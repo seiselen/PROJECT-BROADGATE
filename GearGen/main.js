@@ -9,7 +9,7 @@ var rotSpdVal = 0.25;
 function setup(){
   createCanvas(640,640);
 
-  myNgon = createNgon(6,180,0);
+  myNgon = createNgon(7,180,0);
 
 }
 
@@ -32,7 +32,7 @@ function drawGearShape(ngon,bLandWide,tLandWide,toothTall){
   var numSides = ngon.length;
 
   for (var i = 0; i < numSides; i++) {
-    drawTooth(myNgon[i],myNgon[(i+1)%numSides],32,0.5,128,numSides,(i+2)%numSides);
+    drawTooth(myNgon[i],myNgon[(i+1)%numSides],32,0.5,128,numSides);
   }
 
 }
@@ -40,12 +40,9 @@ function drawGearShape(ngon,bLandWide,tLandWide,toothTall){
 
 // tLandWide will be as % of width of line seg formed by {ptS,ptE}
 // hacking numSides to be offset rotation (for use with 'drawTeeth' \forall sides)
-function drawTooth(ptS, ptE, blandWide, tLandWide, toothTall, numSides, sideID){
+function drawTooth(ptS, ptE, blandWide, tLandWide, toothTall, numSides){
 
-  var intAng = ((numSides-2)*180)/numSides;
-  var extAng = 360/numSides;
-
-  var footAngle = (intAng-extAng)/2;
+  var footAngle = 180/numSides;
 
   var tLandPct = (1-tLandWide)/2; // lerp is WRT excluded pct, so do (1-desired)/2
 
@@ -53,32 +50,42 @@ function drawTooth(ptS, ptE, blandWide, tLandWide, toothTall, numSides, sideID){
   line(ptS.x,ptS.y,ptE.x,ptE.y);
 
 
+  var normSlopeAngle = degrees(createVector(ptE.x-ptS.x,ptE.y-ptS.y).normalize().heading());
+
+
 
   // Vertex forming left bottom landing half-segment
-  var lBotLandHalf = degRadToCoord( (360-footAngle)  ,blandWide, extAng*sideID);
+  var lBotLandHalf = degRadToCoord( -footAngle  ,blandWide, normSlopeAngle);
   lBotLandHalf.add(ptS);
 
 
 
   // Vertex forming right bottom landing half-segment
-  var rBotLandHalf = degRadToCoord( (180+footAngle)   ,blandWide,extAng*sideID);
+  var rBotLandHalf = degRadToCoord( (180+footAngle)   ,blandWide,normSlopeAngle);
   rBotLandHalf.add(ptE);
 
+  // Get projection of point on line of length toothTall
+  var lineSlopeVec = createVector(-1*(ptE.y-ptS.y),ptE.x-ptS.x).setMag(-toothTall);
+
+
   // Vertex forming left top landing segment pt
-  var lTopLandPt = degRadToCoord(270,toothTall,extAng*sideID);
-  lTopLandPt.add(p5.Vector.lerp(ptS,ptE,tLandPct));
+  var tLandPt1 = p5.Vector.lerp(ptS,ptE,tLandPct);
+  tLandPt1.add(lineSlopeVec);
 
   // Vertex forming right top landing segment pt
-  var rTopLandPt = degRadToCoord(270,toothTall,extAng*sideID);
-  rTopLandPt.add(p5.Vector.lerp(ptS,ptE,1-tLandPct));
+  var tLandPt2 = p5.Vector.lerp(ptS,ptE,1-tLandPct);
+  tLandPt2.add(lineSlopeVec);
 
-  stroke(240,60,0);
+  stroke(240,120,0);
 
   line(ptS.x,ptS.y,lBotLandHalf.x,lBotLandHalf.y);
-  line(lBotLandHalf.x,lBotLandHalf.y,lTopLandPt.x,lTopLandPt.y);
-  line(lTopLandPt.x,lTopLandPt.y,rTopLandPt.x,rTopLandPt.y);
-  line(rTopLandPt.x,rTopLandPt.y,rBotLandHalf.x,rBotLandHalf.y);
+  line(lBotLandHalf.x,lBotLandHalf.y,tLandPt1.x,tLandPt1.y);
+  line(tLandPt1.x,tLandPt1.y,tLandPt2.x,tLandPt2.y);
+  line(tLandPt2.x,tLandPt2.y,rBotLandHalf.x,rBotLandHalf.y);
   line(ptE.x,ptE.y,rBotLandHalf.x,rBotLandHalf.y);
+
+
+
 
 }
 
