@@ -2,14 +2,31 @@
 
 var myNgon;
 
+
+//>>> VARIABLES: GEAR OPTIONS (FOR UI/UX AND DOM MANIP.)
+var g_nGearTeeth  = 6;    // # gear teeth (which is == # polygon sides)
+var g_intPolyDiam = 180;  // interior diameter of polygon (i.e. sans gear teeth)
+var g_toothLength = 128;  // length of gear teeth (?TODO: base it on % edge length instead?)
+var g_botLandPct  = 0.25; // % of edge length to place bottom landing vertices
+var g_topLandPct  = 0.50; // % of edge length to place bottom landing vertices
+
+//>>> VARIABLES: Q.A.D. GEAR ROTATION ANIM
 var rotAnmVal = 0;
 var rotSpdVal = 0.25;
 
 
-function setup(){
-  createCanvas(640,640);
 
-  myNgon = createNgon(5,180,0);
+
+function setup(){
+  createCanvas(640,640).parent("viz");
+
+  initUI();
+
+
+  myNgon = createNgon(g_nGearTeeth,g_intPolyDiam,0);
+
+
+
 
 }
 
@@ -24,67 +41,73 @@ function draw(){
 
   translate(width/2,height/2);
   //doRotate();
-  drawGearShape(myNgon,32,0.5,128);
+  drawTeeth(myNgon,g_botLandPct,g_topLandPct,g_toothLength);
 
 }
 
-function drawGearShape(ngon,bLandWide,tLandWide,toothTall){
-  var numSides = ngon.length;
 
-  for (var i = 0; i < numSides; i++) {
-    drawTooth(myNgon[i],myNgon[(i+1)%numSides],0.25,0.5,128,numSides);
+
+
+// tLandWide will be as % of width of line seg formed by {ptS,ptE}
+// footAngle is angle outward from polygon edge that is tangent to this edge and previous
+function generateTooth(ptS, ptE, bLandWide, tLandWide, toothTall, numSides){
+
+  var footAngle = 180/numSides;
+  var tLandPct = (1-tLandWide)/2;
+  var bLandRad = lerp(0,p5.Vector.dist(ptS,ptE),(bLandWide/2));
+
+  stroke(0,240,24);
+  line(ptS.x,ptS.y,ptE.x,ptE.y);
+
+  //>>> Angle of segment [ptS,ptE]. Needed to create bot landing verts
+  var lineSlopeAngle = degrees(createVector(ptE.x-ptS.x,ptE.y-ptS.y).normalize().heading());
+
+  //>>> Point of length toothTall perpendicular to segment [ptS,ptE]. Needed to create top landing verts
+  var perpSlopePoint = createVector(-1*(ptE.y-ptS.y),ptE.x-ptS.x).setMag(-toothTall);
+
+  //>>> 'Left' and 'Right' Bottom Landing Half-Segment Vertices
+  var lBotVert = degRadToCoord( -footAngle  ,bLandRad, lineSlopeAngle).add(ptS);
+  var rBotVert = degRadToCoord( (180+footAngle) ,bLandRad,lineSlopeAngle).add(ptE);
+
+  //>>> 'Left' and 'Right' Top Landing Vertices
+  var lTopVert = p5.Vector.lerp(ptS,ptE,tLandPct).add(perpSlopePoint);
+  var rTopVert = p5.Vector.lerp(ptS,ptE,1-tLandPct).add(perpSlopePoint);
+
+  // Ordering is contiguous vert-to-vert i.e. 'can be used for SVG path shape'
+  return {
+    "initVert" : ptS,
+    "lBotVert" : lBotVert,
+    "lTopVert" : lTopVert,
+    "rTopVert" : rTopVert,
+    "rBotVert" : rBotVert,
+    "exitVert" : ptE
   }
 
 }
 
 
-// tLandWide will be as % of width of line seg formed by {ptS,ptE}
-function drawTooth(ptS, ptE, bLandWide, tLandWide, toothTall, numSides){
 
-  var footAngle = 180/numSides;
+function drawTeeth(ngon,bLandPct,tLandPct,tTall){
+  let nSides = ngon.length; // caching because used in code 3x
+  for (var i = 0; i < nSides; i++) {
+    drawTooth(generateTooth(myNgon[i],myNgon[(i+1)%nSides],bLandPct,tLandPct,tTall,nSides));
+  }
+}
 
-  var tLandPct = (1-tLandWide)/2;
-  var bLandPct = (bLandWide)/2;
-
-  var bLandRad = lerp(0,p5.Vector.dist(ptS,ptE),bLandPct);
-
-  stroke(0,240,24);
-  line(ptS.x,ptS.y,ptE.x,ptE.y);
-
-
-  var normSlopeAngle = degrees(createVector(ptE.x-ptS.x,ptE.y-ptS.y).normalize().heading());
-
-  // Vertex ID: Bottom Landing 'Left' Half-Segment
-  var lBotLandHalf = degRadToCoord( -footAngle  ,bLandRad, normSlopeAngle).add(ptS);
-
-  // Vertex ID: Bottom Landing 'Right' Half-Segment
-  var rBotLandHalf = degRadToCoord( (180+footAngle) ,bLandRad,normSlopeAngle).add(ptE);
-
-
-  // Get projection of point on line of length toothTall
-  var lineSlopeVec = createVector(-1*(ptE.y-ptS.y),ptE.x-ptS.x).setMag(-toothTall);
-
-
-  // Vertex forming left top landing segment pt
-  var tLandPt1 = p5.Vector.lerp(ptS,ptE,tLandPct);
-  tLandPt1.add(lineSlopeVec);
-
-  // Vertex forming right top landing segment pt
-  var tLandPt2 = p5.Vector.lerp(ptS,ptE,1-tLandPct);
-  tLandPt2.add(lineSlopeVec);
-
+function drawTooth(t){
   stroke(240,120,0);
 
-  line(ptS.x,ptS.y,lBotLandHalf.x,lBotLandHalf.y);
-  line(lBotLandHalf.x,lBotLandHalf.y,tLandPt1.x,tLandPt1.y);
-  line(tLandPt1.x,tLandPt1.y,tLandPt2.x,tLandPt2.y);
-  line(tLandPt2.x,tLandPt2.y,rBotLandHalf.x,rBotLandHalf.y);
-  line(ptE.x,ptE.y,rBotLandHalf.x,rBotLandHalf.y);
-
-
-
+  line(t.initVert.x,t.initVert.y,t.lBotVert.x,t.lBotVert.y);
+  line(t.lBotVert.x,t.lBotVert.y,t.lTopVert.x,t.lTopVert.y);
+  line(t.lTopVert.x,t.lTopVert.y,t.rTopVert.x,t.rTopVert.y);
+  line(t.rTopVert.x,t.rTopVert.y,t.rBotVert.x,t.rBotVert.y);
+  line(t.rBotVert.x,t.rBotVert.y,t.exitVert.x,t.exitVert.y);  
 
 }
+
+
+
+
 
 
 
@@ -153,6 +176,30 @@ function degRadToCoord(degree, radius, degOff = 270){
 }
 
 
+//######################################################################
+//>>> UI/UX CODE SPECIFIC TO THIS DEMO
+//######################################################################
+
+
+
+var UI_nGearTeeth;
+var UI_intPolyDiam;
+
+function initUI(){
+  UI_nGearTeeth  = createSlider(4, 12).style('width', '80px').parent("ui").changed(handleUI_nGearTeeth);
+  UI_intPolyDiam = createSlider(120, 240).style('width', '80px').parent("ui").changed(handleUI_intPolyDiam);
+
+}
+
+function handleUI_nGearTeeth(){
+  g_nGearTeeth = UI_nGearTeeth.value();
+  myNgon = createNgon(g_nGearTeeth,g_intPolyDiam,0);
+}
+
+function handleUI_intPolyDiam(){
+  g_intPolyDiam = UI_intPolyDiam.value();
+  myNgon = createNgon(g_nGearTeeth,g_intPolyDiam,0);
+}
 
 
 
