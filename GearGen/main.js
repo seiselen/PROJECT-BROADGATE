@@ -1,4 +1,4 @@
-// NEXT TIME: USE LIN-ALG PROJECTIONS INSTEAD, TO PROJECT VIA EACH TOOTH'S LINE SEG.
+
 
 var myNgon;
 
@@ -9,7 +9,7 @@ var rotSpdVal = 0.25;
 function setup(){
   createCanvas(640,640);
 
-  myNgon = createNgon(7,180,0);
+  myNgon = createNgon(5,180,0);
 
 }
 
@@ -32,19 +32,21 @@ function drawGearShape(ngon,bLandWide,tLandWide,toothTall){
   var numSides = ngon.length;
 
   for (var i = 0; i < numSides; i++) {
-    drawTooth(myNgon[i],myNgon[(i+1)%numSides],32,0.5,128,numSides);
+    drawTooth(myNgon[i],myNgon[(i+1)%numSides],0.25,0.5,128,numSides);
   }
 
 }
 
 
 // tLandWide will be as % of width of line seg formed by {ptS,ptE}
-// hacking numSides to be offset rotation (for use with 'drawTeeth' \forall sides)
-function drawTooth(ptS, ptE, blandWide, tLandWide, toothTall, numSides){
+function drawTooth(ptS, ptE, bLandWide, tLandWide, toothTall, numSides){
 
   var footAngle = 180/numSides;
 
-  var tLandPct = (1-tLandWide)/2; // lerp is WRT excluded pct, so do (1-desired)/2
+  var tLandPct = (1-tLandWide)/2;
+  var bLandPct = (bLandWide)/2;
+
+  var bLandRad = lerp(0,p5.Vector.dist(ptS,ptE),bLandPct);
 
   stroke(0,240,24);
   line(ptS.x,ptS.y,ptE.x,ptE.y);
@@ -52,17 +54,12 @@ function drawTooth(ptS, ptE, blandWide, tLandWide, toothTall, numSides){
 
   var normSlopeAngle = degrees(createVector(ptE.x-ptS.x,ptE.y-ptS.y).normalize().heading());
 
+  // Vertex ID: Bottom Landing 'Left' Half-Segment
+  var lBotLandHalf = degRadToCoord( -footAngle  ,bLandRad, normSlopeAngle).add(ptS);
 
+  // Vertex ID: Bottom Landing 'Right' Half-Segment
+  var rBotLandHalf = degRadToCoord( (180+footAngle) ,bLandRad,normSlopeAngle).add(ptE);
 
-  // Vertex forming left bottom landing half-segment
-  var lBotLandHalf = degRadToCoord( -footAngle  ,blandWide, normSlopeAngle);
-  lBotLandHalf.add(ptS);
-
-
-
-  // Vertex forming right bottom landing half-segment
-  var rBotLandHalf = degRadToCoord( (180+footAngle)   ,blandWide,normSlopeAngle);
-  rBotLandHalf.add(ptE);
 
   // Get projection of point on line of length toothTall
   var lineSlopeVec = createVector(-1*(ptE.y-ptS.y),ptE.x-ptS.x).setMag(-toothTall);
