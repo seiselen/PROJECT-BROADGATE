@@ -7,6 +7,8 @@
     <!-- Basic Style -->
     <style>
       body {color: darkblue; font-family:verdana;}
+      .btnLabl {float:left; width: 240px;}
+      .instructQAD{width: 600px;} /* 600 is width of canvas! */
     </style>
 
     <!-- P5JS Lib Imports -->
@@ -14,15 +16,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
 
     <!-- Project Code -->
+    <script src="gear.js"></script>
     <script src="main.js"></script>
 
   </head>
   
   <body>
-  	<h1>Gear Generator</h1>
-
-  	<div id="viz"></div>
-  	<div id="ui"></div>
+  	<h1>Steve's Gear Generator</h1>
+    <p class="instructQAD"><strong>Instructions:</strong> Play around with the various sliders to change things like number of teeth, tooth length, gear rotation speed, etc.</p>
+    	<div id="viz"></div>
+    	<div id="ui">
+        <!-- Could define this more procedurally via p5js DOM js code, but K.I.S.S. --> 
+        <div id="ui_numTeeth"><span class="btnLabl">Number Of Gear Teeth</span></div>   
+        <div id="ui_polyDiam"><span class="btnLabl">Inner Polygon Diameter</span></div>   
+        <div id="ui_toothLen"><span class="btnLabl">Tooth Length</span></div>   
+        <div id="ui_botLandPct"><span class="btnLabl">Tooth Bot Landing %</span></div>   
+        <div id="ui_topLandPct"><span class="btnLabl">Tooth Top Landing %</span></div>   
+        <div id="ui_rotateSpeed"><span class="btnLabl">Gear Rotation Speed</span></div>   
+    </div>
 
   </body>
 </html>
