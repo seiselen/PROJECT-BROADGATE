@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Keyboard Input | Multiple Keypress Demo</title>
+
+    <!-- [Temp] Basic Style -->
+    <style>
+      body {color: darkblue; font-family:verdana;}
+      ul {width: 780px; font-size: 12px; padding-inline-start: 20px;}
+      li {margin-bottom: 8px;}
+    </style>
+
+    <!-- P5JS Lib Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+
+    <!-- Project Code -->
+    <script src="initKeys.js"></script>
+    <script src="keyRep.js"></script>
+    <script src="main.js"></script>
+
+  </head>
+  
+  <body>
+  	<h1>Keyboard Input | Multiple Keypress Demo</h1>
+    <p><strong>Instructions/Info/Notes:</strong></p>
+    <ul>
+      <li>Pressing one or more keyboard keys (of the ones shown/supported in this visualization) will cause them to light up (i.e. change color) until released. The only exception is <i>{Caps Lock}</i>: which will exhibit its expected 'toggle on / toggle off' behavior.</li>
+      <li>OS/Browser Note: This visualization was built and tested on a laptop running Windows 10 and using the Google Chrome browser. While I believe the keyboard keys shown / implemented will work for most mainstream operating systems, browsers, and keyboards... there's always that one exception.</li>
+      <li>There is no support for the <i>{Right Shift}</i>, <i>{Right Control}</i>, nor <i>{Right Alt}</i> keys; largely because I want to keep this demo interesting yet simple. They could be supported, but this requires grabbing additional info from the keyPress event on the JavaScript side of things (i.e. external to p5js support).</li>
+      <li>The <i>{ANY}</i> key is this visualization's Easter Egg. It's there mostly to fill in the gap between <i>{?, /}</i> and <i>{Enter}</i>, though I might find some later feature for it (i.e. trigger via key combo, etc.)</li>
+      <li>Lastly: this could probably also be easily refactored into a virtual keyboard demo as well (as a kind of inverse thereof). Maybe via removing key detection code, adding mouse collision support for KeyRep objects, collecting 'onVirtualKeypress' events thereof, and sending the chars into a buffer (WLOG).</li>
+    </ul>
+
+  	<div id="viz"></div>
+  </body>
+</html>
