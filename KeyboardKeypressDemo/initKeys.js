@@ -16,12 +16,15 @@ function initKeyReps(){
 
   let uncVers = -1;
 
+  let initOffX = 30;
+  let initOffY = 30;
+
   let offKeys = keyLettWide+keyLettOffs;
 
   //--------------------------------------------------------------------
   //>>> ROW 1
   //--------------------------------------------------------------------
-  let offX = 10; let offY = 20;
+  let offX = initOffX; let offY = initOffY;
 
   keyReps.set(192, new KeyRep(offX, offY, 192, "` ~").setCustomDims(35,17.5)); 
 
@@ -54,7 +57,7 @@ function initKeyReps(){
   //>>> ROW 2
   //--------------------------------------------------------------------
 
-  offX = 10; offY += 10 + keyLettTall;
+  offX = initOffX; offY += 10 + keyLettTall;
   keyReps.set(9, new KeyRep( offX , offY , 9, "Tab").setCustomDims(60,30));
 
   offX+=20;
@@ -77,7 +80,7 @@ function initKeyReps(){
   //>>> ROW 3
   //--------------------------------------------------------------------
 
-  offX = 10; offY += 10 + keyLettTall;
+  offX = initOffX; offY += 10 + keyLettTall;
   keyReps.set(20, new KeyRep( offX , offY , 20, "Caps Lock").setCustomDims(85,42.5,16));
 
   offX += 45;
@@ -100,7 +103,7 @@ function initKeyReps(){
   //>>> ROW 4
   //--------------------------------------------------------------------
 
-  offX = 10; offY += 10 + keyLettTall;
+  offX = initOffX; offY += 10 + keyLettTall;
   keyReps.set(16, new KeyRep( offX , offY , 16, "Shift").setCustomDims(110,55));
 
   offX += 70;
@@ -126,7 +129,7 @@ function initKeyReps(){
   //>>> ROW 5
   //--------------------------------------------------------------------
 
-  offX = 10; offY += 10 + keyLettTall;
+  offX = initOffX; offY += 10 + keyLettTall;
   keyReps.set(17, new KeyRep( offX , offY , 17, "Control").setCustomDims(110,55));
 
   offX += 120;
