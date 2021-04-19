@@ -70,9 +70,9 @@ class DragObject{
       let newMRC = getMRC(adjPos,this.dim);
 
       if(newMRC == null){
-          this.snapToPrevMRC();
-          return null;
-        }
+        this.snapToPrevMRC();
+        return null;
+      }
 
       let qMap = newMRC[0];
       let qRow = newMRC[1];
@@ -81,6 +81,11 @@ class DragObject{
       
 
       if(this.dim == 1){
+        if (!qMap.isValidVacantCell([qRow,qCol])){
+          this.snapToPrevMRC();
+          return null;
+        }
+        
         // Set current cell to 'VACANT'
         this.mrc[0].setToVacant([this.mrc[1],this.mrc[2]]);
         // Reset MRC to new location
