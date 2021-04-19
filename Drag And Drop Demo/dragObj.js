@@ -65,41 +65,37 @@ class DragObject{
       // Needed to avoid issue where snapping to CELL_WIDE puts 2x2 in prev row/col
       let adjPos = createVector(this.pos.x-1, this.pos.y-1);
 
+
       // Get MRC (map[row][col]) encompassing this new possible position
       let newMRC = getMRC(adjPos,this.dim);
+
+      if(newMRC == null){
+          this.snapToPrevMRC();
+          return null;
+        }
+
       let qMap = newMRC[0];
       let qRow = newMRC[1];
       let qCol = newMRC[2];
 
+      
 
       if(this.dim == 1){
-
-        if (qMap==null || !qMap.isValidVacantCell([qRow,qCol])) {
-          this.snapToCell(this.mrc[0].coordToPos(this.mrc[1],this.mrc[2],this.dim));
-          return null;
-        }
-
         // Set current cell to 'VACANT'
         this.mrc[0].setToVacant([this.mrc[1],this.mrc[2]]);
         // Reset MRC to new location
         this.mrc = [qMap,qRow,qCol];
         // Set new cell to 'FILLED'
         this.mrc[0].setToFilled([this.mrc[1],this.mrc[2]]);
-
       } // Ends Handling | dim = 1x1
 
 
       else if(this.dim == 2){
-
-        if (qMap==null) {
-          this.snapToCell(this.mrc[0].coordToPos(this.mrc[1],this.mrc[2],this.dim));
-          return null;      
-        }
-
+        
         for (var r = qRow; r < qRow+this.dim; r++) {
           for (var c = qCol; c < qCol+this.dim; c++) {
             if (!qMap.isValidVacantCell([r,c])){
-              this.snapToCell(this.mrc[0].coordToPos(this.mrc[1],this.mrc[2],this.dim));
+              this.snapToPrevMRC();
               return null;
             }
           }
@@ -138,6 +134,9 @@ class DragObject{
     } // Ends handling if THIS is the selected object
   } // Ends Function OnMouseReleased
 
+  snapToPrevMRC(){
+    this.snapToCell(this.mrc[0].coordToPos(this.mrc[1],this.mrc[2],this.dim));
+  }
 
   snapToCell(newPos=null){
 

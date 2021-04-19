@@ -40,6 +40,12 @@ function draw(){
   QADFPS();
 }
 
+/*>>> This function is 'functionally' equivalent to the above lambda
+function render(d){
+  d.render();
+}
+*/
+
 //>>> QUICK-AND-DIRTY F.P.S. Textbox Display
 const FPSSTR = "FPS: ";
 function QADFPS(){
