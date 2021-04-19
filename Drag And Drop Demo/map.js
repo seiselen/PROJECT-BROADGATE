@@ -58,26 +58,47 @@ class GridMap{
   setCellAtPosToVacant(pos){this.setToVacant(this.posToCoord(pos));}
 
   setToFilled(cell){
-    if(this.isValidCell(cell)){
-      this.map[cell[0]][cell[1]] = CellType.FILLED;
-    }
+    this.map[cell[0]][cell[1]] = CellType.FILLED;
   } // Ends Function setToFilled
 
   setToVacant(cell){
-    if(this.isValidCell(cell)){
-      this.map[cell[0]][cell[1]] = CellType.VACANT;
-    }
+    this.map[cell[0]][cell[1]] = CellType.VACANT;
   } // Ends Function setToVacant
 
-  // Determines if a row and col are in valid range of grid map
+  // Determines if a row and col are in valid range of grid map <TODO: Rename 'cellInBounds' ?>
   isValidCell(coord){
     return (coord[0] >= 0 && coord[0] < this.rows && coord[1] >= 0 && coord[1] < this.cols);
   } // Ends Function isValidCell
 
+  isVacantCell(coord){
+    return (this.map[coord[0]][coord[1]]==CellType.VACANT);
+  }
+
+  // good example of short-circuit logical AND (i.e. to implicitly handle invalid coords)!
+  isValidVacantCell(coord){
+    return (this.isValidCell(coord) && this.isVacantCell(coord));
+  }
+
+
+  // (round(this.pos.y/CELL_SIZE)*CELL_SIZE);
   // Converts p5.Vector of position (as [x,y,z]) into its cell coordinate in this map's local space (as [row,col])
   posToCoord(pos){
-    return [floor((pos.y-this.pos.y)/CELL_SIZE),floor((pos.x-this.pos.x)/CELL_SIZE)];
+    console.log(pos);
+    let tempRow = floor((pos.y-this.pos.y)/CELL_SIZE);
+    let tempCol = floor((pos.x-this.pos.x)/CELL_SIZE);
+
+    console.log(tempRow+","+tempCol);
+
+    return [tempRow,tempCol];
   } // Ends Function posToCoord
+
+  // supporting for dim={1,2,3}. Can make this procedural for any dim, but K.I.S.S. for now...
+  coordToPos(row,col,dim){
+    switch(dim){
+      case 2: return createVector(this.pos.x+((col+1)*this.cSize), this.pos.y+((row+1)*this.cSize));
+      default: return createVector(this.pos.x+(col*this.cSize), this.pos.y+(row*this.cSize));
+    }
+  }
 
   render(){
     var temp;
