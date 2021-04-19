@@ -26,40 +26,63 @@
 |         same instantiation / DragObject update / Gridmap update steps
 |         will occur.
 +---------------------------------------------------------------------*/
-function createDragObject(req,dim){
+function createDragObject(map,row,col,dim){
 
   let obj = null;
+  let pos;
 
-  // Request Type -> 2
-  if(req.length == 3){
+  if(dim==1){
+    if (!map.isValidVacantCell([row,col])){return null;}
+    pos = map.coordToPos(row,col,dim);
+    obj = new DragObject(dim,pos,[map,row,col]);
+    map.setToFilled([row,col]);
+  } // Ends Handling 1x1 cell objects
 
-    // 'unpack' request
-    let qMap = req[0];
-    let qRow = req[1];
-    let qCol = req[2];
+
+  if(dim==2){
 
     // Every cell this object covers must be valid (in-bounds) and 'VACANT'
-    for (var r = qRow; r < qRow+dim; r++) {
-      for (var c = qCol; c < qCol+dim; c++) {
-        if (!qMap.isValidVacantCell([r,c])){return null;}
+    for (var r = row; r < row+dim; r++) {
+      for (var c = col; c < col+dim; c++) {
+        if (!map.isValidVacantCell([r,c])){return null;}
       }
     }
 
     // get position WRT cell
-    let qPos = qMap.coordToPos(qRow,qCol,dim);
+    pos = map.coordToPos(row,col,dim);
 
     // Instantiate object
-    obj = new DragObject(dim,qPos,[qMap,qRow,qCol]);
+    obj = new DragObject(dim,pos,[map,row,col]);
 
     // Lastly: mark map cells as 'FILLED'
-    for (var r = qRow; r < qRow+dim; r++) {
-      for (var c = qCol; c < qCol+dim; c++) {
-        qMap.setToFilled([r,c]);
+    for (var r = row; r < row+dim; r++) {
+      for (var c = col; c < col+dim; c++) {
+        map.setToFilled([r,c]);
       }
     }
-  } // Ends Handling of 2x2 DragObjects
+
+  } // Ends Handling 2x2 cell objects
+
 
   return obj;
 }
 
 
+
+/*----------------------------------------------------------------------
+|>>> Function getMRC
++-----------------------------------------------------------------------
+| Description: (QAD) Extracted from DragObject.onMouseReleased(), this
+|              function determines which [if any] map covers the input
+|              position, then returns [map,row,col] thereto. Does NOT
+|              handle invalid [row][col] coords!
++---------------------------------------------------------------------*/
+function getMRC(pos,dim){
+  let objCoord = mapB.posToCoord(pos,dim);
+  if(mapB.isValidCell(objCoord)){return [mapB,objCoord[0],objCoord[1]];}
+
+  objCoord = mapO.posToCoord(pos,dim);
+  if(mapO.isValidCell(objCoord)){return [mapO,objCoord[0],objCoord[1]];}
+
+  return null;
+}

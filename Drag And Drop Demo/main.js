@@ -1,42 +1,34 @@
-
 //>>> GLOBAL DEFAULT VALS FOR MAP DIMS
 var CELLS_TALL = 15;
 var CELLS_WIDE = 10;
 var CELL_SIZE  = 50;
 
-
+//>>> DATA STRUCTURES FOR MAPS, OBJECTS
 var mapB;
 var mapO;
-
-
-
-var dObj;
-
+var dObjs;
 
 
 function setup(){
   createCanvas(1200,850).parent("viz");
 
-  let mapBCol = color(0,120,240);
-  let mapOCol = color(240,120,0);
-
   mapO = new GridMap(createVector(CELL_SIZE,CELL_SIZE), 
     CELLS_TALL, 
     CELLS_WIDE, 
     CELL_SIZE
-  ).setColor(mapOCol,'v');
+  ).setColor(color(240,120,0),'v');
 
   mapB = new GridMap(
     createVector(width-(CELL_SIZE*CELLS_WIDE)-CELL_SIZE,CELL_SIZE), 
     CELLS_TALL, 
     CELLS_WIDE, 
     CELL_SIZE
-  ).setColor(mapBCol,'v');
+  ).setColor(color(0,120,240),'v');
 
-  dObj = createDragObject([mapO,1,3], 2);
-
-
-
+  // Initialize dObjs and add 2 initial members (arbitrary for demo purposes)
+  dObjs = [];
+  dObjs.push(createDragObject(mapO,1,3,2));
+  dObjs.push(createDragObject(mapO,1,1,1));
 }
 
 
@@ -44,7 +36,7 @@ function draw(){
   background(60);
   mapB.render();
   mapO.render();
-  dObj.render();
+  dObjs.forEach(d => d.render());
   QADFPS();
 }
 
@@ -57,28 +49,51 @@ function QADFPS(){
 }
 
 
-function mouseInCanvas(){return (mouseX > 0) && (mouseY > 0) && (mouseX < width) && (mouseY < height);}
+//>>> MOUSE/KEY METHODS AND EVENT HANDLERS
 
-function mousePtToVec(){return createVector(mouseX, mouseY);}
+function mouseInCanvas(){
+  return (mouseX > 0) && (mouseY > 0) && (mouseX < width) && (mouseY < height);
+}
 
-//vertices.forEach(v => v.onMousePressed(mousePtToVec()));
+function mousePtToVec(){
+  return createVector(mouseX, mouseY);
+}
+
 function mousePressed(){
   if(mouseInCanvas() && mouseButton === LEFT){
-    dObj.onMousePressed(mousePtToVec());
+    dObjs.forEach(d => d.onMousePressed(mousePtToVec()));
   }
 }
 
 function mouseReleased(){
-  //vertices.forEach(v => v.onMouseRelease());
-
-
-
-  dObj.onMouseReleased(mousePtToVec());
+  dObjs.forEach(d => d.onMouseReleased());
 }
 
 function mouseDragged(){
   if(mouseInCanvas() && mouseButton === LEFT){
-    //vertices.forEach(v => v.onMouseDragged(mousePtToVec()));
-    dObj.onMouseDragged(mousePtToVec());
+    dObjs.forEach(d => d.onMouseDragged(mousePtToVec()));
   }
+}
+
+function keyPressed(){
+  let rMRC,rObj; // *r*equest MRC/Obj
+
+  if(!mouseInCanvas()){return;}
+
+  if(key === '1'){
+    rMRC = getMRC(mousePtToVec(),1);
+    if(rMRC){
+      rObj = createDragObject(rMRC[0],rMRC[1],rMRC[2],1);
+      if(rObj){dObjs.push(rObj);}
+    }
+  }
+
+  if(key === '2'){
+    rMRC = getMRC(mousePtToVec(),2);
+    if(rMRC){
+      rObj = createDragObject(rMRC[0],rMRC[1],rMRC[2],2);
+      if(rObj){dObjs.push(rObj);}
+    }    
+  }
+
 }

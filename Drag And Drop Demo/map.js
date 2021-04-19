@@ -10,12 +10,14 @@ class GridMap{
     this.rows  = rows;
     this.cols  = cols;
     this.cSize = cSize;
+    this.cHalf = this.cSize/2;
     this.map   = [];
     this.resetMap();
 
-    this.vacantCol = null; // null -> noFill()
+    this.vacantCol = color(0,0,0,0);
     this.filledcol = color(180,0,0);
     this.strokeCol = color(240,127);
+    this.ERRORCol  = color(255,0,255);
   } // Ends Constructor
 
   // INVALID INPUT NOT HANDLED - USE AT OWN RISK!
@@ -79,37 +81,49 @@ class GridMap{
     return (this.isValidCell(coord) && this.isVacantCell(coord));
   }
 
-
-  // (round(this.pos.y/CELL_SIZE)*CELL_SIZE);
   // Converts p5.Vector of position (as [x,y,z]) into its cell coordinate in this map's local space (as [row,col])
-  posToCoord(pos){
-    console.log(pos);
-    let tempRow = floor((pos.y-this.pos.y)/CELL_SIZE);
-    let tempCol = floor((pos.x-this.pos.x)/CELL_SIZE);
+  posToCoord(pos,dim){
+    let tempRow,tempCol;
 
-    console.log(tempRow+","+tempCol);
+    if(dim == 1){
+      tempRow = floor((pos.y-this.pos.y)/CELL_SIZE);
+      tempCol = floor((pos.x-this.pos.x)/CELL_SIZE);
+    }   
+
+    if(dim == 2){
+      tempRow = floor((pos.y-this.pos.y)/CELL_SIZE);
+      tempCol = floor((pos.x-this.pos.x)/CELL_SIZE);
+    }
 
     return [tempRow,tempCol];
   } // Ends Function posToCoord
 
+
   // supporting for dim={1,2,3}. Can make this procedural for any dim, but K.I.S.S. for now...
   coordToPos(row,col,dim){
     switch(dim){
-      case 2: return createVector(this.pos.x+((col+1)*this.cSize), this.pos.y+((row+1)*this.cSize));
+      case 1: return createVector(
+        this.pos.x+(col*this.cSize)+this.cHalf,
+        this.pos.y+(row*this.cSize)+this.cHalf
+      );
+      case 2: return createVector(
+        this.pos.x+((col+1)*this.cSize),
+        this.pos.y+((row+1)*this.cSize)
+      );
       default: return createVector(this.pos.x+(col*this.cSize), this.pos.y+(row*this.cSize));
     }
-  }
+  } // Ends Function coordToPos
+
 
   render(){
-    var temp;
-    strokeWeight(1);
-    stroke(this.strokeCol);
-
+    strokeWeight(1);stroke(this.strokeCol);
     for(var r=0; r<this.rows; r++){
       for(var c=0; c<this.cols; c++){
-        temp = this.map[r][c];
-        if(temp == CellType.VACANT) {if(this.vacantCol == null){noFill();}else{fill(this.vacantCol);}}
-        else if(temp == CellType.FILLED) {fill(this.filledcol);}
+        switch(this.map[r][c]){
+          case (CellType.VACANT): fill(this.vacantCol); break;
+          case (CellType.FILLED): fill(this.filledcol); break;
+          default: fill(this.ERRORCol);
+        }
         rect(this.pos.x+(c*this.cSize), this.pos.y+(r*this.cSize),this.cSize,this.cSize);
       }
     }
