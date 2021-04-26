@@ -2,6 +2,38 @@
 
 
 //----------------------------------------------------------------------
+//>>> SCORE KEEP AND DISPLAY METHODS (Q.A.D. PENDING MANAGER AND UI)
+//----------------------------------------------------------------------
+var numKills   = 0;
+var numEnemies = 0; // # instantiated, NOT necessarily # alive
+var numTowers  = 0;
+
+function OnEnemyKilled(){numKills++;}
+function OnEnemyCreated(){numEnemies++;}
+function OnTowerCreated(){numTowers++;}
+
+function QADshowKillCount(){
+  fill(0); noStroke();
+  rect(width-256,0,256,64);
+  fill(255);textSize(24);textAlign(LEFT,CENTER);
+  text("> Enemies Killed: "+numKills, width-256,32);
+}
+
+function QADshowEnemyCount(){
+  fill(0); noStroke();
+  rect(width-512,0,256,64);
+  fill(255);textSize(24);textAlign(LEFT,CENTER);
+  text("> Enemies On Map: "+numEnemies, width-512,32);
+}
+
+function QADshowTowerCount(){
+  fill(0); noStroke();
+  rect(width-768,0,256,64);
+  fill(255);textSize(24);textAlign(LEFT,CENTER);
+  text("> Towers On Map: "+numTowers, width-768,32);
+}
+
+//----------------------------------------------------------------------
 //>>> AGENT AND TOWER CREATION METHODS (Q.A.D. PENDING FACTORY OBJ)
 //----------------------------------------------------------------------
 
@@ -10,6 +42,7 @@ function createAgent(randomLen = false){
   if(randomLen){agt.setBodyLenRand(16,32);}
   agt.givePath(map.mapPath);
   agents.push(agt);
+  OnEnemyCreated();
 } // Ends Function createAgent
 
 function createTowerFirstEmptyCell(){
@@ -28,6 +61,7 @@ function createTower(cell){
   twr = new TDTower(pos,cell);
   map.setToFilled(cell);
   towers.push(twr);
+  OnTowerCreated();
 }
 
 

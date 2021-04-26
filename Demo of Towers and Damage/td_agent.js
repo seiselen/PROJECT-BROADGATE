@@ -1,13 +1,6 @@
-/*======================================================================
-| Project:  Simple Tower Defense Map and Pathwalk Demo 01
-| Author:   Steven Eiselen, CFHS/UArizona Computer Science
-|           Dan Shiffman, The Coding Train (crediting in case any of his
-|           steering agent code appears in this code).
-| Language: Javascript with P5JS Library
-+-----------------------------------------------------------------------
-| Description:  QAD - Implements a simple agent that follows a waypoint 
-|               path specified by the map definition.
-*=====================================================================*/
+/*----------------------------------------------------------------------
+|>>> Class TDAgent
++---------------------------------------------------------------------*/
 class TDAgent{
   constructor(x,y,ID){
     this.pos = createVector(y*cellSize+(cellSize/2),x*cellSize+(cellSize/2));
@@ -29,16 +22,20 @@ class TDAgent{
     //>>> Variables for Color Palette
     this.col_agFill = color(216);
     this.col_agStrk = color(60);
-    this.col_agHlth = color(32,216,64);
+    this.col_agHth1 = color(32,216,64);
+    this.col_agHth2 = color(216,216,64);
+    this.col_agHth3 = color(216,32,64);
 
     //>>> Variables for Health and Health-bar
     this.curHealth = 100;
     this.maxHealth = 100;
+    this.isAlive   = true;
+    this.deathFrame = 0;
+
+    this.respawnDel = 120; // 'respawn delay'
 
     this.hbarWide = 48;
     this.hbarTall = 6;
-
-
 
   }
 
@@ -57,14 +54,48 @@ class TDAgent{
   }
 
   update(){
-    this.gotoPath();
+    if(this.isAlive){this.gotoPath();}
+    else{this.checkRespawn();}
     mapSP.updatePos(this);
+
+  }
+
+
+
+  checkRespawn(){
+    if(frameCount-this.deathFrame>this.respawnDel){
+      // reset alive status and health
+      this.isAlive = true;
+      this.curHealth = this.maxHealth;
+
+      // reset waypoint and transform
+      this.curWaypt = 0;
+      this.pos = createVector(this.curPath[this.curWaypt].x,this.curPath[this.curWaypt].y);
+      this.ori = createVector(0,0);
+    }
+  }
+
+  onAgentKilled(){
+      this.curHealth = 0;
+      this.isAlive = false;
+      this.deathFrame = frameCount;
+      this.ori = createVector(random(-10,10),random(-10,10)).normalize();
+      OnEnemyKilled();    
+  }
+
+
+
+  applyDamage(dam){
+    this.curHealth -= dam;
+    if(this.curHealth <= 0){this.onAgentKilled();}
   }
 
 
  
   gotoPath(){
     if(this.curWaypt<this.curPath.length){
+
+      if(!this.isAlive){return;}
 
       // Calculate 'proposed' next move 
       var des = p5.Vector.sub(this.curPath[this.curWaypt],this.pos);
@@ -102,8 +133,14 @@ class TDAgent{
   }
 
   renderAgent(){
-    var theta = this.ori.heading()+(PI/2);
-    fill(this.col_agFill);stroke(this.col_agStrk);strokeWeight(1);
+    let theta = this.ori.heading()+(PI/2);
+
+    switch(this.isAlive){
+      case true: fill(this.col_agFill); break;
+      case false: fill(120,0,0);
+    }
+
+    stroke(this.col_agStrk);strokeWeight(1);
     push();
       // Translate and Rotate, 'Nuff Said
       translate(this.pos.x,this.pos.y);
@@ -126,9 +163,16 @@ class TDAgent{
     stroke(this.col_agStrk);fill(this.col_agStrk);
     rect(this.pos.x-xOff,this.pos.y-yOff,this.hbarWide,this.hbarTall);
 
-    noStroke();fill(this.col_agHlth);
-    let hRatio = lerp(1, this.hbarWide, constrain(this.curHealth/this.maxHealth,0,1) );
-    rect(this.pos.x-xOff, this.pos.y-yOff, hRatio, this.hbarTall);    
+    noStroke();
+
+    let hRatio = constrain(this.curHealth/this.maxHealth,0,1);
+
+    switch(hRatio>=0.5){
+      case true: fill(lerpColor(this.col_agHth2,this.col_agHth1, (hRatio-0.5)*2 ));break;
+      case false: fill(lerpColor(this.col_agHth3,this.col_agHth2, hRatio*2  ));
+    }
+
+    rect(this.pos.x-xOff, this.pos.y-yOff, lerp(1,this.hbarWide,hRatio), this.hbarTall);    
   }
   
 }

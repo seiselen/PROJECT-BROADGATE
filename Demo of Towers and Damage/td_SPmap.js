@@ -46,7 +46,26 @@ class TDSPMap{
 
   }
 
+  getAgentsInCellList(list){
+    let agents = [];
 
+    for (var i = 0; i < list.length; i++) {
+      agents = agents.concat(this.getAgentsAtCell(list[i]));
+    }
+    
+    return agents;
+  }
+
+  getAgentsAtCell(rc){
+    let agents = [];
+    let cellVals = Object.values(this.map[rc[0]][rc[1]]);
+
+    for (var i = 0; i < cellVals.length; i++) {
+      agents.push(cellVals[i]);
+    }
+
+    return agents;
+  }
 
 
   coordsViaPos(pos){

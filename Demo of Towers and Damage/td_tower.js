@@ -20,6 +20,25 @@ class TDTower{
     // Variables for Visibility and Target[s]
     this.vizRange  = cellSize*2.5;
     this.showRange = true;
+    this.enmyCells = [];
+    this.enemyList = [];
+    this.curTarget = null;
+
+    this.getEnemyCellsInRange();
+
+    // Variables for Damage and Related Settings
+    this.baseDamage = 1;
+    this.curDamage = this.baseDamage;
+    this.maxDamage = 10;
+
+
+    // Variables for Turret Settings (QAD - turret should be its own object!)
+    this.turretL = 32;
+    this.turretW = 8;
+    this.turretLh = this.turretL/2;
+    this.turretWh = this.turretW/2;
+    this.turCol   = color(0,120,0);
+    this.laserCol = color(0,255,255);
 
     // Colors
     this.regCol = color(0,216,0);
@@ -36,12 +55,18 @@ class TDTower{
   }
 
   ptInBoundCirc(pt){
-    return (p5.Vector.dist(pt,this.pos) <= this.radi);
-  }  
+    return (p5.Vector.dist(pt,this.pos) <= this.vizRange);
+  }
+
+  distToPt(pt){
+    return p5.Vector.dist(pt,this.pos);
+  }
+
 
 
   //--------------------------------------------------------------------
   //>>> Mouse/UI Behaviors
+  //--------------------------------------------------------------------
 
   onMousePressed(mousePt){
     if(this.ptInBoundCirc(mousePt)){
@@ -72,6 +97,8 @@ class TDTower{
 
     this.cell = newCell;
 
+    this.getEnemyCellsInRange();
+
     map.setToFilled(this.cell);
 
   } // Ends Function OnMouseReleased  
@@ -86,10 +113,86 @@ class TDTower{
     this.pos.y = (floor(newPos.y/this.diam)*this.diam)+(this.radi);
   }
 
+  //--------------------------------------------------------------------
+  //>>> Update
+  //--------------------------------------------------------------------
+  update(){
+    this.getEnemiesInRange();
+    this.getClosestEnemyInRange();
+    this.attackCurTarget();
+  }
+
+  //--------------------------------------------------------------------
+  //>>> Visibility / Targeting / Attack System
+  //--------------------------------------------------------------------
+
+  getEnemyCellsInRange(){
+    this.enmyCells = [];
+
+    let cellRange = floor(this.vizRange/cellSize);
+
+    let r = this.cell[0];
+    let c = this.cell[1];
+
+    let buff = [-1,-1];
+
+    let enmyCells = [];
+
+    for(let adjR = r-cellRange; adjR <= r+cellRange; adjR++){
+      for(let adjC = c-cellRange; adjC <= c+cellRange; adjC++){
+        buff[0] = adjR; buff[1] = adjC;
+        if( !(adjR==r && adjC==c) && map.isEnemyPathCell(buff) ){
+          this.enmyCells.push([adjR,adjC]);
+        }
+      }
+    }
+  }
+
+
+  getEnemiesInRange(){
+    this.enemyList = mapSP.getAgentsInCellList(this.enmyCells);
+  }
+
+
+  getClosestEnemyInRange(){
+    let curDist = 9999;
+    let closestEnemy = null;
+    let nmyDist;
+
+    for (var i = 0; i < this.enemyList.length; i++) {
+
+      if(this.ptInBoundCirc(this.enemyList[i].pos)){
+        nmyDist = this.distToPt(this.enemyList[i].pos)
+        if(nmyDist<curDist){
+          curDist = nmyDist;
+          closestEnemy = this.enemyList[i];
+        }
+      }
+    }
+
+    this.curTarget = closestEnemy;
+  }
+
+
+  attackCurTarget(){
+    if(this.curTarget && this.curTarget.isAlive){
+      this.curTarget.applyDamage(this.curDamage);
+    }
+  }
+
+
+
+
+  //--------------------------------------------------------------------
+  //>>> Render and other GFX/VFX methods
+  //--------------------------------------------------------------------
+
   render(){
     if(this.showRange){this.dispRange();}
     //this.render1();
     this.render2();
+    this.renderLaser();
+    this.renderTurret();
   }
 
   // Draws ellipse using this.diam as basis
@@ -97,7 +200,7 @@ class TDTower{
     stroke(this.strCol);strokeWeight(2);
     if (this.isSelected) {fill(this.selCol);} else{fill(this.regCol);}
     ellipse(this.pos.x,this.pos.y,this.diam*0.75,this.diam*0.75);
-  }
+  } // Ends Function render1
 
   // Draws Regular Polygon using this.shapeDiam as basis
   render2(){
@@ -110,7 +213,30 @@ class TDTower{
       }
     endShape(CLOSE);
 
-  } // Ends Function drawNgonShape
+  } // Ends Function render2
+
+
+  renderTurret(){
+    let turOri = (this.curTarget && this.curTarget.isAlive) 
+      ? p5.Vector.sub(this.curTarget.pos,this.pos) 
+      : createVector(0,0);
+
+    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
+    push();
+      translate(this.pos.x,this.pos.y);
+      rotate(turOri.heading());
+      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
+    pop();
+  }
+
+  renderLaser(){
+    if(this.curTarget && this.curTarget.isAlive){
+      stroke(this.laserCol); strokeWeight(random(1,4));
+      line(this.pos.x,this.pos.y,this.curTarget.pos.x,this.curTarget.pos.y);
+    }
+
+  }
+
 
   dispRange(){
     if(this.showRange){

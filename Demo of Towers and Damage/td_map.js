@@ -63,6 +63,11 @@ class TDMap{
   }
 
 
+  isEnemyPathCell(rc){
+    return (this.isValidCell(rc) && (this.tileMap[rc[0]][rc[1]] == CellType.enemyPath));
+  }
+
+
   resetTileMap(){
     for (var r = 0; r < this.cellsTall; r++) {
       this.tileMap[r]=[];
