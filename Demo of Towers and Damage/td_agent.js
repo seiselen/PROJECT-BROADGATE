@@ -57,7 +57,6 @@ class TDAgent{
     if(this.isAlive){this.gotoPath();}
     else{this.checkRespawn();}
     mapSP.updatePos(this);
-
   }
 
 

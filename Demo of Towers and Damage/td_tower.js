@@ -55,7 +55,7 @@ class TDTower{
   }
 
   ptInBoundCirc(pt){
-    return (p5.Vector.dist(pt,this.pos) <= this.vizRange);
+    return (p5.Vector.dist(pt,this.pos) <= this.diam);
   }
 
   distToPt(pt){
@@ -160,14 +160,13 @@ class TDTower{
     let nmyDist;
 
     for (var i = 0; i < this.enemyList.length; i++) {
-
-      if(this.ptInBoundCirc(this.enemyList[i].pos)){
-        nmyDist = this.distToPt(this.enemyList[i].pos)
-        if(nmyDist<curDist){
-          curDist = nmyDist;
-          closestEnemy = this.enemyList[i];
-        }
+ 
+      nmyDist = this.distToPt(this.enemyList[i].pos)
+      if(nmyDist<curDist){
+        curDist = nmyDist;
+        closestEnemy = this.enemyList[i];
       }
+    
     }
 
     this.curTarget = closestEnemy;
