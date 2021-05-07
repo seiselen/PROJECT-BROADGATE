@@ -1,0 +1,91 @@
+/*======================================================================
+|>>> Carlos' Original Code (with McCann-ish edits to header comment box)
++-----------------------------------------------------------------------
+| Project:    'English to Morse Code Translator'
+| Author:     Carlos Lazo
+| Instructor: Steven Eiselen
++-----------------------------------------------------------------------
+| Original Description: 
+|  > All code was written and run on repl.it. I made a morse to english 
+|    translator in Python last year, but it got lost to the ages along 
+|    with my old school gmail. I decided to make an english to morse
+|    translator in Java in honor of the loss of my old gmail. RIP
++---------------------------------------------------------------------*/
+import java.util.*; 
+public class Main{
+	public static String englishToMorse (String englishWord) {
+    //These are the arrays that store the morse and english alphabet
+		String[] english = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+                "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", 
+                "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+                ",", ".", "?", " "};
+
+		String[] morse = { ".-", "-...", "-.-.", "-..", ".", "..-.", "--.", "....", "..", 
+              ".---", "-.-", ".-..", "--", "-.", "---", ".---.", "--.-", ".-.",
+              "...", "-", "..-", "...-", ".--", "-..-", "-.--", "--..", ".----",
+              "..---", "...--", "....-", ".....", "-....", "--...", "---..", "----.",
+              "-----", "--..--", ".-.-.-", "..--..", "  " };
+		String whole = "";
+		
+    //turns the string into an array of characters
+		char [] chars = englishWord.toCharArray();
+    
+    //iterates through the characters in the chararray
+		for (int index = 0; index < chars.length; index++){	
+      	char letter = chars[index];
+      	String strLetter = Character.toString(letter);
+          //finds the index of each character and appends it to form the string
+      		for (int i = 0; i < english.length; i++) {
+      			if (strLetter.equals(english[i])) {
+      				whole += morse[i] + " ";
+      				break;
+      		}
+      	}     
+      }  
+		return whole;
+		}
+	public static void main(String[] args){
+      Scanner in = new Scanner(System.in);  
+          System.out.print("Enter the english text you wish to translate into morse code: ");  
+          String englishWord = in.nextLine();  
+          System.out.println(englishToMorse(englishWord));          
+          in.close();   
+    }
+}
+
+/*======================================================================
+|>>> Steve's Processing Code Util Snippet
++-----------------------------------------------------------------------
+| Desciption: Used to create a 1-1 pairing of elements of both arrays as
+|             {english:morse} for copying+pasting into coresponding p5js
+|             dict. Processing is good for tiny chores like this!
++-----------------------------------------------------------------------
+
+String[] e = {
+  "a", "b", "c", "d", "e", 
+  "f", "g", "h", "i", "j", 
+  "k", "l", "m", "n", "o", 
+  "p", "q", "r", "s", "t", 
+  "u", "v", "w", "x", "y", 
+  "z", "1", "2", "3", "4", 
+  "5", "6", "7", "8", "9", 
+  "0", ",", ".", "?", " "
+};
+
+String[] m = {
+  ".-", "-...", "-.-.", "-..", ".", 
+  "..-.", "--.", "....", "..", ".---", 
+  "-.-", ".-..", "--", "-.", "---", 
+  ".---.", "--.-", ".-.", "...", "-", 
+  "..-", "...-", ".--", "-..-", "-.--", 
+  "--..", ".----", "..---", "...--", "....-", 
+  ".....", "-....", "--...", "---..", "----.", 
+  "-----", "--..--", ".-.-.-", "..--..", "  " 
+};
+
+void setup(){
+  for(int i=0; i<e.length; i++){
+    println("\'"+e[i]+"\' : \""+m[i]+"\",");
+  }
+}
++=====================================================================*/
