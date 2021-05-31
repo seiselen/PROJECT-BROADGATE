@@ -10,18 +10,14 @@
 |              Hull generation. Ported into p5js from original version
 |              in Processing3, while refactored with some additional
 |              features/improvements. Namely: support for greater parm
-|              interactivity, showing stepwise CH generation [TODO/TBD],
-|              and minor code cleanup / GFX improvements (well kinda, as
-|              this initial version is QAD of the original - see below).
-+-----------------------------------------------------------------------
-| Version Info: 5/30/21 Refactor of original Processing3 code, as a QAD
-| working version thereof before unrolling the hull generation code into
-| a stepwise method for animated viz purposes.
-|
-| Also: since the GitHub version will now be the master version (as with
-| all Broadgate projects), additional version info can be seen via the
-| changelog thereto (i.e. "looks like Good 'Ol Fay-Shin'd Steve Eiselen 
-| *finally* joined the late 20th century by using repos for his code!"
+|              interactivity and minor code cleanup / GFX improvements.
+| Future Work: Further clean up code and implement ability to visualize
+|              stepwise computation of hull. TLDR on the latter is that
+|              it's possible, but I don't want to expend the time to
+|              implement right now as there's no [pressing] need outside
+|              of my usual OCD and ADHD 'Feature Hell'. IOW: K.I.S.S.!
+|              Also IOW: Recall the "Get code up - can improve later"
+|              mantra that I've been using to get things up on GitHub!
 *=====================================================================*/
 
 // Input State
@@ -38,38 +34,28 @@ var inputSet = {pts: [], iter:1};
 var upperCH = {id: 'u', pts: [], iter:1};
 var lowerCH = {id: 'l', pts: [], iter:1};
 
-// VFX State
-var ptPxRad = 10;
-
-// Animation State
+// VFX and Animation State
 var animState = 1; // i.e. as per 'implicit FSM'
-
+var fRates    = {points:24, edges:6, hold:3};
+var ptPxRad   = 10; // radius of viz circles (ellipses)
 var ptPrev, ptCur;
-var fRates = {points:24, edges:6, hold:3};
-
 
 // While Loop Sentinel State
 var originPt;
 var sentI = 12000; // should be some 'decent' small const factor of numPts
 var entrI;
 
-
+//######################################################################
 function setup(){
   createCanvas(800,800).parent("viz");
   ellipseMode(CENTER,CENTER);
-
-  ptSpanWide = (valPtsRange[1]-valPtsRange[0]);
-  ptSpanRad  = ptSpanWide/2;
-
+  ptSpanWide  = (valPtsRange[1]-valPtsRange[0]);
+  ptSpanRad   = ptSpanWide/2;
   canvDimHalf = createVector(width/2,height/2);
-
-  originPt = createVector(0,0);
-  
+  originPt    = createVector(0,0);
 }
 
-
 function draw(){
-
   switch(animState){
     case 1: TASK_PrepPoints(); break;
     case 2: ANIM_DrawPoints(); break;
@@ -81,17 +67,15 @@ function draw(){
   }
 }
 
-
 //######################################################################
 function TASK_PrepPoints(){
   // VFX Resets - Prepare for Points Draw
-  background(36); frameRate(fRates.points);
+  frameRate(fRates.points); background(36); stroke(180,128); fill(180,64);
 
-  stroke(180,128); fill(180,64);
+  // Draw a nice crosshair with center circle of radius of value span
   line(canvDimHalf.x,0,canvDimHalf.x,height);
   line(0,canvDimHalf.y,width,canvDimHalf.y);
   ellipse(canvDimHalf.x,canvDimHalf.y,ptSpanWide,ptSpanWide);
-
   stroke(0); fill(255);
 
   inputSet.iter = 0;
@@ -107,7 +91,6 @@ function createRandPts(){
   let candPtValid;
   let dist;
   for(let i=0; i<numPts; i++){
-
     candPtValid = false;
     entrI = 0;
     while(entrI<sentI && !candPtValid){
@@ -117,18 +100,13 @@ function createRandPts(){
       )
 
       dist = candPt.dist(originPt);
-
       if(dist <= ptSpanRad && abs(candPt.y/ptSpanRad)<=ptMaxDistFac && dist >= (ptSpanRad*ptMinDistFac)){
         ptsList.push(candPt.copy());
         candPtValid = true;
       }
-
       entrI++;
     }
-
     if(entrI>=sentI){console.log("WARNING: While Loop Sentinel Value Was Hit!")}
-
-    // ptsList.push(createVector(int(random(valPtsRange[0],valPtsRange[1]+1)),int(random(valPtsRange[0],valPtsRange[1]+1))));
   }
   return ptsList;
 } // Ends Function createRandList
@@ -142,50 +120,36 @@ function ANIM_DrawPoints(){
   let pt = inputSet.pts[inputSet.iter];
   ellipse(pt.x+canvDimHalf.x, pt.y+canvDimHalf.y, ptPxRad, ptPxRad);
   inputSet.iter++; // Advance iterator
-
 } // Ends ANIM_DrawPoints
 
 
 //######################################################################
 function TASK_PrepCH(){
-  frameRate(fRates.edges);
-  strokeWeight(2);
+  frameRate(fRates.edges); strokeWeight(2);
 
   inputSet.pts.sort((a,b) => (a.x - b.x));
   drawCH('u'); // Create Upper CH
   drawCH('l'); // Create Lower CH 
-
   animState++;
 }
 
 
-function drawCH(op){
-  
+function drawCH(op){ 
   let val = -1;
-  let convexPiece;
+  let hHull;
   
-  if(op == 'u'){ // Upper CH -> no counterclockwise case from Orient
-    convexPiece = upperCH;
-    val=2;
-  } 
-  else if(op == 'l'){ // Upper CH -> no counterclockwise case from Orient
-    convexPiece = lowerCH;  
-    val=1;
-  }
-  else{return;}
+  if(op == 'u'){hHull = upperCH; val=2;} 
+  else if(op == 'l'){ hHull = lowerCH; val=1;}
+
+  let pts = hHull.pts;
   
-  convexPiece.pts.push(inputSet.pts[0].copy());
-  convexPiece.pts.push(inputSet.pts[1].copy());
+  pts.push(inputSet.pts[0].copy());
+  pts.push(inputSet.pts[1].copy());
   
   for(let i = 2; i<inputSet.pts.length; i++){
-    convexPiece.pts.push(inputSet.pts[i].copy());
-    
-    while(convexPiece.pts.length>2 &&
-          getOrient(convexPiece.pts[convexPiece.pts.length-3], 
-                    convexPiece.pts[convexPiece.pts.length-2], 
-                    convexPiece.pts[convexPiece.pts.length-1] ) !=val
-         ){
-        convexPiece.pts.splice(convexPiece.pts.length-2,1);
+    pts.push(inputSet.pts[i].copy());  
+    while(pts.length>2 && getOrient(pts[pts.length-3],pts[pts.length-2],pts[pts.length-1]) != val){
+      pts.splice(pts.length-2,1);
     } // Ends While Loop
   } // Ends For Loop
 }
@@ -199,10 +163,8 @@ function getOrient(p1, p2, p3){
 } // Ends Function Orient
 
 
-
 //########################################################################
 function ANIM_DrawHalfCH(hHull){
-
   // When done - prepare for and launch Lower CH draw sequence
   if(hHull.iter == hHull.pts.length){animState++;return;} 
 
@@ -218,10 +180,6 @@ function ANIM_DrawHalfCH(hHull){
 
   hHull.iter++;
 } // Ends ANIM_DrawUpperCH
-
-
-
-
 
 
 //########################################################################
