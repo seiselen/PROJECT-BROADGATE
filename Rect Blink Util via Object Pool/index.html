@@ -4,7 +4,11 @@
     <meta charset="UTF-8"/>
     <title>RectBlinkUtil via Object Pool</title>
     <!-- Basic Style -->
-    <style> body {color: darkblue; font-family:verdana;}</style>
+    <style> 
+      body {color: darkblue; font-family:verdana;}
+      p { width: 800px;  text-align: justify;
+  text-justify: inter-word;}
+    </style>
     <!-- P5JS Lib Imports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
@@ -14,6 +18,10 @@
   </head>  
   <body>
   	<h1>RectBlinkUtil via Object Pool</h1>
+    <h3>Description:</h3>
+    <p>Small util I wrote as a TA for the Spring 2020 UArizona CSC-345 (Junior Algorithms) course; for students to adapt it to display various animations relating to traversal through a Quadtree (i.e. showing path to a leaf node by animating all parent/ancestor nodes thereto. It also demonstrates use of a [primitive] object pool as an added design patterns bonus.</p>
+    <h3>Instructions:</h3>
+    <p>Press any keyboard key (i.e. one of the alphabet letters) and a rect blink request will be randomly generated - as will be animated within the canvas.</p>
   	<div id="viz"></div>
   	<div id="ui"></div>
   </body>

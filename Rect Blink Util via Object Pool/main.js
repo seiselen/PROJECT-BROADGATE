@@ -7,7 +7,7 @@ var minTimePer = 1; // min time period for anim requests
 var maxTimePer = 6; // max time period for anim requests
 
 function setup(){
-  createCanvas(800,800).parent("viz");
+  createCanvas(800,600).parent("viz");
   rbm = new RectBlinkerManager();
 }
 
@@ -28,7 +28,7 @@ function drawCanvasBorder(){
 function keyPressed(){
   rbm.request(
     createVector(int(random(20,380)),  int(random(20,380))),
-    createVector(int(random(400,780)), int(random(400,780))),
+    createVector(int(random(400,780)), int(random(400,580))),
     random(minTimePer,maxTimePer)
   );
 }
