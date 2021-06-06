@@ -1,0 +1,222 @@
+/*======================================================================
+| Project: Dynamic Programming LCS Computation and Visualization.
+| Author:  Steven Eiselen, University of Arizona
+| Source:  Alon Efrat's Dynamic Programming LCS slide(s) were used as a
+|          reference for implementation of LCS computation algorithms.
++-----------------------------------------------------------------------
+| Description: At initialization, computes D.P. LCS Matrix C[] followed
+|              by LCS from C[] for input strings 'ColSeq' and 'RowSeq';
+|              then displays C[] and LCS to console and graphically to
+|              canvas. Thereon, hitting any recognized keyboard key will
+|              randomly generate two new input strings of 12 characters
+|              each, then likewise compute C[], LCS, and display both to
+|              console and window for new input whenever key is pressed.
+|
+| To Install:  Simply Copy+Paste this code into a new Processing sketch. 
+|              This implementation was built in Processing Version 3.3.7
+|              and should work for all Processing 3.<x> versions.
+|
+| To Use:      1) Modify value of input strings 'RowSeq' and 'Colseq' as
+|                 desired, else keep the examples already provided. Try
+|                 to keep the size of each to at or below 12 characters
+|                 each, else you may need to reduce value of 'fontsize'.
+|              2) Modify value of 'fontSize' as needed/desired, else the
+|                 default value of 32 will work for example/random input
+|                 as both are implemented as of the 12/07/18 version.
+|              3) Click on recognized keyboard key to reset computation
+|                 and visualization for 2 new randomized input strings.
+|                 All alphanumeric and/or punctuation keys should work.
++-----------------------------------------------------------------------
+| Version Info:
+|  > 12/05/18 - Original
+|  > 12/07/18 - Added minor modularity/UI improvements, cleaned up code,
+|               wrote full inline and header comment box documentation.
+*=====================================================================*/
+
+/*----------------------------------------------------------------------
+|>>> User Input
++----------------------------------------------------------------------
+| NOTE: Only these values should be modified unless you are modifying
+|       the code itself! Avoid using strings larger than 12 characters!
+|       (See notes in header comment box above for more info as to why)
++---------------------------------------------------------------------*/
+int fontSize = 32;
+String ColSeq = "TRAINING";
+String RowSeq = "INTERNATIONAL";
+
+/*----------------------------------------------------------------------
+|>>> Data Structure Declarations
++---------------------------------------------------------------------*/
+int[][] C;
+
+/*----------------------------------------------------------------------
+|>>> Function setup 
++-----------------------------------------------------------------------
+| Purpose: Sets fixed size of 600x600 pixels for the canvas, then sets
+|          background color to black (font color is white by default),
+|          then loads in an evenly spaced font (Consolas WLOG), and then
+|          calls RunLCS() which performs the computation/visualization.
++---------------------------------------------------------------------*/
+void setup(){
+  size(600,600); 
+  background(0); 
+  textFont(createFont("Consolas",fontSize));
+  RunLCS();
+} // Ends Function setup
+
+/*----------------------------------------------------------------------
+|>>> Function draw 
++-----------------------------------------------------------------------
+| Purpose: Implements Processing draw() function which despite being a
+|          stub is necessary in order for keyPressed() UI to be enabled.
+|          In other words - this is needed to allow keyboard input, even
+|          though there's no code within it.
++---------------------------------------------------------------------*/
+void draw(){}
+
+/*----------------------------------------------------------------------
+|>>> Functions keyPressed and mousePressed
++-----------------------------------------------------------------------
+| Purpose: These are Processing's handler functions for key-pressed and 
+|          mouse-pressed UI events. Both simply call the DoUI() function
+|          which generates two new random strings, does LCS computation,
+|          and displays their LCS and C[] for the new input.
++---------------------------------------------------------------------*/
+void keyPressed(){ DoUI();} // Ends Function keyPressed
+void mousePressed(){ DoUI();} // Ends Function mousePressed
+
+/*----------------------------------------------------------------------
+|>>> Function DoUI 
++-----------------------------------------------------------------------
+| Purpose: Called by a Processing keyPressed and/or mousePressed event.
+|          Resets 'RowSeq' and 'ColSeq' to two new strings composed of
+|          12 random capitalized alphabet characters each, then calls
+|          RunLCS() to process and visualize their C[] and LCS values.
++---------------------------------------------------------------------*/
+void DoUI(){
+  RowSeq = "";
+  ColSeq = "";
+  for(int i=0; i<12; i++){RowSeq+= char(int(random(65,91)));}  
+  for(int i=0; i<12; i++){ColSeq+= char(int(random(65,91)));}
+  background(0);
+  RunLCS();
+} // Ends Function DoUI
+
+/*----------------------------------------------------------------------
+|>>> Function RunLCS 
++-----------------------------------------------------------------------
+| Purpose: Inits LCS D.P. Array C[], then runs LCS Dynamic Program, then
+|          Displays C[] and LCS to console and graphically to window.
++---------------------------------------------------------------------*/
+void RunLCS(){
+  C = new int[RowSeq.length()+1][ColSeq.length()+1];
+  DoLCSDynProg();
+  PrintLCSMatrix();
+  DisplayLCSMatrix();  
+  DisplayLCSSequence(GetLCSFromMatrixC()); 
+} // Ends Function RunLCS
+
+/*----------------------------------------------------------------------
+|>>> Function DoLCSDynProg 
++-----------------------------------------------------------------------
+| Purpose: Runs LCS Dynamic Program i.e. fills D.P. Matrix C[] as seen
+|          within Alon Efrat's Dynamic Programming slides.
++---------------------------------------------------------------------*/
+void DoLCSDynProg(){ 
+  for(int row = 0; row<RowSeq.length(); row++){
+    for(int col = 0; col<ColSeq.length(); col++){      
+      if(RowSeq.charAt(row)==ColSeq.charAt(col)){ C[row+1][col+1] = C[row][col]+1; }
+      else {C[row+1][col+1] = max(C[row][col+1],C[row+1][col]);}      
+    }  
+  }
+} // Ends Function DoLCSDynProg
+
+/*----------------------------------------------------------------------
+|>>> Function GetLCSFromMatrixC 
++-----------------------------------------------------------------------
+| Purpose: Computes LCS from D.P. Matrix C[] as seen within Alon Efrat's
+|          Dynamic Programming slides.
++---------------------------------------------------------------------*/
+String GetLCSFromMatrixC(){
+  StringBuilder ret = new StringBuilder();  
+  int i = RowSeq.length();
+  int j = ColSeq.length();
+  int k = C[i][j];  
+  while(k>0){
+    if(C[i][j]>C[i-1][j] && C[i][j]>C[i][j-1]){
+      ret.append(RowSeq.charAt(i-1));
+      i--; j--; k--;
+    }    
+    else if(C[i][j] == C[i][j-1]){ j--;}
+    else{i--;}
+  } 
+  return "LCS = \"" + ret.reverse().toString() + "\"";
+} // Ends Function GetLCSFromDynProgMatrix
+
+/*----------------------------------------------------------------------
+|>>> Function DisplayLCSSequence 
++-----------------------------------------------------------------------
+| Purpose: Displays Computed LCS text at bottom left of window
++---------------------------------------------------------------------*/
+void DisplayLCSSequence(String theLCS){
+  text(theLCS,8,height-fontSize);
+} // Ends Function DisplayLCSSequence
+
+/*----------------------------------------------------------------------
+|>>> Function PrintLCSMatrix 
++-----------------------------------------------------------------------
+| Purpose: Prints LCS Matrix C[] to console 
++---------------------------------------------------------------------*/
+void PrintLCSMatrix(){
+  // Header Row
+  print("      ");for(int i=0; i<ColSeq.length(); i++){print(ColSeq.charAt(i));if(i<ColSeq.length()-1){print(" ");}}
+  println();
+  print("   ");for(int i=0; i<ColSeq.length()*2+2; i++){print("-");}
+  println(); 
+  // Zeroth Row
+  print("  | ");
+  for(int i=0; i<ColSeq.length()+1; i++){print(C[0][i]);if(i<ColSeq.length()){print(" ");}}
+  println();  
+  // All Other Rows
+  for(int row=1; row<=RowSeq.length(); row++){print(RowSeq.charAt(row-1)+" | ");
+    for(int col=0; col<ColSeq.length()+1; col++){print(C[row][col]);if(col<ColSeq.length()){print(" ");}}
+    println();
+  }
+} // Ends Function PrintLCSMatrix
+
+/*----------------------------------------------------------------------
+|>>> Function DisplayLCSMatrix 
++-----------------------------------------------------------------------
+| Purpose: Displays LCS Matrix C[] onto window 
++---------------------------------------------------------------------*/
+void DisplayLCSMatrix(){
+  int xOff = fontSize/4; 
+  // Header Row
+  int yOff = fontSize;
+  String s = "";
+  s+="      ";for(int i=0; i<ColSeq.length(); i++){s+= ColSeq.charAt(i);if(i<ColSeq.length()-1){s+=" ";}}  
+  text(s,xOff,yOff);
+  // Util Row
+  yOff+=fontSize;  
+  s = "";
+  s+="   ";for(int i=0; i<ColSeq.length()*2+2; i++){s+="-";}
+  text(s,xOff,yOff);  
+  // Zeroth Row
+  yOff+=fontSize;  
+  s = "";  
+  s+="  | ";
+  for(int i=0; i<ColSeq.length()+1; i++){s+=C[0][i];if(i<ColSeq.length()){s+=" ";}}
+  text(s,xOff,yOff);  
+  // All Other Rows
+  yOff+=fontSize;  
+  for(int row=1; row<=RowSeq.length(); row++){
+    s = "";    
+    s+=RowSeq.charAt(row-1)+" | ";
+    for(int col=0; col<ColSeq.length()+1; col++){
+      s+=C[row][col];
+      if(col<ColSeq.length()){s+=" ";}
+    }
+    text(s,xOff,yOff);    
+    yOff+=fontSize;  
+  } 
+} // Ends Function DisplayLCSMatrix
