@@ -17,7 +17,7 @@ var animInsertPeriod = 6; // insert random point every [x] frames (i.e. ~[x]/60 
 //>>> Dest-Quadtrees Structures/Variables
 var qtNodeNum; // # of DestQT nodes (via # calling 'render' each frame)
 var dispEdges; // display node edges?
-var qDiskInfo; // current position, current radius, and max radius of query disk
+var queryDisk; // current position, current radius, and max radius of query disk
 
 //######################################################################
 //>>> SETUP FUNCTIONS
@@ -42,9 +42,11 @@ function setupDest(){
 
   queryDisk = {
     pos: vec2(), 
-    rad: 50, 
-    maxRad: 500, 
-    update : function(){this.pos.set(mouseX,mouseY);},
+    rad: 64,
+    radD: 2,   // disk radius delta (i.e. change) per mouseWheel/keypress action
+    radB: {min:8, max:128}, // disk radius min and max value bounds
+    updatePos : function(){this.pos.set(mouseX,mouseY);},
+    updateRad : function(mwDelta){this.rad = constrain(((mwDelta<0)?this.rad+this.radD:this.rad-this.radD), this.radB.min, this.radB.max)},
     render : function(){strokeWeight(2);noFill();stroke(0,120,255);ellipse(this.pos.x, this.pos.y, this.rad*2, this.rad*2);}
   };
 } // Ends p5js Function setupDest
@@ -72,13 +74,18 @@ function drawPR(){
 
 function drawDest(){
   //>>> UPDATE CALLS
-  queryDisk.update();
+  queryDisk.updatePos();
   qtNodeNum.setToZero();
   //>>> RENDER CALLS
   background(240,240,255);
   drawCanvasBorder();
   qt.render();
   queryDisk.render();
+
+  // Display Quadtree Node Count. Makes no sense to define function for this (at least for this demo) 
+  textSize(24); textAlign(LEFT,CENTER); strokeWeight(1); stroke(60); fill(60);
+  text("Quadtree Node Count = "+qtNodeNum.get(), width/1.75, height-15);
+
   drawFPSSimple();
 } // Ends Function drawDest
 
@@ -101,12 +108,32 @@ function mousePressed(){
   return false;
 }
 
+
+function mouseWheel(event){
+  switch(qtMode){   
+    case MODES.dest: queryDisk.updateRad(event.delta); break;
+  }
+}
+
+
 function keyPressed(){
-  if(key == 'm'){
-    switch(qtMode){   
-      case MODES.pr:   qtMode = MODES.dest; setupDest(); break;
-      case MODES.dest: qtMode = MODES.pr;     setupPR(); break;
-    }    
+  switch(qtMode){   
+    case MODES.pr: kP_PR(key); break;
+    case MODES.dest: kP_Dest(key); break;
+  }
+}
+
+function kP_PR(k){
+  switch(k){
+    case 'm': qtMode = MODES.dest; setupDest(); break;
+    case 'r': setupPR(); break;
+  }
+}
+
+function kP_Dest(k){
+  switch(k){
+    case 'm': qtMode = MODES.pr; setupPR(); break;
+    case 'r': setupDest(); break;
   }
 }
 

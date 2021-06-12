@@ -6,6 +6,10 @@
     <!-- Basic Style -->
     <style>
       body {color: darkblue; font-family:verdana;}
+      h1 {margin-top: 12px; margin-bottom: 4px;}
+      h3 {margin-top: 4px; margin-bottom: 4px;}
+      ul {margin-top: 4px; margin-bottom: 4px; font-family:monospace; color:black; font-size:14px;}
+      ul strong {color: blue;}
     </style>
     <!-- P5JS Lib Imports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
@@ -18,6 +22,14 @@
   <body>
   	<h1>Quadtree Demo 02</h1>
   	<div id="viz"></div>
-  	<div id="ui"></div>
+    <h3>Description and Instructions:</h3>
+    <ul>
+      <li>This demo features 2 different Quadtree Modes: Point-Region [PR] and Destructible [Dest]</li>
+      <li>Press <strong>'r'</strong> to reset Quadtree to initialization state (empty if [PR], undamaged if [Dest])</li>
+      <li>Press <strong>'m'</strong> to change current Quadtree mode between [PR] and [Dest] (note: resets Quadtree)</li>
+      <li>In [PR] mode:  <strong>left mouse click</strong> adds xor removes point at mouse coordinates from Quadtree</li>
+      <li>In [Dest] mode: <strong>left mouse click</strong> 'punches hole' into Quadtree via disk position/radius</li>
+      <li>In [Dest] mode: <strong>mousewheel</strong> changes radius of disk used to 'punch holes' into Quadtree</li>
+    </ul>
   </body>
 </html>
