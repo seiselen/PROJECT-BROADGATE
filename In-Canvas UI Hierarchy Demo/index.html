@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>In-Canvas UI Hierarchy Demo</title>
+    <!-- [Temp] Basic Style -->
+    <style> body {color: darkblue; font-family:verdana;}</style>
+    <!-- P5JS Lib Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+    <!-- Project Code -->  
+    <script src="ui_objects.js"></script>
+    <script src="main.js"></script>
+  </head> 
+  <body>
+  	<h1>In-Canvas UI Hierarchy Demo</h1>
+    <p style="width:800px"><strong>Description [QAD]:</strong> Demonstrates basic hierarchical (i.e. 'tree', 'recursive') structure for UI objects; e.g. "a button within a sub-menu within a menu within the UI partition of the canvas". The main reason for this design is spatial partitioning, i.e. handling an 'On Mouse Pressed' event via traversing through the tree starting at the root UIContainer, via the mouse coordinates thereof.</p>
+  	<div id="viz"></div>
+  </body>
+</html>
