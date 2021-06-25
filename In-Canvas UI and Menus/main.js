@@ -1,6 +1,8 @@
 var mainUIPanel;
 
-var testBool;
+var showGrid;
+var colMode;
+
 var int_health;
 var int_armor;
 var int_nClicks;
@@ -9,9 +11,11 @@ var int_money;
 var buyItem_1;
 
 function setup(){
-  createCanvas(800,800).parent("viz");
+  createCanvas(600,800).parent("viz");
 
-  testBool = new Bool(true);
+  showGrid = new Bool(true);
+  colMode = new Bool(true);
+
   int_health  = new Integer(100);
   int_armor  = new Integer(150);
   int_nClicks = new Integer(0);
@@ -29,16 +33,24 @@ function draw(){
   mainUIPanel.update();
 
   //>>> RENDER CALLS
-  background(60);
+  (colMode.eval()) ? background(240) : background(12);
+  renderGrid();
   mainUIPanel.render();
-
 }
-
 
 function mousePressed(){
   mainUIPanel.onMousePressed();
   return false;
 }
+
+function renderGrid(cellSize=20){
+  if(showGrid.eval()){
+    (colMode.eval()) ? stroke(12,128) : stroke(240,128);
+    strokeWeight(4);
+    for(let i=0; i<width/cellSize; i++) {line(i*cellSize,0,i*cellSize,height);}
+    for(let i=0; i<height/cellSize; i++){line(0,i*cellSize,width,i*cellSize);}
+  }
+} // Ends Function renderGrid
 
 
 
@@ -50,6 +62,7 @@ function vec2(x,y){return createVector(x,y);}
 
 class Bool{
   constructor(val=false){this.val = val;}
+  eval(){return this.val;}
   toggle(){this.val = !this.val;}
 }
 

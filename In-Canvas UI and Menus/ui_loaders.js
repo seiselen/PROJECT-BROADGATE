@@ -11,16 +11,16 @@ function initUI(){
   .bindCallback(() => ("Clicks = " + int_nClicks.val))
   .setPredefStyle("label2");
 
-  let exToggleButton = new UIToggleButton(vec2(20,60),vec2(100,30), "Toggle Me")
-  .bindState(testBool)
+  let showGridToggle = new UIToggleButton(vec2(20,60),vec2(100,30), "Show Grid")
+  .bindState(showGrid)
   .setPredefStyle("toggle");
 
-  let exToggleLabel = new UIToggleLabel(vec2(140,60),vec2(100,30))
-  .bindCallback(() => testBool.val)
-  .setPredefStyle("label_toggle");
+  let bgColModeToggle = new UIToggleButton(vec2(125,60),vec2(115,30), "Dark/Lite BG")
+  .bindState(colMode)
+  .setPredefStyle("toggle");
 
   let clickToggleContainer = new UIContainer(vec2(20,20),vec2(260,110))
-  .addChildren([nClickButton, nClickLabel, exToggleButton, exToggleLabel]);
+  .addChildren([nClickButton, nClickLabel, showGridToggle, bgColModeToggle]);
 
   /*--------------------------------------------------------------------
   //>>> Demo: Health Label and Inc/Dec Buttons
@@ -28,7 +28,7 @@ function initUI(){
   let healthLabel = new UILabel(vec2(20,20),vec2(220,50))
   .bindCallback(() => ("Health = " + int_health.val))
   .setPredefStyle("label")
-  .setStyle("col_bground",color(216,60,0));
+  .setStyle("fill_bGround",color(216,60,0));
 
   let healthIncButton = new UIClickButton(vec2(20,90),vec2(100,30), "Health +1")
   .bindAction(() => int_health.inc())
@@ -47,7 +47,7 @@ function initUI(){
   let armorLabel = new UILabel(vec2(20,20),vec2(220,50))
   .bindCallback(() => ("Armor = " + int_armor.val))
   .setPredefStyle("label")
-  .setStyle("col_bground",color(60,180,0));
+  .setStyle("fill_bGround",color(60,180,0));
 
   let armorIncButton = new UIClickButton(vec2(20,90),vec2(100,30), "Armor +1")
   .bindAction(() => int_armor.inc())
@@ -85,8 +85,8 @@ function initUI(){
   let moneyLabel = new UILabel(vec2(20,20),vec2(220,50))
   .bindCallback(() => ("Money = $" + int_money.val))
   .setPredefStyle("label")
-  .setStyle("col_bground",color(60,60,60))
-  .setStyle("col_text",color(255,180,0))  
+  .setStyle("fill_bGround",color(60,60,60))
+  .setStyle("fill_text",color(255,180,0))  
   .setStyle("textSize",27);
 
   let buyOptLab_1 = new UILabel(vec2(20,80),vec2(40,50), "Option 1 ($300)")
@@ -99,22 +99,15 @@ function initUI(){
   .bindAction(() => int_money.dec(buyItem_1.cost))
   .bindQuery(() => buyItem_1.canAfford())
   .setPredefStyle("click")
-  .setStyle("col_border2",color(60,60,60,128));
-
-
+  .setStyle("strk_border2",color(60,60,60,128));
 
   let buyOptContainer = new UIContainer(vec2(20,380),vec2(260,350))
   .addChildren([moneyLabel, buyOptLab_1, buyOptBut_1]);
 
-
-
-
-
-
   /*--------------------------------------------------------------------
   //>>> Initialization of root UIContainer
   +-------------------------------------------------------------------*/
-  mainUIPanel = new UIContainer(vec2(250,25),vec2(300,750))
+  mainUIPanel = new UIContainer(vec2(150,25),vec2(300,750))
   .addChildren([clickToggleContainer, showHideContainer, healthContainer, armorContainer, buyOptContainer]);
 
-}
+} // Ends Function initUI
