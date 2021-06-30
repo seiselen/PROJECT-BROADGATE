@@ -69,7 +69,7 @@ class Weapon{
 
     for (let i=0; i<this.targetList.length; i++) {
       tarDist = p5.Vector.dist(this.targetList[i].pos,this.owner.pos);
-      if(tarDist<minDist){
+      if(this.targetList[i].isAlive && tarDist<minDist){
         minDist = tarDist;
         goalTar = this.targetList[i];
       }  

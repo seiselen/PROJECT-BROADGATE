@@ -7,46 +7,108 @@
 +-----------------------------------------------------------------------
 | Description:  QAD - Implements a simple agent that follows a waypoint 
 |               path specified by the map definition.
++-----------------------------------------------------------------------
+| Implementation Notes:
+|   > Utilizing only 1 class and diversifying unit types as configs of
+|     values such as maxHealth, maxSpeed, color, etc. Why? No need to
+|     create subtypes, as units just pathwalk until dead. This will NOT
+|     be the case for RTS-P5JS (obviously...)
+|   > Constructor inputs a map [row][col], not a world (x,y) position.
+|     For RTS-P5JS refactor, this should again be (x,y) position again,
+|     corresponding to factory's or otherwise 'spawn point'.
 *=====================================================================*/
 class Unit{
-  constructor(x,y,ID,map){
-    this.pos = createVector(y*cellSize+(cellSize/2),x*cellSize+(cellSize/2));
+  // Schema: {id : [maxHealth, maxSpeed, bodyLen, fill color, $ bounty]}
+  static Types = {
+    /*------------------------------------------------------------------
+    |>>> 'Standard Set'
+    +-------------------------------------------------------------------
+    |> Description: Difference between STD_(n+1) <vs> STD_(n) => 
+    |  - inc. health (double its predecessor)
+    |  - dec speed (+0.25 from [8,5], +1 from [5,1])
+    |  - inc. size (-6 its predecessor)
+    |  - colormap (colorbrewer2.org/#type=diverging&scheme=Spectral&n=8)
+    |  - $ bounty (will be same as respective health values for now)
+    +-----------------------------------------------------------------*/
+    STD_1 : [25,     5, 18, [50,136,189],    25],
+    STD_2 : [50,     4, 24, [102,194,165],   50],
+    STD_3 : [100,    3, 30, [171,221,164],  100],
+    STD_4 : [200,    2, 36, [230,245,152],  200],
+    STD_5 : [400,    1, 42, [254,224,139],  400],
+    STD_6 : [800,  .75, 48, [253,174,97],   800],
+    STD_7 : [1600,  .5, 54, [244,109,67],  1600],
+    STD_8 : [3200, .25, 60, [213,62,79],   3200]
+  } // Ends Unit Type Config Definition
+
+  constructor(row,col,ID,map){
+    this.ID  = ID;
+    this.pos = createVector(col*cellSize+(cellSize/2),row*cellSize+(cellSize/2));
     this.vel = createVector(1,0);
     this.ori = createVector(1,0);
 
-    this.setBodyLen(cellSize/2);
-
-    this.curPath = [];
-    this.curWaypt = 0;
-    this.maxSpeed = 2;
-    this.maxForce = 0.2;
-
-    this.ID = ID;
-
-    //>>> Variables for Spatial Partition
+    //>>> Spatial Partition / Visibility
     this.map  = map; // TODO: Give it map obj's callback method instead?
     this.spCell = null;
 
-    //>>> Variables for Color Palette
-    this.fill_live = color(216);
-    this.fill_dead = color(120,0,0);    
-    this.col_agStrk = color(60);
-    this.col_agHth1 = color(32,216,64);
-    this.col_agHth2 = color(216,216,64);
-    this.col_agHth3 = color(216,32,64);
+    //>>> Path[walk] Info
+    this.curPath = [];
+    this.curWaypt = 0;
 
-    //>>> Variables for Health and Health-bar
-    this.curHealth = 100;
-    this.maxHealth = 100;
+    //>>> Life/Death State
     this.isAlive   = true;
     this.deathFrame = 0;
-
     this.respawnDel = 120; // 'respawn delay'
 
-    this.hbarWide = 48;
-    this.hbarTall = 6;
+    //>>> Variables for Health and Health-bar (these are DEFAULT VALS, else WILL VARY BY UNIT TYPE!)
+    this.unitType = -1;
+    this.setBodyLen(cellSize*0.5);
+    this.maxSpeed = 1;
+    this.maxForce = 0.1; // relates to turning speed (good heuristic seems to be maxSpeed/10)
+    this.maxHealth = 400;
+    this.curHealth = this.maxHealth;
 
+
+
+    //##################################################################
+    //>>> GFX/VFX Variables, Color Palette, etc.
+    //##################################################################
+    this.fill_live  = color(216); // DEFAULT val - else WILL VARY BY UNIT TYPE!) 
+    this.fill_dead  = color(255,64);
+    this.strk_live  = color(60);
+    this.strk_dead  = color(0,128);
+    this.fill_hBar1 = color(32,216,64);
+    this.fill_hBar2 = color(216,216,64);
+    this.fill_hBar3 = color(216,32,64);
+
+    // Healthbar Settings
+    this.hBar_wide = 48;
+    this.hBar_tall = 6;
+    this.hBar_xOff = this.hBar_wide/2;
+    this.hBar_yOff = this.bodyLnHalf+(this.hBar_tall*2);
   } // Ends Constructor
+
+  // Type Data Schema: {id : [maxHealth, maxSpeed, bodyLen, bodyColor]}
+  setType(type){
+    this.unitType = type;
+    let info = Unit.Types[type];
+    if(info){
+      this.maxHealth = info[0];
+      this.curHealth = this.maxHealth;
+
+      this.maxSpeed  = info[1];
+      this.maxForce  = this.maxSpeed/10; // relates to turn speed (good heuristic seems to be maxSpeed/10)
+
+      this.setBodyLen(info[2]);
+
+      this.fill_live = color(info[3][0],info[3][1],info[3][2]);
+    }
+    else{
+      console.log(">>> Warning: Input \""+type+"\" is an invalid Unit.Type! Retaining default values.");
+    }
+
+    return this; // for function chaining
+  } // Ends Function setType
+
 
   givePath(path){
     this.curWaypt = 0;
@@ -88,7 +150,7 @@ class Unit{
       this.isAlive = false;
       this.deathFrame = frameCount;
       this.ori = createVector(random(-10,10),random(-10,10)).normalize();
-      //OnEnemyKilled();    
+      manager.OnEnemyKilled(); // DEPENDENCY NOTE: REFERENCING GLOBAL VAR!    
   }
 
   applyDamage(dam){
@@ -146,19 +208,18 @@ class Unit{
     let theta = this.ori.heading()+(PI/2);
 
     switch(this.isAlive){
-      case true: fill(this.fill_live); break;
-      case false: fill(this.fill_dead);
+      case true:  fill(this.fill_live); stroke(this.strk_live); break;
+      case false: fill(this.fill_dead); stroke(this.strk_dead); break;
     }
 
-    stroke(this.col_agStrk);strokeWeight(1);
+    strokeWeight(1);
 
     push();
-      // Translate and Rotate, 'Nuff Said
       translate(this.pos.x,this.pos.y);
       rotate(theta);
-      // Triangle body representation
+      // Triangle Chevron body representation
       beginShape();
-      vertex(0,-this.bodyLength);             // Head
+      vertex(0,-this.bodyLength);               // Head
       vertex(-this.bodyLnHalf,this.bodyLnHalf); // Starboard
       vertex(this.bodyLnHalf,this.bodyLnHalf);  // Port
       endShape(CLOSE);
@@ -166,24 +227,16 @@ class Unit{
   } // Ends Function renderBody
 
   renderHealthbar(){
-    strokeWeight(1);
-
-    let xOff = this.hbarWide/2;
-    let yOff = this.bodyLnHalf+(this.hbarTall*2);
-
-    stroke(this.col_agStrk);fill(this.col_agStrk);
-    rect(this.pos.x-xOff,this.pos.y-yOff,this.hbarWide,this.hbarTall);
-
-    noStroke();
+    strokeWeight(1);stroke(this.strk_live);fill(this.strk_live);
+    rect(this.pos.x-this.hBar_xOff,this.pos.y-this.hBar_yOff,this.hBar_wide,this.hBar_tall);
 
     let hRatio = constrain(this.curHealth/this.maxHealth,0,1);
-
-    switch(hRatio>=0.5){
-      case true: fill(lerpColor(this.col_agHth2,this.col_agHth1, (hRatio-0.5)*2 ));break;
-      case false: fill(lerpColor(this.col_agHth3,this.col_agHth2, hRatio*2  ));
+    switch(hRatio>=0.5){ /* switch implements diverging colormap */
+      case true: fill(lerpColor(this.fill_hBar2,this.fill_hBar1, (hRatio-0.5)*2 ));break;
+      case false: fill(lerpColor(this.fill_hBar3,this.fill_hBar2, hRatio*2  ));break;
     }
-
-    rect(this.pos.x-xOff, this.pos.y-yOff, lerp(1,this.hbarWide,hRatio), this.hbarTall);    
+    noStroke();
+    rect(this.pos.x-this.hBar_xOff, this.pos.y-this.hBar_yOff, lerp(1,this.hBar_wide,hRatio), this.hBar_tall);    
   } // Ends Function renderHealthbar
   
-}
+} // Ends Class Unit

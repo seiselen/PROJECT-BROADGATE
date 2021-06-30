@@ -10,6 +10,29 @@
 |              functions for vector producing, debug viz/console, etc.)
 *=====================================================================*/
 
+
+/*----------------------------------------------------------------------
+|>>> Wrapper Classes (Older Version - but KISS 'to-the-build')
++---------------------------------------------------------------------*/
+class Bool{
+  constructor(val=false){this.val = val;}
+  eval(){return this.val;}
+  toggle(){this.val = !this.val;}
+}
+
+class Integer{
+  constructor(val=0){this.val = val;}
+  set(val){this.val = val;}
+  inc(i=1){this.val += i;}
+  dec(i=1){this.val -= i;}
+}
+
+class BuyItem{
+  constructor(name,cost){this.name = name; this.cost = cost;}
+  canAfford(){return (this.cost <= int_money.val);}
+}
+
+
 /*----------------------------------------------------------------------
 |>>> Canvas [Debug] Display Utils
 +-----------------------------------------------------------------------
@@ -24,6 +47,8 @@ function db_drawSubCanvs(){db_drawGameSubCanv();db_drawMenuSubCanv();}
 function db_drawGameSubCanv(){db_drawRect(0,0,worldWide,worldTall,color(60),color(255,60,0,8)); db_drawCHair(0,0,worldWide,worldTall,color(255,60,0,64));}
 function db_drawMenuSubCanv(){db_drawRect(worldWide,0,menuWide,height,color(60),color(0,60,255,8)); db_drawCHair(worldWide,0,menuWide,height,color(0,60,255,64));}
 
+function db_drawTextSimple(txt){textSize(32);textAlign(CENTER,CENTER);stroke(64,64);strokeWeight(4);fill(255);text(txt,width/2,height-32);}
+
 function drawFPSSimple(blurb="FPS: "){textSize(32); textAlign(LEFT,CENTER); stroke(0); strokeWeight(4); fill(255); text(blurb+round(frameRate()), 12, height-15);}
 
 
@@ -31,6 +56,9 @@ function drawFPSSimple(blurb="FPS: "){textSize(32); textAlign(LEFT,CENTER); stro
 |>>> Mouse-Related Utils
 +---------------------------------------------------------------------*/
 function mouseInCanvas(){return(mouseX>0)&&(mouseY>0)&&(mouseX<width)&&(mouseY<height);}
+function mouseInGWindow(){return(mouseX>0)&&(mouseY>0)&&(mouseX<worldWide)&&(mouseY<height);}
+function mouseInSidebar(){return(mouseX>worldWide)&&(mouseY>0)&&(mouseX<width)&&(mouseY<height);}
+
 function mousePtToVec(){return createVector(mouseX, mouseY);}
 
 /*----------------------------------------------------------------------

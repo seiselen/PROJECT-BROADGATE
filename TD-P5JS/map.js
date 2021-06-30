@@ -55,8 +55,8 @@ class GameMap{
   initGFXConfig(){
     //>>> Colors used for displaying tilemap (in lieu of sprites)
     this.col_cellBorder    = color(0,0,0);
-    this.col_cellMapDecor  = color(84,84,84);
-    this.col_cellEnemyPath = color(0,108,48);
+    this.col_cellMapDecor  = color(0,108,48);
+    this.col_cellEnemyPath = color(84,84,84);
     this.col_cellBuildable = color(144,84,12);
 
     //>>> Colors used for displaying building cell state    
@@ -181,6 +181,20 @@ class GameMap{
     else{console.log(">>> Error: Input Out Of Bounds [row="+row+"][col="+col+"]");}
   } // Ends Function setValueAt
 
+  getWayPtClosestTo(pos){
+    let closestWaypt = -1;
+    let closestDist  = 9999;
+    let curDist;
+    for (let i = 0; i < this.walkPath.length; i++){
+      curDist = pos.dist(this.walkPath[i]);
+      if(curDist < closestDist){
+        closestWaypt = i;
+        closestDist = curDist;
+      }     
+    }
+    return closestWaypt;
+  } // Ends Function getWayPtClosestTo
+
 
   //##################################################################
   //>>> FUNCTIONS FOR BLDG [SUB]MAP
@@ -196,9 +210,12 @@ class GameMap{
     return null;
   } // Ends Function findVacantCell
 
+  // TODO: 2 Methods with diff inputs... How Annoying! Try to change all back to 'input Array2 / output Array2' paradigm?
   isVacant(r,c){return this.cellInBounds(r,c) && (this.bldgMap[r][c]==GameMap.CellState.VACANT);}
-
+  isVacant2(coord){return(this.isVacant(coord[0],coord[1]));}
+  // TODO: Same as aforementioned: change dependencies to isEnemyPathCell(coord)
   isEnemyPathCell(r,c){return this.cellInBounds(r,c) && (this.tileMap[r][c]==GameMap.CellType.enemyPath);}
+  isEnemyPathCell2(coord){return this.cellInBounds(coord[0],coord[1]) && (this.tileMap[coord[0]][coord[1]]==GameMap.CellType.enemyPath);}
 
   // TODO: Handle invalid input via 'cellInBounds'? (vis-a-vis an 'if' xor ternary)
   setToFilled(r,c){this.bldgMap[r][c] = GameMap.CellState.FILLED;}
@@ -255,6 +272,9 @@ class GameMap{
   posToCoord(pos){return [floor(pos.y/this.cellSize),floor(pos.x/this.cellSize)];}
 
   coordToPos(r,c,i=0){return createVector((c*this.cellSize)+this.cellHalf, (r*this.cellSize)+this.cellHalf, i);}
+
+
+  coordToTopLeftPos(rc,i=0){return createVector((rc[1]*this.cellSize), (rc[0]*this.cellSize), i);}
 
   // Note: a.k.a. 'checkInBounds' or 'isValidCell' when porting old version code in
   cellInBounds(r,c){return (r>=0 && r<this.cellsTall && c>=0 && c<this.cellsWide);}
