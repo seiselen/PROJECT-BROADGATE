@@ -118,7 +118,8 @@ class Unit{
 
   setBodyLen(len){
     this.bodyLength = len;
-    this.bodyLnHalf = len/2;    
+    this.bodyLnHalf = len/2;
+    this.bodyLenSq  = (this.bodyLnHalf*this.bodyLnHalf);
   } // Ends Function setBodyLen
 
   setBodyLenRand(minLen,maxLen){
@@ -146,11 +147,18 @@ class Unit{
   }
 
   onAgentKilled(){
-      this.curHealth = 0;
-      this.isAlive = false;
-      this.deathFrame = frameCount;
-      this.ori = createVector(random(-10,10),random(-10,10)).normalize();
-      manager.OnEnemyKilled(); // DEPENDENCY NOTE: REFERENCING GLOBAL VAR!    
+    this.curHealth = 0;
+    this.isAlive = false;
+    this.deathFrame = frameCount;
+    this.ori = createVector(random(-10,10),random(-10,10)).normalize();
+    manager.OnEnemyKilled(); // DEPENDENCY NOTE: REFERENCING GLOBAL VAR!    
+  }
+
+
+  onBulletHit(bulletPos,dam){
+    if(p5.Vector.sub(bulletPos,this.pos).magSq() <= this.bodyLenSq*2){
+      this.applyDamage(dam);
+    }
   }
 
   applyDamage(dam){

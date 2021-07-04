@@ -4,9 +4,8 @@
 | Description: [QAD] Implements towers AND other buildings, but keeping 
 |              its name 'Tower' for now to KISS. If/When I implement a
 |              building that generates money for every [x] frames, I'll
-|              call it 'Fusion Reactor Tower', if a building increases
-|              rate-of-fire for all towers by [x] frames, I'll call it
-|              'Weapons Lab', etc.
+|              call it 'Fusion Reactor Tower', 'Weapons Lab' for a bldg
+|              that increases ROF for all towers by [x] frames, etc.
 +---------------------------------------------------------------------*/
 class Tower{
   constructor(pos,cell,map){
@@ -15,7 +14,7 @@ class Tower{
     this.map  = map;
     this.diam = this.map.cellSize; // ALL towers will be 1x1 cells in size
     this.rad  = this.map.cellSize/2; // originally cellSize*0.375 (i.e. half of 0.75)
-    this.weap = new Weapon(this.pos, this.map, this); // set null? (i.e. base tower unarmed -> player needs to buy weapon)?
+    this.weap = new GatlingGunCannon(this);
 
     //> GFX/Viz Settings (Note: WILL VARY once I implement diff. tower types)
     this.nGonSides = 6;

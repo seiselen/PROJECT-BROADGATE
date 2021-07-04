@@ -6,18 +6,27 @@ function initUI(){
   //####################################################################
   // LABELS+CONTAINER FOR {GAME MODE, CONFIG[S], ETC.}
   //--------------------------------------------------------------------
-  let label_gameConfigHeader = new UILabel(vec2(0,0),vec2(224,32), "Game Configs")
+
+  let panWide = 256;
+
+  let label_gameConfigHeader = new UILabel(vec2(0,0),vec2(panWide,32), "Misc. Game Info:")
   .setPredefStyle("label2");
 
   i = 0; iDelta = 32;
 
-  let label_gameMode = new UILabel(vec2(0,i+=iDelta),vec2(224,32))
+  let label_gameMode = new UILabel(vec2(0,i+=iDelta),vec2(panWide,32))
   .bindCallback(() => manager.gameModeToString())
   .setPredefStyle("label").setStyle("textSize",16).setStyle("fill_bGround",color(120,60,120));
 
-  let container_gameConfig = new UIContainer(vec2(32,32),vec2(224,128))
+  let label_bullPool = new UILabel(vec2(0,i+=iDelta),vec2(panWide,32))
+  .bindCallback(() => projPool.bulletPoolPopToString())
+  .setPredefStyle("label").setStyle("textSize",16).setStyle("fill_bGround",color(120,60,120));
+
+
+
+  let container_gameConfig = new UIContainer(vec2(32,32),vec2(panWide,128))
   .setStyle("fill_bGround",color(0,0,60,128))
-  .addChildren([label_gameConfigHeader,label_gameMode]);
+  .addChildren([label_gameConfigHeader,label_gameMode,label_bullPool]);
   //####################################################################
 
 

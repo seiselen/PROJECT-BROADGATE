@@ -17,9 +17,9 @@ var cellsWide = worldWide/cellSize;
 var manager;
 var map;
 var mainUIPanel;
-var units = [];
-var bldgs = [];
-
+var units = []; // Contains all Units in game
+var bldgs = []; // Contains Towers in game
+var projPool;   // Contains (and manages) Projectiles (Bullets and Missiles)
 
 function setup(){
   createCanvas(worldWide+menuWide,worldTall).parent("viz");
@@ -27,6 +27,8 @@ function setup(){
   map = new GameMap(cellsTall, cellsWide, cellSize, m01);//.set_showBldgMap().set_showUnitMap();
 
   manager = new GameManager();
+
+  projPool = new ProjectileManager();
 
   //manager.createUnit();
   manager.createTower([6,7]);
@@ -44,6 +46,7 @@ function draw(){
   //>>> UPDATE CALLS (unit->bldg order COUNTS)
   units.forEach(u => u.update());
   bldgs.forEach(b => b.update());
+  projPool.update();
 
   //>>> RENDER CALLS
   background(255);
@@ -51,12 +54,14 @@ function draw(){
   map.render();
   bldgs.forEach(b => b.render());
   units.forEach(u => u.render());
+  projPool.render();
 
   dispMousePlaceCell();
 
 
 
   mainUIPanel.render();
+
 
   drawFPSSimple();
 
@@ -95,7 +100,4 @@ function dispMousePlaceCell(){
 
   push();translate(cPos.x,cPos.y);line(0,32,32,0);line(0,16,16,0);line(0,64,64,0);line(0,48,48,0);line(16,64,64,16);line(32,64,64,32);line(48,64,64,48);pop();
 } // Ends Function dispMousePlaceCell
-
-
-
 
