@@ -229,6 +229,7 @@ class LaserBlaster extends Weapon{
     this.turCol   = color(0,120,0);
     this.strCol   = color(60); 
     this.laserCol = color(0,255,255);
+    this.lLerpCol = color(0,60,240);
   } // Ends Constructor
 
   canFire(){
@@ -279,8 +280,9 @@ class LaserBlaster extends Weapon{
   } // Ends Function renderLaser
 
   renderTowerCap(){
-    strokeWeight(6);stroke(this.strCol);fill(this.laserCol);
-    ellipse(this.owner.pos.x,this.owner.pos.y,this.turretL-this.turretW,this.turretL-this.turretW);
+    strokeWeight(4);stroke(this.strCol);fill(lerpColor(this.laserCol,this.lLerpCol, noise(frameCount/10)));
+    let capRad = 16;
+    ellipse(this.owner.pos.x,this.owner.pos.y,capRad,capRad);
   }
 
 } // Ends Weapon Type LaserBlaster
@@ -380,7 +382,8 @@ class LaserBlasterDual extends Weapon{
 
   renderTowerCap(){
     strokeWeight(4);stroke(this.strCol);fill(lerpColor(this.laserCol,this.lLerpCol, noise(frameCount/10)));
-    ellipse(this.owner.pos.x,this.owner.pos.y,this.turretL-this.turretW,this.turretL-this.turretW);
+    let capRad = 20;
+    ellipse(this.owner.pos.x,this.owner.pos.y,capRad,capRad);
   }
 
 } // Ends Weapon Type LaserBlasterDual
@@ -487,7 +490,8 @@ class LaserBlasterTriple extends Weapon{
 
   renderTowerCap(){
     strokeWeight(4);stroke(this.strCol);fill(lerpColor(this.laserCol,this.lLerpCol, noise(frameCount/10)));
-    ellipse(this.owner.pos.x,this.owner.pos.y,this.turretL-this.turretW,this.turretL-this.turretW);
+    let capRad = 24;
+    ellipse(this.owner.pos.x,this.owner.pos.y,capRad,capRad);
   }
 
 } // Ends Weapon Type LaserBlasterTriple

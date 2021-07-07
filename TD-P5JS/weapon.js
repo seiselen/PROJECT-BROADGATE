@@ -1,3 +1,26 @@
+
+
+/*======================================================================
+|>>> WeaponType (Enum in JavaScript context {i.e. is an object [dict]})
++-----------------------------------------------------------------------
+|> Scheme: {key : [cost,desc]}
++=====================================================================*/
+var WeaponType = {
+  LaserBlaster       : [100, "Fires several energy bursts at a time"],
+  LaserBlasterDual   : [100, "Doubles the number of Laser Blasters!"],
+  LaserBlasterTriple : [100, "Triples the number of Laser Blasters!"],
+
+  LaserBeam          : [100, "Fires constant beam of energy ~toasty!~"],
+  LaserBeamRelay     : [100, "Laser beam, but travels enemy-2-enemy!"],
+
+  Cannon             : [100, "Fires only one bullet at a time ~yawn~"],
+  SemiAutoCannon     : [100, "Fires bullets several at a time ~better!~"],
+  GatlingGunCannon   : [100, "Fires bullets constantly ~tower go Brrr!!!~"],
+
+  MissileLauncher    : [100, "Launches 2 homing missiles at a time."],
+  MissileLauncher2X  : [100, "Launches 4 homing missiles at a time."]
+} // Ends Enum WeaponType
+
 /*======================================================================
 |>>> Class Weapon (Abstract Class in Java context {i.e. no instances})
 +-----------------------------------------------------------------------
@@ -57,6 +80,21 @@ class Weapon{
     }
     return goalTar;
   } // Ends Function getClosestTarget
+
+  getFurthestTarget(){
+    let maxDist = -9999;
+    let goalTar = null;
+    let tarDist;
+
+    for (let i=0; i<this.targetList.length; i++) {
+      tarDist = p5.Vector.dist(this.targetList[i].pos,this.owner.pos);
+      if(this.targetList[i].isAlive && tarDist>maxDist){
+        maxDist = tarDist;
+        goalTar = this.targetList[i];
+      }  
+    }
+    return goalTar;
+  } // Ends Function getFurthestTarget
 
   /*--------------------------------------------------------------------
   |>>> Functions get2ClosestTargets / get3ClosestTargets

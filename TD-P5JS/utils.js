@@ -67,3 +67,38 @@ function mousePtToVec(){return createVector(mouseX, mouseY);}
 function randCanvasPt(){return vec2(int(random(qtSqPixels)),int(random(qtSqPixels)));}
 function vec2(x=0,y=0){return createVector(x,y);}
 
+
+
+/*----------------------------------------------------------------------
+|>>> UTILS FOR UNIT AND BLDG CLASS (AND OPS RELATED THERETO)
+|      > TODO: Put these in their respective source files? (i.e. unit.js
+|        and {tower.js xor weapon.js WLOG})
++---------------------------------------------------------------------*/
+function unitKeyToUIName(key){
+  switch(key){
+    case "STD_1": return "Standard\n<One>";
+    case "STD_2": return "Standard\n<Two>";
+    case "STD_3": return "Standard\n<Three>";
+    case "STD_4": return "Standard\n<Four>";
+    case "STD_5": return "Standard\n<Five>";
+    case "STD_6": return "Standard\n<Six>";
+    case "STD_7": return "Standard\n<Seven>";
+    case "STD_8": return "Standard\n<Eight>";
+  }
+}
+
+function bldgKeyToUIName(key){
+  switch(key){
+    case "LaserBlaster"      : return "Laser Blaster";
+    case "LaserBlasterDual"  : return "Laser Blaster 2x";
+    case "LaserBlasterTriple": return "Laser Blaster 3x";
+    case "LaserBeam"         : return "Laser Beam";
+    case "LaserBeamRelay"    : return "Laser Relay Beam";
+    case "Cannon"            : return "One-Shot Turret";
+    case "SemiAutoCannon"    : return "Semi-Auto Turret";
+    case "GatlingGunCannon"  : return "Gatling Gun";
+    case "MissileLauncher"   : return "Missile Site 2x";
+    case "MissileLauncher2X" : return "Missile Site 4x";
+  }  
+}
+

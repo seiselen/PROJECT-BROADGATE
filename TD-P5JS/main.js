@@ -31,7 +31,7 @@ function setup(){
   projPool = new ProjectileManager();
 
   //manager.createUnit();
-  manager.createTower([6,7]);
+  //manager.createTowerAt([6,7]);
 
   initUI();
 

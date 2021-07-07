@@ -14,7 +14,8 @@ class Tower{
     this.map  = map;
     this.diam = this.map.cellSize; // ALL towers will be 1x1 cells in size
     this.rad  = this.map.cellSize/2; // originally cellSize*0.375 (i.e. half of 0.75)
-    this.weap = new GatlingGunCannon(this);
+
+    this.setWeapon("LaserBlaster");
 
     //> GFX/Viz Settings (Note: WILL VARY once I implement diff. tower types)
     this.nGonSides = 6;
@@ -25,6 +26,26 @@ class Tower{
     this.stke_sel  = color(60,127);      // stroke color if selected by player
     this.stke_wgt  = 2;                  // stroke weight
   } // Ends Constructor
+
+  setWeapon(weapID){
+    switch(weapID){
+      /* ENERGY WEAPONS */
+      case "LaserBlaster"       : this.weap = new LaserBlaster(this);       break;
+      case "LaserBlasterDual"   : this.weap = new LaserBlasterDual(this);   break;
+      case "LaserBlasterTriple" : this.weap = new LaserBlasterTriple(this); break;
+      case "LaserBeam"          : this.weap = new LaserBeam(this);          break;
+      case "LaserBeamRelay"     : this.weap = new LaserBeamRelay(this);     break;
+      /* PROJECTILE WEAPONS */
+      case "Cannon"             : this.weap = new Cannon(this);             break;
+      case "SemiAutoCannon"     : this.weap = new SemiAutoCannon(this);     break;
+      case "GatlingGunCannon"   : this.weap = new GatlingGunCannon(this);   break;
+      case "MissileLauncher"    : this.weap = new MissileLauncher(this);    break;
+      case "MissileLauncher2X"  : this.weap = new MissileLauncher2X(this);  break;
+
+      default: console.log("ERROR - Should Not Get Here! Check input with those expected!");
+    }
+    return this; // to support function chaining
+  } // Ends Function setWeapon
 
 
   update(){

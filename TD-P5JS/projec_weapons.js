@@ -1,42 +1,3 @@
-/*>>> TEMP --- KEEPING THIS FOR THE OLD RENDER{TURRET/LASER} CODE
-class LaserBeam extends Weapon{
-  constructor(owner){
-    super(owner);
-    //> Range and Damage Settings for this tower type
-    this.weapRange  = this.owner.map.cellSize*2.5;
-    this.baseDamage = 1;
-    this.curDamage  = this.baseDamage;
-    this.getCellsInRange(); // must be called here because needs weapRange assigned
-    //> GFX/Viz Settings for this tower type
-    this.turretL = 32; this.turretW = 8;
-    this.turretLh = this.turretL/2;
-    this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
-    this.strCol   = color(60); 
-    this.laserCol = color(0,255,255);
-  } // Ends Constructor
-
-  update(){this.getTargetsInRange();this.curTarget = this.getClosestTarget();}
-  render(){this.renderRange(); this.renderLaser(); this.renderTurret();}
-
-  renderTurret(){
-    let turOri = (this.curTarget && this.curTarget.isAlive) ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) : createVector(0,0);
-    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
-    push(); 
-      translate(this.owner.pos.x,this.owner.pos.y); rotate(turOri.heading()); 
-      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW); 
-    pop();
-  } // Ends Function renderTurret  
-
-  renderLaser(tar){
-    if(this.curTarget && this.curTarget.isAlive){
-      stroke(this.laserCol); strokeWeight(random(1,4));
-      line(this.owner.pos.x,this.owner.pos.y,this.curTarget.pos.x,this.curTarget.pos.y);
-    }
-  } // Ends Function renderLaser  
-} // Ends Weapon Type LaserBeam
-*/
-
 /*======================================================================
 |>>> Weapon Type : Cannon
 +=====================================================================*/
@@ -305,3 +266,199 @@ class GatlingGunCannon extends Weapon{
     pop();
   } // Ends Function renderTurret
 } // Ends Weapon Type GatlingGunCannon
+
+
+
+/*======================================================================
+|>>> Weapon Type : MissileLauncher
++=====================================================================*/
+class MissileLauncher extends Weapon{
+  constructor(owner){
+    super(owner);
+
+    //> Range and Damage settings for this weapon type
+    this.weapRange  = this.owner.map.cellSize*6.5;
+
+    this.getCellsInRange(); // must be called here because needs weapRange assigned
+
+    //> Behavior settings for this weapon type
+    this.idle       = true;
+    this.atkFrmSpan  = 108;   // attack frame span, i.e. 'length of attack behavior'
+    this.atkFrmDelta = 12;    // length between attacks during an attack span
+    this.atksPerSpan = 2;    // how many attacks within the attack span [before idle until reset]
+    this.atkFrmStart = 0;    // frame/60 when not idle, used to start fire loop 'OnStartAttack'
+    this.atksCurSpan = 0;    // number of attacks this frame span
+    this.animFrame   = 0;    // current frame (of animation span)
+    
+    //> GFX/Viz Settings for this tower type
+    this.turretL = 32;
+    this.turretW = 32;
+    this.turretLh = this.turretL/2;
+    this.turretWh = this.turretW/2;
+    this.turCol   = color(120,36,0);
+    this.doorCol  = color(60);
+    this.strCol   = color(180); 
+
+    this.launchThisFrame = false;
+
+  } // Ends Constructor
+
+  update(){
+    this.getTargetsInRange();
+    this.curTarget = this.getFurthestTarget();
+  } // Ends Function update
+
+  //> OPTM-AREA: Use Switches and/or Ternarys if frame rates start dropping?
+  attack(){
+    this.launchThisFrame = false; // for barrel flash VFX
+    
+    if(this.curTarget && this.curTarget.isAlive){
+      if(this.idle == true){
+        this.atkFrmStart = frameCount;
+        this.idle=false;
+      }
+
+      this.animFrame = (frameCount-this.atkFrmStart)%this.atkFrmSpan;
+
+      if(this.animFrame%this.atkFrmDelta == 0 && this.atksCurSpan < this.atksPerSpan){
+        this.launchThisFrame = true;
+        this.launchProjectile();
+        this.atksCurSpan+=1;
+      } 
+    
+      if (this.atksCurSpan == this.atksPerSpan && this.animFrame+1 == this.atkFrmSpan){
+        this.atksCurSpan = 0;
+        this.idle=true;
+      }
+    }
+    else {
+      this.idle = true;
+    }
+  } // Ends Function attack
+
+  launchProjectile(){
+    let launchPos = p5.Vector.add(this.owner.pos, p5.Vector.sub(this.curTarget.pos,this.owner.pos).setMag(this.turretLh));
+    projPool.reqMissile(launchPos,this.curTarget);
+  }
+
+  render(){
+    this.renderRange();
+    this.renderTurret();
+  } // Ends Function render 
+
+  renderTurret(){
+    let turOri = (this.curTarget && this.curTarget.isAlive) ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) : createVector(0,0);
+    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
+    push(); 
+      translate(this.owner.pos.x,this.owner.pos.y); rotate(turOri.heading());
+      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
+      fill(this.doorCol);
+      rect(this.turretLh-16,-this.turretWh+8,this.turretLh,this.turretWh);
+      strokeWeight(2); stroke(this.doorCol);
+      fill(240,216,0);
+      push();
+        translate(6-this.turretLh,0);
+        rotate(PI*lerp(0,2, (frameCount%120)/120));
+        ellipse(0,0,6,16);
+      pop();
+    pop();
+  } // Ends Function renderTurret  
+
+} // Ends Weapon Type MissileLauncher
+
+
+
+/*======================================================================
+|>>> Weapon Type : MissileLauncher2X
++=====================================================================*/
+class MissileLauncher2X extends Weapon{
+  constructor(owner){
+    super(owner);
+
+    //> Range and Damage settings for this weapon type
+    this.weapRange  = this.owner.map.cellSize*6.5;
+
+    this.getCellsInRange(); // must be called here because needs weapRange assigned
+
+    //> Behavior settings for this weapon type
+    this.idle       = true;
+    this.atkFrmSpan  = 108;   // attack frame span, i.e. 'length of attack behavior'
+    this.atkFrmDelta = 12;    // length between attacks during an attack span
+    this.atksPerSpan = 4;    // how many attacks within the attack span [before idle until reset]
+    this.atkFrmStart = 0;    // frame/60 when not idle, used to start fire loop 'OnStartAttack'
+    this.atksCurSpan = 0;    // number of attacks this frame span
+    this.animFrame   = 0;    // current frame (of animation span)
+    
+    //> GFX/Viz Settings for this tower type
+    this.turretL = 32;
+    this.turretW = 48;
+    this.turretLh = this.turretL/2;
+    this.turretWh = this.turretW/2;
+    this.turCol   = color(120,36,0);
+    this.doorCol  = color(60);
+    this.strCol   = color(180); 
+
+    this.launchThisFrame = false;
+
+  } // Ends Constructor
+
+  update(){
+    this.getTargetsInRange();
+    this.curTarget = this.getFurthestTarget();
+  } // Ends Function update
+
+  //> OPTM-AREA: Use Switches and/or Ternarys if frame rates start dropping?
+  attack(){
+    this.launchThisFrame = false; // for barrel flash VFX
+    
+    if(this.curTarget && this.curTarget.isAlive){
+      if(this.idle == true){
+        this.atkFrmStart = frameCount;
+        this.idle=false;
+      }
+
+      this.animFrame = (frameCount-this.atkFrmStart)%this.atkFrmSpan;
+
+      if(this.animFrame%this.atkFrmDelta == 0 && this.atksCurSpan < this.atksPerSpan){
+        this.launchThisFrame = true;
+        this.launchProjectile();
+        this.atksCurSpan+=1;
+      } 
+    
+      if (this.atksCurSpan == this.atksPerSpan && this.animFrame+1 == this.atkFrmSpan){
+        this.atksCurSpan = 0;
+        this.idle=true;
+      }
+    }
+    else {
+      this.idle = true;
+    }
+  } // Ends Function attack
+
+  launchProjectile(){
+    let launchPos = p5.Vector.add(this.owner.pos, p5.Vector.sub(this.curTarget.pos,this.owner.pos).setMag(this.turretLh));
+    projPool.reqMissile(launchPos,this.curTarget);
+  }
+
+  render(){
+    this.renderRange();
+    this.renderTurret();
+  } // Ends Function render 
+
+  renderTurret(){
+    let turOri = (this.curTarget && this.curTarget.isAlive) ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) : createVector(0,0);
+    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
+    push(); 
+      translate(this.owner.pos.x,this.owner.pos.y); rotate(turOri.heading());
+      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
+      fill(this.doorCol);
+      rect(this.turretLh-16,-this.turretWh+8,this.turretLh,this.turretWh+8);
+      strokeWeight(2); stroke(this.doorCol);
+      fill(240,216,0);
+      let rotVal = PI*lerp(0,2, (frameCount%120)/120);
+      push();translate(6-this.turretLh,-12);rotate(rotVal);ellipse(0,0,6,16);pop();
+      push();translate(6-this.turretLh,12);rotate(HALF_PI+rotVal);ellipse(0,0,6,16);pop();
+    pop();
+  } // Ends Function renderTurret  
+
+} // Ends Weapon Type MissileLauncher2X

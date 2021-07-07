@@ -16,10 +16,16 @@
 |   > Constructor inputs a map [row][col], not a world (x,y) position.
 |     For RTS-P5JS refactor, this should again be (x,y) position again,
 |     corresponding to factory's or otherwise 'spawn point'.
+|   > (7/5/21) Refactored the unit type "enum" from a static dict within
+|     the Unit class definition to a global var defined externally. This
+|     is actually better OOP in-general; but the main reason was so the
+|     'sandbox mode' enemy spawner UI can iterate through its keys as to
+|     access and display unit info to the player: which appears to be a
+|     difficult ['wonky'?] for a statically defined dict.
 *=====================================================================*/
-class Unit{
-  // Schema: {id : [maxHealth, maxSpeed, bodyLen, fill color, $ bounty]}
-  static Types = {
+
+// Schema: {id : [maxHealth, maxSpeed, bodyLen, fill color, $ bounty]}
+var UnitType = {
     /*------------------------------------------------------------------
     |>>> 'Standard Set'
     +-------------------------------------------------------------------
@@ -37,9 +43,10 @@ class Unit{
     STD_5 : [400,    1, 42, [254,224,139],  400],
     STD_6 : [800,  .75, 48, [253,174,97],   800],
     STD_7 : [1600,  .5, 54, [244,109,67],  1600],
-    STD_8 : [3200, .25, 60, [213,62,79],   3200]
-  } // Ends Unit Type Config Definition
+    STD_8 : [3200, .25, 60, [213,62,79],   3200],
+} // Ends 'Enum' UnitType
 
+class Unit{
   constructor(row,col,ID,map){
     this.ID  = ID;
     this.pos = createVector(col*cellSize+(cellSize/2),row*cellSize+(cellSize/2));
@@ -90,7 +97,7 @@ class Unit{
   // Type Data Schema: {id : [maxHealth, maxSpeed, bodyLen, bodyColor]}
   setType(type){
     this.unitType = type;
-    let info = Unit.Types[type];
+    let info = UnitType[type];
     if(info){
       this.maxHealth = info[0];
       this.curHealth = this.maxHealth;
@@ -103,7 +110,7 @@ class Unit{
       this.fill_live = color(info[3][0],info[3][1],info[3][2]);
     }
     else{
-      console.log(">>> Warning: Input \""+type+"\" is an invalid Unit.Type! Retaining default values.");
+      console.log(">>> Warning: Input \""+type+"\" is an invalid unit type! Retaining default values.");
     }
 
     return this; // for function chaining
@@ -154,12 +161,21 @@ class Unit{
     manager.OnEnemyKilled(); // DEPENDENCY NOTE: REFERENCING GLOBAL VAR!    
   }
 
+  didMissileCollide(projPos){
+    return p5.Vector.sub(projPos,this.pos).magSq() <= this.bodyLenSq*4;
+  }
+
 
   onBulletHit(bulletPos,dam){
     if(p5.Vector.sub(bulletPos,this.pos).magSq() <= this.bodyLenSq*2){
       this.applyDamage(dam);
     }
   }
+
+  onMissileHit(bulletPos,dam){
+    this.applyDamage(dam);
+  }
+
 
   applyDamage(dam){
     this.curHealth -= dam;

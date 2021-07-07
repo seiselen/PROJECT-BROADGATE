@@ -1,7 +1,7 @@
 
 
 class UIStyle{
-  static TextOriOpts = {TL:1,TR:2,CTR:0};
+  static TextOriOpts = {TL:1,TR:2,CTR:0,TC:3}; // top-left, top-right, center, top-center
   constructor(){
     this.fill_bGround = color(0,120,255);      // Color when not clicked or toggled
     this.fill_fGround = color(240,240,240,50); // Transparent color when clicked or toggled
@@ -15,9 +15,13 @@ class UIStyle{
     this.fill_text    = color(255,255,255);
     this.fill_text2   = color(180,180,180);    // color to use if disabled (A/A)
 
-    this.boldText     = false; // make text bold? (i.e. via stroke weight)
+    this.boldText     = false; // make text bold (i.e. via stroke weight)
+    this.boldTextWgt  = 2; // TODO: Implement for other UIObject types; as only currently used for ClickButton!
+
     this.textSize     = 18;
     this.textOff      = [0,0]; // offset [LEFT,DOWN] from top left corner
+    this.textDims     = [0,0]; // textbox dimensions (if using text wrap mode)
+    this.useTextWrap  = false;
 
     this.textOri      = UIStyle.TextOriOpts.TL; // default text ori: top left
   }
@@ -39,7 +43,7 @@ class UIStyle{
         break;
       case "click2":  
         this.fill_bGround = color(144,144,144);
-        this.fill_text    = color(0,0,0);
+        this.fill_text    = color(0);
         this.textOri      = UIStyle.TextOriOpts.CTR;
         break;    
       case "toggle":
@@ -53,9 +57,9 @@ class UIStyle{
         this.fill_bGround = color(60);
         break;
       case "label_transparent":
-        this.fill_bGround = color(60,60,60,120);
+        this.fill_bGround = color(0,0);
         break;
-      case "label2":
+      case "label2": /* UNUSED (A/O 7/5/21) */
         this.fill_bGround = color(255);
         this.fill_text    = color(60);
         this.textSize     = 24;
@@ -111,13 +115,23 @@ class UIObject{
     switch(this.style.textOri){
       case UIStyle.TextOriOpts.TL:  this.renderTextViaTLCorner(); break;
       case UIStyle.TextOriOpts.TR:  this.renderTextViaTRCorner(); break;
-      case UIStyle.TextOriOpts.CTR: this.renderTextViaCenter(); break;      
+      case UIStyle.TextOriOpts.CTR: this.renderTextViaCenter(); break;
+      case UIStyle.TextOriOpts.TC: this.renderTextViaTCenter(); break;   
     }
   }
 
-  renderTextViaTLCorner(){textAlign(LEFT,TOP);   text(this.text,this.pos.x+this.style.textOff[0],this.pos.y+this.style.textOff[1]);}
-  renderTextViaTRCorner(){textAlign(RIGHT,TOP);  text(this.text,this.ePt.x-this.style.textOff[0],this.pos.y+this.style.textOff[1]);}
-  renderTextViaCenter(){textAlign(CENTER,CENTER);text(this.text,this.mPt.x+this.style.textOff[0],this.mPt.y+this.style.textOff[1]);}
+  renderTextViaTLCorner(){textAlign(LEFT,TOP);    this.renderText(this.pos.x+this.style.textOff[0],this.pos.y+this.style.textOff[1]);}
+  renderTextViaTRCorner(){textAlign(RIGHT,TOP);   this.renderText(this.ePt.x-this.style.textOff[0],this.pos.y+this.style.textOff[1]);}
+  renderTextViaCenter(){textAlign(CENTER,CENTER); this.renderText(this.mPt.x+this.style.textOff[0],this.mPt.y+this.style.textOff[1]);}
+  renderTextViaTCenter(){textAlign(CENTER,TOP);   this.renderText(this.mPt.x+this.style.textOff[0],this.pos.y+this.style.textOff[1]);}
+
+  renderText(x1,y1){
+    switch(this.style.useTextWrap){
+      case true: text(this.text,x1,y1,this.style.textDims[0],this.style.textDims[1]); break;
+      case false: text(this.text,x1,y1); break; 
+    }
+  }
+
 } // Ends Class UIObject
 
 
@@ -135,10 +149,10 @@ class UIContainer extends UIObject{
     this.hidden   = false;
   } // Ends Constructor
 
-  // TODO: should see if default parm val of 'val = !this.hidden' works
-  setHidden(val){
+  setHidden(val = !this.hidden){
     this.hidden = val;
-  }
+    return this; // for function chaining purposes
+  } // Ends Function setHidden
 
   addChildren(kids){
     kids.forEach(c => this.addChild(c));
@@ -170,13 +184,14 @@ class UIContainer extends UIObject{
     if(this.hidden){return;}
     strokeWeight(this.style.strk_weight);stroke(this.style.strk_border);fill(this.style.fill_bGround);
     rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
-    //noFill();ellipse(this.mPt.x,this.mPt.y,5,5); // draw ellipse at midpoint (commented out as DEBUG only)
-    if(this.mouseOver){
-      strokeWeight(this.style.strk_weight2);noFill();
-      rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
-    }
+    //this.renderMidpoint(); // comment out unless using for DEBUG
+    //this.renderMouseOver(); // comment out unless using for DEBUG
     this.children.forEach(c => c.render());
   } // Ends Function render
+
+  // Implemented for DEBUG purposes only (i.e. not part of player's UI/UX)
+  renderMidpoint(){noFill();ellipse(this.mPt.x,this.mPt.y,5,5);}
+  renderMouseOver(){if(this.mouseOver){strokeWeight(this.style.strk_weight2);noFill();rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);}}
 
   onMousePressed(){
     if(this.hidden){return;}
@@ -205,16 +220,12 @@ class UIClickButton extends UIObject{
     return this;
   } // Ends Function bindAction
 
-  // TODO: if still only super() when refactor done - remove this function
-  update(){
-    super.update();
-  } // Ends Function update
-
   render(){
     strokeWeight(this.style.strk_weight);stroke(this.style.strk_border);fill(this.style.fill_bGround);
     rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
 
-    noStroke();fill(this.style.fill_text);textSize(this.style.textSize);
+    (this.style.boldText) ? stroke(this.style.fill_text) : noStroke();
+    fill(this.style.fill_text);textSize(this.style.textSize);
     this.renderTextViaOri();
 
     if(this.mouseOver && mouseIsPressed){

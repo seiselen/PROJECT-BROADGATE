@@ -21,6 +21,7 @@ class GameManager{
 
 
     this.reqUnit;
+    this.reqBldg;
 
     this.frameModeChanged = -1;
 
@@ -49,7 +50,7 @@ class GameManager{
   onMousePressed(){
 
     if(this.gameMode == GameManager.MODES.PLACE_BLDG && frameCount > this.frameModeChanged){
-      let res = this.createTower(map.posToCoord(mousePtToVec()));
+      let res = this.createTowerAt(map.posToCoord(mousePtToVec()));
       if(res==true || mouseInSidebar()){this.gameMode = GameManager.MODES.IDLE;}
     }
 
@@ -63,10 +64,11 @@ class GameManager{
 
 
 
-  handlePlaceBuilding(){
+  handlePlaceBuilding(request){
     if(mouseInSidebar()){
       this.gameMode = GameManager.MODES.PLACE_BLDG;
       this.frameModeChanged = frameCount;
+      this.reqBldg = request;
     } 
   }
 
@@ -78,7 +80,11 @@ class GameManager{
     } 
   }
 
-
+  handleSpawnUnit(request, numRequested=1){
+    this.reqUnit = request;
+    if(numRequested == 1){this.createUnitAt(map.entCoord);}
+    else{for(let i=0; i<numRequested; i++){this.createUnitAt(map.entCoord);}}
+  } // Ends Function handleSpawnUnit
 
   createUnit(){
     let u = new Unit(map.entCoord[0], map.entCoord[1], units.length, map)
@@ -111,17 +117,7 @@ class GameManager{
   } // Ends Function createUnitAt
 
 
-
-
-  createTowerFirstEmptyCell(){
-    let cell = map.findVacantCell();
-    console.log(cell);
-    if(cell==null){console.log("Cell Null!");return;}
-    createTower(cell[0],cell[1]);
-  } // Ends Function createTowerFirstEmptyCell
-
-
-  createTower(cell){
+  createTowerAt(cell){
     let row = cell[0];
     let col = cell[1];
     let twr = null;
@@ -129,7 +125,7 @@ class GameManager{
 
     if (!map.isVacant(row,col)){return false;}
     pos = map.coordToPos(row,col);
-    twr = new Tower(pos,cell,map);
+    twr = new Tower(pos,cell,map).setWeapon( (this.reqBldg) ? this.reqBldg : "LaserBlaster");
     map.setToFilled(row,col);
     bldgs.push(twr);
     this.OnTowerCreated();
