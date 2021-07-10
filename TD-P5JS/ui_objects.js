@@ -55,17 +55,16 @@ class UIStyle{
         break;
       case "label":
         this.fill_bGround = color(60);
+        this.textOri = UIStyle.TextOriOpts.CTR;
         break;
       case "label_transparent":
         this.fill_bGround = color(0,0);
+        this.textOri = UIStyle.TextOriOpts.CTR;
         break;
-      case "label2": /* UNUSED (A/O 7/5/21) */
-        this.fill_bGround = color(255);
-        this.fill_text    = color(60);
-        this.textSize     = 24;
-        this.strk_weight2 = 2;
-        this.strk_border2 = color(60);
-        this.boldText     = true;
+      case "label2":
+        this.fill_bGround = color(60);
+        this.textOff      = [4,8]
+        UIStyle.TextOriOpts.TL;
         break;
       case "rectBar":
         this.fill_bGround = color(60);
@@ -359,7 +358,6 @@ class UILabel extends UIObject{
     super(pos,dim);
     this.text = label;
     this.cBack;
-    this.style.textOri = UIStyle.TextOriOpts.CTR;
   } // Ends Constructor
 
   // Used for manual setting (i.e. one-time at init <vs> needing updates)

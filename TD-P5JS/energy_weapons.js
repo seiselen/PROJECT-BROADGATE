@@ -13,11 +13,11 @@ class LaserBeam extends Weapon{
     this.getCellsInRange(); // must be called here because needs weapRange assigned
 
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
-    this.turretW = 16;
+    this.turretL = 36;
+    this.turretW = 18;
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
+    this.turCol   = color(216);
     this.strCol   = color(60); 
     this.laserCol = color(0,255,255);
     this.lLerpCol = color(0,60,240);
@@ -81,11 +81,11 @@ class LaserBeamRelay extends Weapon{
     this.getCellsInRange(); // must be called here because needs weapRange assigned
 
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
-    this.turretW = 36;
+    this.turretL = 48;
+    this.turretW = 24;
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
+    this.turCol   = color(216);
     this.strCol   = color(60); 
     this.laserCol = color(0,255,255);
     this.lLerpCol = color(0,60,240);
@@ -158,7 +158,7 @@ class LaserBeamRelay extends Weapon{
       rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
 
       strokeWeight(2);fill(lerpColor(this.laserCol,this.lLerpCol, noise(frameCount/10)));
-      rect(6-this.turretLh,8-this.turretWh,this.turretL-12,this.turretW-16);
+      rect(8-this.turretLh,4-this.turretWh,this.turretL-16,this.turretW-8);
     pop();
   } // Ends Function renderTurret  
 
@@ -226,7 +226,7 @@ class LaserBlaster extends Weapon{
     this.turretW = 8;
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
+    this.turCol   = color(216);
     this.strCol   = color(60); 
     this.laserCol = color(0,255,255);
     this.lLerpCol = color(0,60,240);
@@ -262,13 +262,13 @@ class LaserBlaster extends Weapon{
   renderTurret(){
     let turOri = (this.curTarget && this.curTarget.isAlive) 
       ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) 
-      : createVector(0,0);
+      : createVector(-1,0);
 
     fill(this.turCol);stroke(this.strCol);strokeWeight(1);
     push();
       translate(this.owner.pos.x,this.owner.pos.y);
       rotate(turOri.heading());
-      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
+      rect(0,-this.turretWh,this.turretLh,this.turretW);
     pop();
   } // Ends Function renderTurret  
 
@@ -315,14 +315,16 @@ class LaserBlasterDual extends Weapon{
     this.atkFrmStart = [0,0];    // frame/60 when not idle, used to start fire loop 'OnStartAttack'
     
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
+    this.turretL = 36;
     this.turretW = 8;
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
+    this.turCol   = color(216);
     this.strCol   = color(60); 
     this.laserCol = color(0,255,255);
     this.lLerpCol = color(0,60,240);
+
+    this.rotXTurIdle = [-1,0]; // rotation (ori) vector if idle where index-> turret ID
   } // Ends Constructor
 
   canFire(id){
@@ -360,16 +362,18 @@ class LaserBlasterDual extends Weapon{
   } // Ends Function render
 
 
+
+
   renderTurret(i){
     let turOri = (this.curTargets[i] && this.curTargets[i].isAlive) 
       ? p5.Vector.sub(this.curTargets[i].pos,this.owner.pos) 
-      : createVector(0,0);
+      : createVector( this.rotXTurIdle[i] ,0);
 
     fill(this.turCol);stroke(this.strCol);strokeWeight(1);
     push();
       translate(this.owner.pos.x,this.owner.pos.y);
       rotate(turOri.heading());
-      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
+      rect(0,-this.turretWh,this.turretLh,this.turretW);
     pop();
   } // Ends Function renderTurret  
 
@@ -420,14 +424,17 @@ class LaserBlasterTriple extends Weapon{
     this.atkFrmStart = [0,0,0];    // frame/60 when not idle, used to start fire loop 'OnStartAttack'
     
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
+    this.turretL = 40;
     this.turretW = 8;
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
+    this.turCol   = color(216);
     this.strCol   = color(60); 
     this.laserCol = color(0,255,255);
     this.lLerpCol = color(0,60,240);
+
+    this.rotXTurIdle = [-1,0,0]; // rotation (ori) vector if idle where index-> turret ID
+    this.rotYTurIdle = [0,0,1];
   } // Ends Constructor
 
   canFire(id){
@@ -471,13 +478,13 @@ class LaserBlasterTriple extends Weapon{
   renderTurret(i){
     let turOri = (this.curTargets[i] && this.curTargets[i].isAlive) 
       ? p5.Vector.sub(this.curTargets[i].pos,this.owner.pos) 
-      : createVector(0,0);
+      : createVector(this.rotXTurIdle[i],this.rotYTurIdle[i]);
 
     fill(this.turCol);stroke(this.strCol);strokeWeight(1);
     push();
       translate(this.owner.pos.x,this.owner.pos.y);
       rotate(turOri.heading());
-      rect(-this.turretLh,-this.turretWh,this.turretL,this.turretW);
+      rect(0,-this.turretWh,this.turretLh,this.turretW);
     pop();
   } // Ends Function renderTurret  
 

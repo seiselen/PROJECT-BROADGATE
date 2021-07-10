@@ -50,6 +50,7 @@ function db_drawMenuSubCanv(){db_drawRect(worldWide,0,menuWide,height,color(60),
 function db_drawTextSimple(txt){textSize(32);textAlign(CENTER,CENTER);stroke(64,64);strokeWeight(4);fill(255);text(txt,width/2,height-32);}
 
 function drawFPSSimple(blurb="FPS: "){textSize(32); textAlign(LEFT,CENTER); stroke(0); strokeWeight(4); fill(255); text(blurb+round(frameRate()), 12, height-15);}
+function fpsBlurbToString(){return "FPS: "+round(frameRate());}
 
 
 /*----------------------------------------------------------------------
@@ -61,12 +62,23 @@ function mouseInSidebar(){return(mouseX>worldWide)&&(mouseY>0)&&(mouseX<width)&&
 
 function mousePtToVec(){return createVector(mouseX, mouseY);}
 
+function dispMousePlaceCell(){
+  if(!mouseInCanvas() || manager.gameMode == GameManager.MODES.IDLE){return;}
+  let mPos = mousePtToVec(); let cPos = map.coordToTopLeftPos(map.posToCoord(mPos));
+  strokeWeight(2); noFill();
+  switch (manager.gameMode){
+    case GameManager.MODES.PLACE_BLDG: (map.isVacant2(map.posToCoord(mPos))) ? stroke(255) : stroke(255,0,0); break;
+    case GameManager.MODES.PLACE_UNIT: (map.isEnemyPathCell2(map.posToCoord(mPos))) ? stroke(255) : stroke(255,0,0); break;
+  }
+  push();translate(cPos.x,cPos.y);line(0,32,32,0);line(0,16,16,0);line(0,64,64,0);line(0,48,48,0);line(16,64,64,16);line(32,64,64,32);line(48,64,64,48);pop();
+} // Ends Function dispMousePlaceCell
+
+
 /*----------------------------------------------------------------------
 |>>> Vector Creation Utils
 +---------------------------------------------------------------------*/
 function randCanvasPt(){return vec2(int(random(qtSqPixels)),int(random(qtSqPixels)));}
 function vec2(x=0,y=0){return createVector(x,y);}
-
 
 
 /*----------------------------------------------------------------------

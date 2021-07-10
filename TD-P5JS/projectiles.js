@@ -39,9 +39,9 @@ class ProjectileManager{
   poolPopToString(op=0){
     let pop  = 0;
     let pool = (op==0) ? this.bullPool : this.missPool;
-    let prfx = (op==0) ? "Bullet" : "Missile";
-    let pct  = floor((pop/this.poolCap)*100);
+    let prfx = (op==0) ? "Bull" : "Miss";
     pool.forEach(i => {pop += (i.canRecycle()) ? 0 : 1});
+    let pct  = floor((pop/this.poolCap)*100);
     return prfx+" Pool Use: "+(pct)+"% ["+pop+"/"+this.poolCap+"]";
   } // Ends Function poolPopToString
 
@@ -54,7 +54,7 @@ class ProjectileManager{
 
   missPoolPopToString(){
     let pop = 0;
-    this.missPool.forEach(b => {pop += (b.canRecycle()) ? 0 : 1});
+    this.missPool.forEach(m => {pop += (m.canRecycle()) ? 0 : 1});
     let pct = floor((pop/this.poolCap)*100);
     return "Missile Pool Use: "+(pct)+"% ["+pop+"/"+this.poolCap+"]";
   } // Ends Function missPoolPopToString
@@ -70,7 +70,7 @@ class ProjectileManager{
         return;
       }
     }
-    console.log("WARNING - No unused entries available!");   
+    console.log("WARNING - No unused Bullet entries available!");   
   } // End Function reqBullet
 
   reqMissile(launchPos,target){
@@ -80,7 +80,7 @@ class ProjectileManager{
         return;
       }
     }
-    console.log("WARNING - No unused entries available!");   
+    console.log("WARNING - No unused Missile entries available!");   
   } // End Function reqBullet
 
   update(){this.updateBullets(); this.updateMissiles();}
@@ -311,7 +311,9 @@ class Missile extends Projectile{
 
       if(this.tar.didMissileCollide(this.pos)){this.onHitTarget();}
     }
-    else if(this.didImpactAnim){
+    
+    if(this.didImpactAnim){
+      console.log("hi");
       this.inUse = false;
     }
     this.curLifeFrame++;

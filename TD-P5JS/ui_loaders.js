@@ -1,42 +1,13 @@
-function pane_statsDebugSwap(xPos,yPos,statsPane=null,debugPane=null){
-  let pane = new UIContainer(vec2(xPos,yPos),vec2(320,32)).setStyle("fill_bGround",color(255,64)).addChildren([
-    new UIClickButton(vec2(0,0),vec2(160,32), "Game Stats").bindAction(() => {statsPane.setHidden(false);debugPane.setHidden(true)}).setPredefStyle("click2").setStyle("fill_text",color(255)).setStyle("fill_bGround",color(156,120,0)),
-    new UIClickButton(vec2(160,0),vec2(160,32), "Debug Menu").bindAction(() => {statsPane.setHidden(true);debugPane.setHidden(false)}).setPredefStyle("click2").setStyle("fill_text",color(255)).setStyle("fill_bGround",color(120,60,120))
-  ]);
-  return pane;
-} // Ends Function pane_unitBldgSwap
-
-function pane_gameStats(xPos,yPos){
-  let i = 0; let objT = 32; let objW = 320;
-  return new UIContainer(vec2(xPos,yPos),vec2(objW,128)).setStyle("fill_bGround",color(255,64)).addChildren([
-    new UILabel(vec2(0,0),vec2(objW,objT)).setPredefStyle("label").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("# Enemies Killed: " + manager.getNumKills())),
-    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("# Enemies On Map: " + manager.getNumUnits())),
-    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("# Towers On Map: " + manager.getNumTowers()))
-  ]);
-} // Ends Function pane_gameStats
-
-function pane_gameDebug(xPos,yPos){
-  let i = 0; let objT = 32; let objW = 320; let col = color(180,32,180);
-  return new UIContainer(vec2(xPos,yPos),vec2(objW,128)).setStyle("fill_bGround",color(255,64)).addChildren([
-    new UILabel(vec2(0,0),vec2(objW,objT)).setPredefStyle("label").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => manager.gameModeToString()),
-    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => projPool.poolPopToString(0)),
-    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => projPool.poolPopToString(1))
-  ]);
-} // Ends Function pane_gameDebug
-
-
-
-
 function initUI(){
   //====================================================================
   //>>> Loaders/Inits for [sub] UI panels 
   //====================================================================
-  let gameStatsPane      = pane_gameStats(32,32)/*.setHidden()*/;
-  let gameDebugPane      = pane_gameDebug(32,32).setHidden();
+  let gameStatsPane      = pane_gameStats(32,32).setHidden(false);
+  let gameDebugPane      = pane_gameDebug(32,32).setHidden(true);
   let statsDebugSwapPane = pane_statsDebugSwap(32,0,gameStatsPane,gameDebugPane);
 
-  let unitSpawnPane      = pane_unitSpawn(32,224).setHidden();
-  let bldgSpawnPane      = pane_bldgSpawn(32,224)/*.setHidden()*/;
+  let unitSpawnPane      = pane_unitSpawn(32,224).setHidden(true);
+  let bldgSpawnPane      = pane_bldgSpawn(32,224).setHidden(false);
   let unitBldgSwapPane   = pane_unitBldgSwap(32,192,unitSpawnPane,bldgSpawnPane);
 
   //====================================================================
@@ -51,6 +22,42 @@ function initUI(){
 } // Ends Function initUI
 
 
+function pane_statsDebugSwap(xPos,yPos,statsPane=null,debugPane=null){
+  let pane = new UIContainer(vec2(xPos,yPos),vec2(320,32)).setStyle("fill_bGround",color(255,64)).addChildren([
+    new UIClickButton(vec2(0,0),vec2(160,32), "Game Info").bindAction(() => {statsPane.setHidden(false);debugPane.setHidden(true)}).setPredefStyle("click2").setStyle("fill_text",color(255)).setStyle("fill_bGround",color(156,120,0)),
+    new UIClickButton(vec2(160,0),vec2(160,32), "Debug Info").bindAction(() => {statsPane.setHidden(true);debugPane.setHidden(false)}).setPredefStyle("click2").setStyle("fill_text",color(255)).setStyle("fill_bGround",color(120,60,120))
+  ]);
+  return pane;
+} // Ends Function pane_unitBldgSwap
+
+function pane_gameStats(xPos,yPos){
+  let i = 0; let objT = 32; let objW = 320;
+  return new UIContainer(vec2(xPos,yPos),vec2(objW,128)).setStyle("fill_bGround",color(255,64)).addChildren([
+    new UILabel(vec2(0,0),vec2(216,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Units Killed: " + manager.getNumKills())),
+    new UILabel(vec2(216,0),vec2(104,objT)).setPredefStyle("label").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => fpsBlurbToString()), 
+    
+    new UILabel(vec2(0,i+=objT),vec2(188,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Units On Map: " + manager.getNumUnits())),
+    new UILabel(vec2(188,i),vec2(132,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Lives Left: " + manager.getCurLives())),
+    
+    new UILabel(vec2(0,i+=objT),vec2(188,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Towers On Map: " + manager.getNumTowers())),
+    new UILabel(vec2(188,i),vec2(132,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Money: $" + manager.getCurMoney())),
+
+    new UILabel(vec2(0,i+=objT),vec2(320,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => waveManage.toBlurb()),
+    new UIClickButton(vec2(176,i+4),vec2(136,24), "SEND NEXT WAVE").bindAction(() => waveManage.sendNextWave()).setPredefStyle("click2").setStyle("textOff",[0,2]).setStyle("textSize",14).setStyle("boldText",true),
+  ]);
+} // Ends Function pane_gameStats
+
+function pane_gameDebug(xPos,yPos){
+  let i = 0; let objT = 32; let objW = 320; let col = color(180,32,180);
+  return new UIContainer(vec2(xPos,yPos),vec2(objW,160)).setStyle("fill_bGround",color(255,64)).addChildren([
+    new UILabel(vec2(0,0),vec2(216,objT)).setPredefStyle("label").setStyle("fill_bGround",color(120,60,120)).setStyle("textOff",[4,8]).setStyle("textOri",UIStyle.TextOriOpts.TL).bindCallback(() => manager.gameModeToString()),
+    new UILabel(vec2(216,0),vec2(104,objT)).setPredefStyle("label").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => fpsBlurbToString()),   
+    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => projPool.poolPopToString(0)),
+    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => projPool.poolPopToString(1)),
+    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => spawnPool.poolPopToString()),
+    new UILabel(vec2(0,i+=objT),vec2(objW,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(120,60,120)).bindCallback(() => unitPool.poolPopToString()),
+  ]);
+} // Ends Function pane_gameDebug
 
 function pane_unitBldgSwap(xPos,yPos,unitPane=null,bldgPane=null){
   let pane = new UIContainer(vec2(xPos,yPos),vec2(320,32)).setStyle("fill_bGround",color(255,64)).addChildren([
@@ -107,8 +114,15 @@ function spawnUnitUI(key,idx){
 
 
 
-
-//>>> QAD NOTE: Obsolete per new/upgraded UI, but keeping J.I.C.
+/*----------------------------------------------------------------------
+|>>> Function pane_oldPlaceUnitBldg
++-----------------------------------------------------------------------
+| Deprecation Note:
+|   > Obsolete per new/upgraded UI, but keeping JIC. 
+|   > Function Parms (let alone the [existence of] entire functions and
+|     objects) might have changed [significantly] since last use of this
+|     code: so usage is 'At-Own-Risk' and 'If-You-Can-Get-It-To-Work'!
++---------------------------------------------------------------------*/
 function pane_oldPlaceUnitBldg(){
   let objW = 152; let objT = 32; let i = 32;
   let UnitPlaceBlurb = "Note: Places unit at \'mouse\n          hover\' cell (if enemy\n          path), not the cell of\n          starting waypoint!"

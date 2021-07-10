@@ -31,7 +31,7 @@ class GameMap{
     this.extCoord  = [-1,-1]; // cell coord where enemies exit the map
 
     //> UI/UX Toggle Configs
-    this.showGrid    = true;  // show map grid        (def:true {FALSE when done with dev?})
+    this.showGrid    = false;  // show map grid       (def:false)
     this.showCoords  = false; // show map cell coords (def:false)
     this.showTileMap = true;  // show map tiles       (def:true)
     this.showBldgMap = false; // show building SP map (def:false)
@@ -57,7 +57,7 @@ class GameMap{
     this.col_cellBorder    = color(0,0,0);
     this.col_cellMapDecor  = color(0,108,48);
     this.col_cellEnemyPath = color(84,84,84);
-    this.col_cellBuildable = color(144,84,12);
+    this.col_cellBuildable = color(84,48,12);
 
     //>>> Colors used for displaying building cell state    
     this.col_bldgVacant    = color(0,0,0,0);    
@@ -255,6 +255,14 @@ class GameMap{
     this.unitMap[newCoords[0]][newCoords[1]][unit.ID] = unit;
     unit.spCell = newCoords;
   } // Ends Function updatePos
+
+  // Added 7/8 to [possibly] support Unit object pooling
+  removePos(unit){
+    if(unit.spCell != null){
+      delete this.unitMap[unit.spCell[0]][unit.spCell[1]][unit.ID];
+    }     
+  } // Ends Function removePos
+
 
   getUnitsInCells(list){
     let units = [];

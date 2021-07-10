@@ -38,7 +38,7 @@ class Weapon{
     this.curTarget    = null;
 
     //> GFX/Viz Settings (Common \forall weapon types)
-    this.dispRange = true;
+    this.dispRange = false;
     this.col_range = color(0,180,255,64); // attack range color
   }
 

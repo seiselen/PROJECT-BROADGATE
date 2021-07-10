@@ -17,12 +17,15 @@ class Cannon extends Weapon{
     this.atkFrmStart = 0;    // frame/60 when not idle, used to start fire loop 'OnStartAttack'
     
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
-    this.turretW = 8;
+    this.turretL  = 32;
+    this.turretW  = 16;
+    this.barrelW  = 8;
+    this.barrelWh = this.barrelW/2;    
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
-    this.strCol   = color(60); 
+    this.turCol   = color(24,120,24);
+    this.barCol   = color(168,192,216);
+    this.strCol   = color(24);
 
     this.launchThisFrame = false;
   } // Ends Constructor
@@ -66,18 +69,18 @@ class Cannon extends Weapon{
       ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) 
       : createVector(0,0);
 
-    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
+    strokeWeight(1); stroke(this.strCol);
     push();
       translate(this.owner.pos.x,this.owner.pos.y);
       rotate(turOri.heading());
-      stroke(60);
-      strokeWeight(16); line(4-this.turretLh,0,8,0);
-      strokeWeight(8); line(8,0,this.turretLh+8,0);
+
+      fill(this.turCol); rect(-this.turretLh,-this.turretWh,this.turretLh*1.5,this.turretW); 
+      fill(this.barCol); rect(this.turretLh-(this.turretLh*1.25),-this.barrelWh,this.turretLh*1.5,this.barrelW);
+
       if(this.launchThisFrame){
         strokeWeight(4); stroke(255,60,0,156); fill(255,255,0,216); 
-        ellipse(this.turretLh+16,0,18,18);
+        ellipse(this.turretLh+this.barrelW,0,18,18);
       }
-      noStroke();fill(this.turCol); ellipse(-10,0,8,8);
     pop();
   } // Ends Function renderTurret
 } // Ends Weapon Type Cannon
@@ -104,12 +107,15 @@ class SemiAutoCannon extends Weapon{
     this.atksCurSpan = 0;    // number of attacks this frame span
     
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
-    this.turretW = 8;
+    this.turretL  = 40;
+    this.turretW  = 20;
+    this.barrelW  = 10;
+    this.barrelWh = this.barrelW/2;    
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
-    this.strCol   = color(60); 
+    this.turCol   = color(24,120,24);
+    this.barCol   = color(168,192,216);
+    this.strCol   = color(24);
 
     this.launchThisFrame = false;
   } // Ends Constructor
@@ -162,18 +168,18 @@ class SemiAutoCannon extends Weapon{
       ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) 
       : createVector(0,0);
 
-    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
+    strokeWeight(1); stroke(this.strCol);
     push();
       translate(this.owner.pos.x,this.owner.pos.y);
       rotate(turOri.heading());
-      stroke(60);
-      strokeWeight(24); line(4-this.turretLh,0,8,0);
-      strokeWeight(14); line(8,0,this.turretLh+8,0);
+
+      fill(this.turCol); rect(-this.turretLh,-this.turretWh,this.turretLh*1.5,this.turretW); 
+      fill(this.barCol); rect(this.turretLh-(this.turretLh*1.25),-this.barrelWh,this.turretLh*1.5,this.barrelW);
+
       if(this.launchThisFrame){
         strokeWeight(4); stroke(255,60,0,156); fill(255,255,0,216); 
-        ellipse(this.turretLh+16,0,18,18);
+        ellipse(this.turretLh+this.barrelW,0,18,18);
       }
-      noStroke();fill(this.turCol); ellipse(-10,0,12,12);
     pop();
   } // Ends Function renderTurret
 } // Ends Weapon Type SemiAutoCannon
@@ -199,12 +205,15 @@ class GatlingGunCannon extends Weapon{
     this.atkFrmStart = 0;    // frame/60 when not idle, used to start fire loop 'OnStartAttack'
     
     //> GFX/Viz Settings for this tower type
-    this.turretL = 32;
-    this.turretW = 8;
+    this.turretL  = 40;
+    this.turretW  = 30;
+    this.barrelW  = 15;
+    this.barrelWh = this.barrelW/2;    
     this.turretLh = this.turretL/2;
     this.turretWh = this.turretW/2;
-    this.turCol   = color(0,120,0);
-    this.strCol   = color(60); 
+    this.turCol   = color(24,120,24);
+    this.barCol   = color(168,192,216);
+    this.strCol   = color(24);
 
     this.launchThisFrame = false;
   } // Ends Constructor
@@ -251,18 +260,18 @@ class GatlingGunCannon extends Weapon{
       ? p5.Vector.sub(this.curTarget.pos,this.owner.pos) 
       : createVector(0,0);
 
-    fill(this.turCol);stroke(this.strCol);strokeWeight(1);
+    strokeWeight(1); stroke(this.strCol);
     push();
       translate(this.owner.pos.x,this.owner.pos.y);
       rotate(turOri.heading());
-      stroke(60);
-      strokeWeight(24); line(4-this.turretLh,0,8,0);
-      strokeWeight(14); line(8,0,this.turretLh+8,0);
+
+      fill(this.turCol); rect(-this.turretLh,-this.turretWh,this.turretLh*1.5,this.turretW); 
+      fill(this.barCol); rect(this.turretLh-(this.turretLh*1.25),-this.barrelWh,this.turretLh*1.5,this.barrelW);
+
       if(this.launchThisFrame){
         strokeWeight(4); stroke(255,60,0,156); fill(255,255,0,216); 
-        ellipse(this.turretLh+16,0,18,18);
+        ellipse(this.turretLh+this.barrelW,0,18,18);
       }
-      noStroke();fill(this.turCol); ellipse(-10,0,12,12);
     pop();
   } // Ends Function renderTurret
 } // Ends Weapon Type GatlingGunCannon
