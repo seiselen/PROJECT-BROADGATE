@@ -16,7 +16,7 @@ class ProjectileManager{
 
 
   /*--------------------------------------------------------------------
-  |>>> Functions poolPopToString / bullPoolPopToString / missPopToString
+  |>>> Functions getPoolPop getPoolPct / poolPopToString
   +---------------------------------------------------------------------
   | Description: Prints out message indicating pool use for one of the
   |              two projectile pools; informing of both usage percent 
@@ -36,6 +36,17 @@ class ProjectileManager{
   | Input Parm:  op => 'opcode' [1] indicating the pool to provide info
   |                    for; whereby {0 -> bullet} and {1 -> missile}
   +-------------------------------------------------------------------*/
+  getPoolPop(op){
+    let pool = (op==0) ? this.bullPool : this.missPool;    
+    let pop = 0; pool.forEach(r => {pop += (r.canRecycle()) ? 0 : 1}); return pop;
+  }
+
+  getPoolPct(op){return floor((this.getPoolPop(op)/this.poolCap)*100);}
+
+  poolPctToString(op){return ((op==0) ? "Bull" : "Miss") + " Pool: "+nf(this.getPoolPct(op),2)+"%";}
+
+  // Commented out below is a new version based on getPop/getPct as used with unit pool. Keeping un-commented version as it ain't broken!
+  // poolPopToString(op){return "Unit Pool Use: "+this.getPoolPct(op)+"% ["+this.getPoolPop(op)+"/"+this.poolCap+"]";}
   poolPopToString(op=0){
     let pop  = 0;
     let pool = (op==0) ? this.bullPool : this.missPool;

@@ -62,7 +62,7 @@ class UIStyle{
         this.textOri = UIStyle.TextOriOpts.CTR;
         break;
       case "label2":
-        this.fill_bGround = color(60);
+        this.fill_bGround = color(0,0);
         this.textOff      = [4,8]
         UIStyle.TextOriOpts.TL;
         break;
@@ -299,6 +299,7 @@ class UIBuyButton extends UIObject{
     this.text = label;
     this.action;
     this.query;
+    this.style.cantBuyCol = color(0,128);
   } // Ends Constructor
 
   bindAction(act){
@@ -319,8 +320,11 @@ class UIBuyButton extends UIObject{
     strokeWeight(this.style.strk_weight);stroke(this.style.strk_border);fill(this.style.fill_bGround);
     rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
 
-    noStroke();fill(this.style.fill_text);textSize(this.style.textSize);
+
+    (this.style.boldText) ? stroke(this.style.fill_text) : noStroke();
+    fill(this.style.fill_text);textSize(this.style.textSize);
     this.renderTextViaOri();
+
 
     if(this.query()){
       if(this.mouseOver && mouseIsPressed){
@@ -329,7 +333,7 @@ class UIBuyButton extends UIObject{
       }
     }
     else{
-      strokeWeight(this.style.strk_weight2);fill(this.style.strk_border2);
+      strokeWeight(this.style.strk_weight2);stroke(this.style.cantBuyCol);fill(this.style.cantBuyCol);
       rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
     }
   } // Ends Function render

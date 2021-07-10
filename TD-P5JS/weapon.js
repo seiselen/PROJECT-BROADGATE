@@ -3,22 +3,22 @@
 /*======================================================================
 |>>> WeaponType (Enum in JavaScript context {i.e. is an object [dict]})
 +-----------------------------------------------------------------------
-|> Scheme: {key : [cost,desc]}
+|> Scheme: {key : [cost, name, desc]}
 +=====================================================================*/
 var WeaponType = {
-  LaserBlaster       : [100, "Fires several energy bursts at a time"],
-  LaserBlasterDual   : [100, "Doubles the number of Laser Blasters!"],
-  LaserBlasterTriple : [100, "Triples the number of Laser Blasters!"],
+  ENGY_BL1 : [100, "Laser Blaster",    "Fires several energy bursts at a time"],
+  ENGY_BL2 : [250, "Laser Blaster 2x", "Doubles the number of Laser Blasters"],
+  ENGY_BL3 : [500, "Laser Blaster 3x", "Triples the number of Laser Blasters"],
 
-  LaserBeam          : [100, "Fires constant beam of energy ~toasty!~"],
-  LaserBeamRelay     : [100, "Laser beam, but travels enemy-2-enemy!"],
+  ENGY_LBM : [250, "Laser Beam",       "Fires constant energy beam (toasty!)"],
+  ENGY_RBM : [750, "Relay Beam",       "Its beam can reflect across 3 enemies"],
 
-  Cannon             : [100, "Fires only one bullet at a time ~yawn~"],
-  SemiAutoCannon     : [100, "Fires bullets several at a time ~better!~"],
-  GatlingGunCannon   : [100, "Fires bullets constantly ~tower go Brrr!!!~"],
+  PROJ_ONE : [100, "One-Shot Turret",  "Fires only one bullet at a time (yawn)"],
+  PROJ_SEM : [200, "Semi-Auto Turret", "Fires several bullets at a time (better)"],
+  PROJ_GAT : [800, "Gatling Gun",      "Fires bullets constantly (tower go Brrr)"],
 
-  MissileLauncher    : [100, "Launches 2 homing missiles at a time."],
-  MissileLauncher2X  : [100, "Launches 4 homing missiles at a time."]
+  PROJ_ML1 : [400, "Missile Site 2x", "Launches 2 homing missiles at a time"],
+  PROJ_ML2 : [800, "Missile Site 4x", "Launches 4 homing missiles at a time"]
 } // Ends Enum WeaponType
 
 /*======================================================================

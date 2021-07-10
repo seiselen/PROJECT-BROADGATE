@@ -1,7 +1,7 @@
 
-//######################################################################
-//>>> GLOBAL VARIABLES
-//######################################################################
+/*--------------------------------------------------------------------
+|>>> Global Variables/Objects
++-------------------------------------------------------------------*/
 var worldWide = 1024;
 var worldTall = 768;
 var menuWide  = 384;
@@ -23,7 +23,7 @@ var waveManage; // Manages waves (of a level, in the form of a .js 'wave schedul
 var unitPool    // Contains (and manages) Units in game
 
 
-
+var didInitGame = false;
 
 /*--------------------------------------------------------------------
 |>>> P5JS Function setup
@@ -31,21 +31,36 @@ var unitPool    // Contains (and manages) Units in game
 function setup(){
   createCanvas(worldWide+menuWide,worldTall).parent("viz");
 
+  initGame();
+
+} // Ends P5JS Function setup
+
+function initGame(){
   map        = new GameMap(cellsTall, cellsWide, cellSize, m01);
   waveManage = new WaveManager(m01[m01[0][0]+2]);
   manager    = new GameManager();
   projPool   = new ProjectileManager();
   spawnPool  = new SpawnManager();
   unitPool   = new UnitManager();
-
   initUI();
-} // Ends P5JS Function setup
+  this.didInitGame = true;
+}
 
 
 /*--------------------------------------------------------------------
 |>>> P5JS Function draw
 +-------------------------------------------------------------------*/
 function draw(){
+
+  //if(didInitGame){
+    runGame();
+  //}
+
+} // Ends P5JS Function draw
+
+
+
+function runGame(){
   //>>> UPDATE CALLS (unit->bldg order COUNTS)
   mainUIPanel.update();
   unitPool.update();
@@ -62,14 +77,27 @@ function draw(){
   projPool.render();
   dispMousePlaceCell();
   mainUIPanel.render();
-} // Ends P5JS Function draw
+}
 
 
 /*--------------------------------------------------------------------
 |>>> P5JS Function mousePressed
 +-------------------------------------------------------------------*/
 function mousePressed(){
-  mainUIPanel.onMousePressed();
-  manager.onMousePressed();
+  //if(didInitGame){
+    mainUIPanel.onMousePressed();
+    manager.onMousePressed();
+  //}
+
   return false;
+} // Ends P5JS Function mousePressed
+
+
+
+
+/*--------------------------------------------------------------------
+|>>> P5JS Function mousePressed
++-------------------------------------------------------------------*/
+function keyPressed(){
+  //initGame();
 } // Ends P5JS Function mousePressed

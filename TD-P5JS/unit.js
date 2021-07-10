@@ -23,10 +23,11 @@ class UnitManager{
 
   initPool(){for(let i=0; i<this.poolCap; i++){this.pool.push(new Unit());}}
 
-  poolPopToString(){
-    let pop = 0; this.pool.forEach(r => {pop += (r.canRecycle()) ? 0 : 1});
-    return "Unit Pool Use: "+floor((pop/this.poolCap)*100)+"% ["+pop+"/"+this.poolCap+"]";
-  } // Ends Function poolPopToString
+  getPoolPop(){let pop = 0; this.pool.forEach(r => {pop += (r.canRecycle()) ? 0 : 1}); return pop;}
+  getPoolPct(){return floor((this.getPoolPop()/this.poolCap)*100);}
+
+  poolPopToString(){return "Unit Pool Use: "+this.getPoolPct()+"% ["+this.getPoolPop()+"/"+this.poolCap+"]";}
+  poolPctToString(){return "Unit Pool: "+nf(this.getPoolPct(),2)+"%";}
 
   reqUnit(type,row,col){
     for(let i=0; i<this.poolCap; i++){if(this.pool[i].canRecycle()){
@@ -335,7 +336,6 @@ class Unit{
       this.pos = createVector(this.curPath[this.curWaypt].x,this.curPath[this.curWaypt].y);
     }
   } // Ends Function gotoPath
-
 
   render(){
     if(this.fullyDead){return;}

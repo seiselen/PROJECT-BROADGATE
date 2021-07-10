@@ -88,29 +88,13 @@ function vec2(x=0,y=0){return createVector(x,y);}
 +---------------------------------------------------------------------*/
 function unitKeyToUIName(key){
   switch(key){
-    case "STD_1": return "Standard\n<One>";
-    case "STD_2": return "Standard\n<Two>";
-    case "STD_3": return "Standard\n<Three>";
-    case "STD_4": return "Standard\n<Four>";
-    case "STD_5": return "Standard\n<Five>";
-    case "STD_6": return "Standard\n<Six>";
-    case "STD_7": return "Standard\n<Seven>";
-    case "STD_8": return "Standard\n<Eight>";
+    case "STD_1": return "ST Type 1";
+    case "STD_2": return "ST Type 2";
+    case "STD_3": return "ST Type 3";
+    case "STD_4": return "ST Type 4";
+    case "STD_5": return "ST Type 5";
+    case "STD_6": return "ST Type 6";
+    case "STD_7": return "ST Type 7";
+    case "STD_8": return "ST Type 8";
   }
 }
-
-function bldgKeyToUIName(key){
-  switch(key){
-    case "LaserBlaster"      : return "Laser Blaster";
-    case "LaserBlasterDual"  : return "Laser Blaster 2x";
-    case "LaserBlasterTriple": return "Laser Blaster 3x";
-    case "LaserBeam"         : return "Laser Beam";
-    case "LaserBeamRelay"    : return "Laser Relay Beam";
-    case "Cannon"            : return "One-Shot Turret";
-    case "SemiAutoCannon"    : return "Semi-Auto Turret";
-    case "GatlingGunCannon"  : return "Gatling Gun";
-    case "MissileLauncher"   : return "Missile Site 2x";
-    case "MissileLauncher2X" : return "Missile Site 4x";
-  }  
-}
-

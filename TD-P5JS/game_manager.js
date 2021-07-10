@@ -36,9 +36,9 @@
 |                   UI design/system, but keeping for now JIC
 *=====================================================================*/
 class GameManager{
-  static MODES = {IDLE:0, PLACE_BLDG:1, PLACE_UNIT:2};
+  static MODES = {START:0, IDLE:1, PLACE_BLDG:2, PLACE_UNIT:3, LOSE:4, WIN:5};
   constructor(){
-    this.maxLives  = 20;
+    this.maxLives  = 200;
     this.initMoney = 1000;
     this.init();
   } // Ends Constructor
@@ -65,6 +65,11 @@ class GameManager{
   getNumKills(){return this.numKills;}
   getNumTowers(){return this.numTowers;}
 
+  canAfford(thing){
+    let cost = (WeaponType[thing]) ? WeaponType[thing][0] : 999999;
+    return this.curMoney>=cost;
+  }
+
   gameModeToString(){
     let prefx = "Game Mode: "; // ➞ keeping this cool char
     switch(this.gameMode){
@@ -76,7 +81,9 @@ class GameManager{
   }
 
   OnEnemyCreated(){this.numUnits++;}
-  OnTowerCreated(){this.numTowers++;}
+
+  OnTowerCreated(type){this.numTowers++;this.curMoney-=WeaponType[type][0];}
+
   OnEnemyKilled(type){this.numKills++;this.numUnits--;if(UnitType[type]){this.curMoney+=UnitType[type][4];}}
   OnEnemyExited(){this.curLives--;if(this.curLives<0){this.curLives=0;}}
 
@@ -174,7 +181,8 @@ class GameManager{
     twr = new Tower(pos,cell,map).setWeapon( (this.reqBldg) ? this.reqBldg : "LaserBlaster");
     map.setToFilled(row,col);
     bldgs.push(twr);
-    this.OnTowerCreated();
+    this.OnTowerCreated(this.reqBldg);
+    this.reqBldg = null;
     return true;
   } // Ends Function createTower
 
