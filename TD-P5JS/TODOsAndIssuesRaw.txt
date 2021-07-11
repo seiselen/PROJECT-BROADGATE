@@ -1,0 +1,30 @@
+> Defining {cellSize, cellsTall, cellsWide} globally (i.e. in main.js) will be a PROBLEM if the map used for the game is not 12x16 cells! Keeping intact for now as to get FH-CS SP-21 progress fully refactored into the new build, but this should be resolved! Solution Idea/Algorithm follows:
+  1. I am already defining {worldWide,worldTall} standalone. This is good - keep it so!
+  2. I will now pass {worldWide,worldTall} into the GameMap instance’s constructor call
+  3. It will now cache these values in the [already existing] instance variables {areaWide, areaTall}
+  4. In GameMap.loadMapCells: external map file ‘extMap’ reveals its {cellsWide, cellsTall}
+  5. We can consequently assign {this.cellsWide, this.cellsTall} from the above observation
+  6. We can also now compute+assign this.cellSize by finding the largest ‘good’ value fitting the following constraint: int( (areaWide/cellsWide) ≈ (areaTall/cellsTall) ) % 2 ≈ 0 … and adjust areaWide, areaTall accordingly to the bounding box these cell wide/tall values encompass…
+
+…Or more simply: remind myself and anyone wanting to make a custom map to keep {worldWide,worldTall} into consideration with their map design’s {cellsWide, cellsTall} 
+  7. On that note: I could [should?] also admit a new [optional?] parm into the map definition file which indicates a [suggested?] cellSize for the map to effect in-game
+
+> Resolve methods in Map (and dependencies) so that ALL work with single Array2 as both input and output
+
+> Have Unit refer to the global map object instead of a redundant assignment by constructor/init methods?
+    ~ Else: give unit the callback for map's 'updatePos' method?
+
+> In Laser{Blaster,BlasterDual,BlasterTriple} function 'canFire()' :
+    ~ Swap: return ((frameCount-this.atkFrmStart)%this.atkFrmSpan) <= this.atkFrmDelta;
+    ~ With: return ((frameCount-this.atkFrmStart)%this.atkFrmSpan) < this.atkFrmDelta;
+    ~As the former is effectively extending the blast time by a frame (though is 1 frame enough to fret over?)
+
+> Fix Weapon and all dependencies to work with new WeaponType key name; i.e. "LaserBlasterTriple" internal key could/should be something smaller like "LasBlast3" or something like that. I'd do it now (7/5/21) but too much headache and I'm on deadline for a POC/MVP to be done ASAP.
+
+> For Weapon and Unit UI ClickButtons - implement rectMode with UIStyle flag "curveEdges" to … curve the edges?
+
+> For Final Code Sweep: Look for unused local vars (e.g. 'let [x] …' where [x] is never used)
+
+> Glitch with Missiles often not setting inUse back to false for pool recycling. A problem, but something that is not as high-priority as wrapping gameplay
+
+> Design/Clean/Unify (maybe projectile VFX/GFX and DAM)  (as well as weapon damage tuning otherwise)
