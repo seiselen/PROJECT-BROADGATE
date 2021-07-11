@@ -5,10 +5,18 @@
 |              UIContainers) and their UIObjects therein. Calling this
 |              function thus sets up the UI contained within the right-
 |              hand partition of the canvas (sans [future] exceptions).
++-----------------------------------------------------------------------
+| Implementation Notes:
+|  > Will init both UI mode types (in case I want to swap them manually
+|    in-game via the inspector). Mode types are: {"regular","sandbox"}
 +---------------------------------------------------------------------*/
-function initUI(){
-  let sBoxModePane = pane_sBoxModeUI().setHidden(false);
-  let regModePane  = pane_regModeUI().setHidden(true);
+function initUI(mode){
+  let sBoxModePane = pane_sBoxModeUI();
+  let regModePane  = pane_regModeUI();
+  switch(mode){
+    case GameType.REGULAR : regModePane.setHidden(false); sBoxModePane.setHidden(true); break;
+    case GameType.SANDBOX : sBoxModePane.setHidden(false); regModePane.setHidden(true); break;
+  }
   mainUIPanel = new UIContainer(vec2(worldWide,0),vec2(menuWide,worldTall)).setStyle("fill_bGround",color(60)).addChildren([sBoxModePane, regModePane]);
 } // Ends Function initUI
 
@@ -42,14 +50,16 @@ function pane_sBoxSDSwap(xPos,yPos,statsPane=null,debugPane=null){
 function pane_sBoxGameStats(xPos,yPos){
   let i = 0; let objT = 32; let objW = 320;
   return new UIContainer(vec2(xPos,yPos),vec2(objW,128)).setStyle("fill_bGround",color(255,64)).addChildren([
-    new UILabel(vec2(0,0),vec2(216,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Units Killed: " + manager.getNumKills())),
-    new UILabel(vec2(216,0),vec2(104,objT)).setPredefStyle("label").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => fpsBlurbToString()), 
+    new UILabel(vec2(176,0),vec2(84,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => fpsBlurbToString()),
+    new UIClickButton(vec2(260,0),vec2(60,objT), "# QUIT #\n# GAME #").bindAction(() => onGameExit()).setPredefStyle("click2").setStyle("textSize",12).setStyle("fill_text",color(255,60,0)).setStyle("fill_bGround",color(255)).setStyle("boldText",true),
+
+
+    new UILabel(vec2(0,0),vec2(176,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Units Killed: " + manager.getNumKills())), 
+    new UILabel(vec2(0,i+=objT),vec2(176,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Units On Map: " + manager.getNumUnits())),
+    new UILabel(vec2(176,i),vec2(144,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Lives Left: " + manager.getCurLives())),
     
-    new UILabel(vec2(0,i+=objT),vec2(188,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Units On Map: " + manager.getNumUnits())),
-    new UILabel(vec2(188,i),vec2(132,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Lives Left: " + manager.getCurLives())),
-    
-    new UILabel(vec2(0,i+=objT),vec2(188,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Towers On Map: " + manager.getNumTowers())),
-    new UILabel(vec2(188,i),vec2(132,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Money: $" + manager.getCurMoney())),
+    new UILabel(vec2(0,i+=objT),vec2(176,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Towers On Map: " + manager.getNumTowers())),
+    new UILabel(vec2(176,i),vec2(144,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => ("Money: $" + manager.getCurMoney())),
 
     new UILabel(vec2(0,i+=objT),vec2(320,objT)).setPredefStyle("label2").setStyle("fill_bGround",color(156,120,0)).bindCallback(() => waveManage.toBlurb()),
     new UIClickButton(vec2(176,i+4),vec2(136,24), "SEND NEXT WAVE").bindAction(() => waveManage.sendNextWave()).setPredefStyle("click2").setStyle("textOff",[0,2]).setStyle("textSize",14).setStyle("boldText",true),
@@ -177,8 +187,8 @@ function pane_regGameHUD(xPos,yPos,col){
     new UILabel(vec2(256,0),vec2(96,32),"Steven Eiselen\nVersion : 1.0").setPredefStyle("label").setStyle("fill_bGround",color(240,240,255)).setStyle("fill_text",color(60,60,72)).setStyle("boldText",true).setStyle("textOri",UIStyle.TextOriOpts.TL).setStyle("textSize",12).setStyle("textOff",[6,4]).setStyle("strk_border",color(0,0)),
 
     new UILabel(vec2(256,32),vec2(96,80),"").setPredefStyle("label_transparent").setStyle("fill_bGround",color(64,128)).setStyle("strk_border",color(0,0)),
-    new UIClickButton(vec2(8,40),vec2(112,64), "Continue\nGame").setPredefStyle("click2").setStyle("boldText",true).setStyle("textSize",22).bindAction(() => {console.log("Paused Game")}),
-    new UIClickButton(vec2(136,40),vec2(112,64), "Quit / New\nGame").setPredefStyle("click2").setStyle("boldText",true).setStyle("textSize",22).bindAction(() => {console.log("Quit Game")}),   
+    new UIClickButton(vec2(8,40),vec2(112,64), "Quit\nGame").setPredefStyle("click2").setStyle("boldText",true).setStyle("textSize",22).bindAction(() => onGameExit()),
+    new UIClickButton(vec2(136,40),vec2(112,64), "New\nGame").setPredefStyle("click2").setStyle("boldText",true).setStyle("textSize",22).bindAction(() => onGameExit()),   
     new UILabel(vec2(256,i),vec2(96,20)).setPredefStyle("label_transparent").setStyle("textOri",UIStyle.TextOriOpts.TL).setStyle("textSize",12).setStyle("textOff",[6,6]).setStyle("strk_border",color(0,0)).bindCallback(() => fpsBlurbToString()),
     new UILabel(vec2(256,i+=16),vec2(96,20)).setPredefStyle("label_transparent").setStyle("textOri",UIStyle.TextOriOpts.TL).setStyle("textSize",12).setStyle("textOff",[6,6]).setStyle("strk_border",color(0,0)).bindCallback(() => unitPool.poolPctToString()),
     new UILabel(vec2(256,i+=16),vec2(96,20)).setPredefStyle("label_transparent").setStyle("textOri",UIStyle.TextOriOpts.TL).setStyle("textSize",12).setStyle("textOff",[6,6]).setStyle("strk_border",color(0,0)).bindCallback(() => projPool.poolPctToString(0)),

@@ -37,7 +37,8 @@
 *=====================================================================*/
 class GameManager{
   static MODES = {START:0, IDLE:1, PLACE_BLDG:2, PLACE_UNIT:3, LOSE:4, WIN:5};
-  constructor(){
+  constructor(mode){
+    this.gameType  = mode;
     this.maxLives  = 200;
     this.initMoney = 1000;
     this.init();
@@ -108,12 +109,18 @@ class GameManager{
           bldgs[i].toggleShowRange(); return;
         }
       }
-
-
     }
-
   }
 
+
+
+  // ASSIGNS TO GLOBALS! And also a QAD last-minute addition
+  update(){
+    if(this.gameType==GameType.REGULAR){
+      if(this.curLives==0){gameLost = true;}
+      if(this.numUnits==0 && waveManage.noMoreWaves()){gameWon = true;}
+    }
+  }
 
 
   handlePlaceBuilding(request){

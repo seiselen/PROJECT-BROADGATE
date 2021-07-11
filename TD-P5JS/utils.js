@@ -52,6 +52,16 @@ function db_drawTextSimple(txt){textSize(32);textAlign(CENTER,CENTER);stroke(64,
 function drawFPSSimple(blurb="FPS: "){textSize(32); textAlign(LEFT,CENTER); stroke(0); strokeWeight(4); fill(255); text(blurb+round(frameRate()), 12, height-15);}
 function fpsBlurbToString(){return "FPS: "+round(frameRate());}
 
+function dispGameWinOrLose(){
+  noStroke(); fill(24,128);textAlign(CENTER,CENTER); rect(0,0,worldWide,worldTall);
+  stroke(0); strokeWeight(4);
+
+  textSize(64);
+  if(gameWon){stroke(0);fill(0,96,255);text("- YOU WON THE GAME! -",worldWide/2,(height/2)-32);}
+  if(gameLost){stroke(0);fill(255,96,0);text(" - YOU LOST THE GAME! -",worldWide/2,(height/2)-32);}
+  textSize(32); fill(255); text("Press Any Key To Return To Title Screen (Main Menu)",worldWide/2,(height/2)+32);
+}
+
 
 /*----------------------------------------------------------------------
 |>>> Mouse-Related Utils

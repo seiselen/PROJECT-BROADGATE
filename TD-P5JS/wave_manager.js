@@ -8,6 +8,7 @@ class WaveManager{
   reqN(){return this.schedule[this.curWave][1];} // *req*uested *n*umber of units
   sendNextWave(){if(this.curWave < this.totalWaves){spawnPool.reqSpawn(this.reqU(),this.reqN());this.curWave++;}}
   toBlurb(){return "Current Wave: "+this.progressToString();}
+  noMoreWaves(){return (this.curWave>=this.totalWaves);}
   progressToString(){return this.curWave+"/"+this.totalWaves;}
   nextwaveToString(){return (this.curWave>=this.totalWaves) ? "None. Done!" : this.schedItemToString(this.curWave);}
   schedItemToString(id){return this.schedule[id][1]+"x "+unitKeyToUIName(this.schedule[id][0]);}

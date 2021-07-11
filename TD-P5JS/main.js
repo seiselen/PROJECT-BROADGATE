@@ -16,88 +16,49 @@ var cellsWide = worldWide/cellSize;
 var manager;
 var map;
 var mainUIPanel;
-var bldgs = []; // Contains Towers in game
+var titleUIPanel;
+var bldgs       // Contains Towers in game
 var projPool;   // Contains (and manages) Projectiles (Bullets and Missiles)
 var spawnPool;  // Contains (and manages) [Unit] Spawn Requests
 var waveManage; // Manages waves (of a level, in the form of a .js 'wave schedule')
 var unitPool    // Contains (and manages) Units in game
 
-
+// Last-Minute QAD crap code to get title screen and win/lose working
+var frameGameQuit = -1;
 var didInitGame = false;
+var gameWon = false;
+var gameLost = false;
+var GameType = {REGULAR:1, SANDBOX:0};
 
 /*--------------------------------------------------------------------
 |>>> P5JS Function setup
 +-------------------------------------------------------------------*/
 function setup(){
   createCanvas(worldWide+menuWide,worldTall).parent("viz");
-
-  initGame();
-
+  initTitleScreenUI();
 } // Ends P5JS Function setup
-
-function initGame(){
-  map        = new GameMap(cellsTall, cellsWide, cellSize, m01);
-  waveManage = new WaveManager(m01[m01[0][0]+2]);
-  manager    = new GameManager();
-  projPool   = new ProjectileManager();
-  spawnPool  = new SpawnManager();
-  unitPool   = new UnitManager();
-  initUI();
-  this.didInitGame = true;
-}
-
 
 /*--------------------------------------------------------------------
 |>>> P5JS Function draw
 +-------------------------------------------------------------------*/
 function draw(){
-
-  //if(didInitGame){
-    runGame();
-  //}
-
+  background(255); // need this here as common to both modes
+  (didInitGame) ? runGame() : runTitleScreen();
 } // Ends P5JS Function draw
 
-
-
-function runGame(){
-  //>>> UPDATE CALLS (unit->bldg order COUNTS)
-  mainUIPanel.update();
-  unitPool.update();
-  bldgs.forEach(b => b.update());
-  projPool.update();
-  spawnPool.update(); // try placing this before units pool's update?
-  
-  //>>> RENDER CALLS
-  background(255);
-  db_drawMenuSubCanv();
-  map.render();
-  bldgs.forEach(b => b.render());
-  unitPool.render();
-  projPool.render();
-  dispMousePlaceCell();
-  mainUIPanel.render();
-}
-
-
 /*--------------------------------------------------------------------
-|>>> P5JS Function mousePressed
+|>>> P5JS I/O Function Interfaces
 +-------------------------------------------------------------------*/
 function mousePressed(){
-  //if(didInitGame){
-    mainUIPanel.onMousePressed();
-    manager.onMousePressed();
-  //}
+  if(gameWon || gameLost){return;}
 
+  switch(didInitGame){
+    case true: mainUIPanel.onMousePressed(); manager.onMousePressed(); break;
+    case false: titleUIPanel.onMousePressed(); break;
+  }
   return false;
 } // Ends P5JS Function mousePressed
 
-
-
-
-/*--------------------------------------------------------------------
-|>>> P5JS Function mousePressed
-+-------------------------------------------------------------------*/
 function keyPressed(){
-  //initGame();
-} // Ends P5JS Function mousePressed
+  if(gameWon || gameLost){onGameExit();}
+} // Ends P5JS Function keyPressed
