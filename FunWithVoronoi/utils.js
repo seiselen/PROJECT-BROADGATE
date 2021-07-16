@@ -12,8 +12,6 @@ class CanvUtil{
     this.colGD  = color(64,32);
     this.dimGD  = 10;
 
-
-
     this.displ  = {BD:true, CH:false, GR:false};
   } // Ends Constructor
 
@@ -45,9 +43,6 @@ class CanvUtil{
     }
   } // Ends Function drawMousePosTooltip
 
-
-
-
   render(){
     (this.displ.BD) ? this.renderBorder(this.tform) : false;
     (this.displ.GR) ? this.renderGrid(this.tform) : false;
@@ -57,8 +52,9 @@ class CanvUtil{
   renderBorder(tf){stroke(this.colBD); strokeWeight(4); noFill(); rect(0,0,tf.wide,tf.tall);}
   renderCHair(tf){stroke(this.colCH); strokeWeight(2); line(0,tf.tallHf,tf.wide,tf.tallHf); line(tf.wideHf,0,tf.wideHf,tf.tall);}
   renderGrid(tf){stroke(this.colGD); strokeWeight(1); let i=0; for(i=0; i<tf.tall/this.dimGD; i++){line(0,this.dimGD*i,tf.wide,this.dimGD*i);} for(i=0; i<tf.wide/this.dimGD; i++){line(this.dimGD*i,0,this.dimGD*i,tf.tall);}}
+  renderFPSSimple(blurb="FPS: "){textSize(18); textAlign(LEFT,CENTER); strokeWeight(1); stroke(this.colBD); fill(this.colBD); text(blurb+round(frameRate()), 10, height-15);}
+  renderNumVerts(blurb="# Verts: "){textSize(18); textAlign(LEFT,CENTER); strokeWeight(1); stroke(this.colBD); fill(this.colBD); text(blurb+round(voronoi.vertUtil.getNumVerts()), 120, height-15);}
 
-  static drawFPSSimple(blurb="FPS: "){textSize(18); textAlign(LEFT,CENTER); strokeWeight(1); stroke(60); fill(60);text(blurb+round(frameRate()), 10, height-15);}
   static mouseInCanvas(){return (mouseX > 0) && (mouseY > 0) && (mouseX < width) && (mouseY < height);}
   static mousePtToVec(){return createVector(mouseX, mouseY);}
 
@@ -67,43 +63,115 @@ class CanvUtil{
 
 
 /*----------------------------------------------------------------------
-|>>> Class VertDispUtil
+|>>> Class VertUtil
 +---------------------------------------------------------------------*/
 class VertUtil{
+  constructor(bbox, nVerts, minDist){
+    this.bbox     = bbox;
+    this.bounds   = this.bbox.getBoundsPC();
+    this.nVerts   = nVerts;
+    this.minVertD = minDist;
+    this.nTries   = 10;
+    this.maxTries = this.nTries*this.nVerts;
+    this.vertices = this.createVertSetMinDist();
+
+    this.canAddVs = true;
+    this.canRemVs = true;
+
+    this.selVert  = null;
+    this.selVtID  = -1; // to avoid O(n) search for index of selVert when removing
+
+    this.fill_pts = color(60);
+    this.diam_pts = 10;
+  }
+
   // Creates set of random points wherein each must be min dist from neighbors. Brute Force, I know. But KISS and ABC
-  static createVertSetMinDist(bounds, nVerts, minDist){
-    let nTries   = 10;
-    let maxTries = nTries*nVerts; 
+  createVertSetMinDist(){
     let curTries = 0;
     let verts    = []; 
     let buff     = createVector(-1,-1);
     let isValid  = false;
 
-    verts.push(VertUtil.randPtInBounds(bounds)); // 'primes the pump'
+    verts.push(this.getRandVertInBounds()); // 'primes the pump'
 
-    while(verts.length<nVerts && curTries<maxTries){
+    while(verts.length<this.nVerts && curTries<this.maxTries){
       isValid = true;
-      buff = VertUtil.randPtInBounds(bounds);
-      verts.forEach((v) => {isValid = (isValid&&(v.dist(buff)>=minDist));});
+      buff = this.getRandVertInBounds();
+      verts.forEach((v) => {isValid = (isValid&&(v.dist(buff)>=this.minVertD));});
       switch(isValid){case true: verts.push(buff); break; case false: curTries++; break;}
     }
-    if(curTries>=maxTries){console.log(">>> Warning: maxTries ["+maxTries+"] encountered! Returning set size of ["+verts.length+"]");}
-    else{console.log(">>> FYI: Number of tries needed was ["+curTries+"/"+maxTries+"]")}
-
+    if(curTries>=this.maxTries){console.log(">>> Warning: maxTries ["+this.maxTries+"] encountered! Returning set size of ["+verts.length+"]");}
+    //else{console.log(">>> FYI: Number of tries needed was ["+curTries+"/"+maxTries+"]")}
     return verts;
   } // Ends Function createVertSetMinDist
 
-  static randPtInBounds(bounds){return createVector(round(random(bounds.minX,bounds.maxX)),round(random(bounds.minY,bounds.maxY)));}
-  static vertListToSitesList(vertList){var ret = []; vertList.forEach((v)=> ret.push({x: v.x, y: v.y})); return ret;}
-
-  static createVertListFromSiteList(sites){
-    let list = [];
-    sites.forEach((site)=>list.push(createVector(site.x,site.y)));
-    return list;
+  resetVertSet(){
+    this.clearVertList();
+    this.vertices = this.createVertSetMinDist();
   }
 
+  getRandVertInBounds(){
+    return createVector(round(random(this.bounds.minX,this.bounds.maxX)),round(random(this.bounds.minY,this.bounds.maxY)));
+  }
 
-  static renderVerts(verts,diam=8){fill(60); noStroke(); verts.forEach((v) => ellipse(v.x,v.y,diam,diam));}
+  getNumVerts(){
+    return this.vertices.length;
+  }
+
+  vertListToSiteList(){
+    let sites = []; 
+    this.vertices.forEach((v)=> sites.push({x: v.x, y: v.y})); 
+    return sites;
+  }
+
+  setVertListFromVDSiteList(sites){
+    if(this.vertices.length != sites.length){console.log(">>> Error: vertices.length != sites.length, cancelling operation!"); return;}
+    sites.forEach((site, i)=>this.vertices[i].set(site.x,site.y)); 
+  }
+
+  distLessThan(va,vb,dist){
+    return ((vb.x-va.x) * (vb.x-va.x)) + ((vb.y-va.y) * (vb.y-va.y)) <= (dist*dist);
+  }
+
+  // being more strict for memory purposes JIC (too OCD???)
+  clearVertList(){
+    while(this.vertices.length > 0){this.vertices.pop();}
+  }
+
+  onMousePressed(){
+    this.selVert = null; // clear selected point on mouse press in any case
+    let mVec = CanvUtil.mousePtToVec();
+
+    // If mouse in diam of any vert - that vert is now selected
+    for(let i=0; i<this.vertices.length; i++){if(this.distLessThan(this.vertices[i],mVec,this.diam_pts)){
+      this.selVert = this.vertices[i]; this.selVtID = i; return;
+    }}
+
+    // XOR If mouse vec in bbox bounds and not in min vert distance of any other vert - add mouse vec as new vert 
+    if (this.canAddVs && this.bbox.inBounds(mVec.x,mVec.y)){
+      let isValidLoc = true;
+      for(let i=0; i<this.vertices.length; i++){if(this.distLessThan(this.vertices[i],mVec,this.minVertD)){isValidLoc=false; break;}}
+      if(isValidLoc){this.vertices.push(mVec);}
+    }
+  }
+
+  onMouseDragged(){
+    if(this.selVert){this.selVert.set(mouseX,mouseY);}
+  }
+
+  onMouseReleased(){
+    if(this.selVert){
+      if(this.canRemVs && !this.bbox.inBounds(this.selVert.x,this.selVert.y)){this.vertices.splice(this.selVtID, 1);}
+      this.selVert = null;
+    }
+  }
+
+  renderVerts(){
+    fill(this.fill_pts); noStroke(); 
+    this.vertices.forEach((v) => ellipse(v.x,v.y,this.diam_pts,this.diam_pts));
+    if(this.selVert){fill(255,120,0);stroke(0);strokeWeight(1);ellipse(this.selVert.x,this.selVert.y,this.diam_pts,this.diam_pts)}
+  }
+
 } // Ends Class VertUtil
 
 
@@ -113,33 +181,23 @@ class VertUtil{
 +---------------------------------------------------------------------*/
 class BBox{
   constructor(x1,y1,x2,y2){
+    // t-form state
     this.pos = createVector(x1,y1);
     this.ept = createVector(x2,y2);
     this.dim = createVector(x2-x1,y2-y1);
     this.mpt = createVector(this.pos.x+(this.dim.x/2),this.pos.y+(this.dim.y/2));
-    this.initVFXSettings();
+    // vfx state
+    this.strkCol = color(0,60,240,64);
+    this.fillCol = color(0,60,240,32);
+    this.strkWgt = 8;
+    this.CHLenHf = min(this.dim.x,this.dim.y)/8;
   } // Ends Constructor
 
-  initVFXSettings(){
-    this.strkCol = color(0,60,240,128);
-    this.fillCol = color(0,60,240,64);
-    this.strkWgt = 2;
-    this.CHLenHf = min(this.dim.x,this.dim.y)/8;
-  } // Ends Function initVFXSettings
-
-  // Key Encoding needed for VertUtil and Voronoi code, respectively.
-  getBoundsPC(){return {minX: this.pos.x, maxX: this.ept.x, minY: this.pos.y, maxY: this.ept.y};}
-  getBoundsVD(){return {xl: this.pos.x, xr: this.ept.x, yt: this.pos.y, yb: this.ept.y};}
-
+  getBoundsPC(){return {minX: this.pos.x, maxX: this.ept.x, minY: this.pos.y, maxY: this.ept.y};} // bounds encoding for Vert generator
+  getBoundsVD(){return {xl: this.pos.x, xr: this.ept.x, yt: this.pos.y, yb: this.ept.y};} // bounds encoding for Voronoi generator
   inBounds(x,y){return (x>=this.pos.x && x<=this.ept.x && y>=this.pos.y && y<=this.ept.y);}
 
-  render(){
-    //this.renderBorderAndBG();
-    this.renderBorderOnly();
-    //this.renderCrosshair();
-  } // Ends Function render
-
   renderBorderAndBG(){strokeWeight(this.strkWgt); stroke(this.strkCol); fill(this.fillCol); rect(this.pos.x,this.pos.y,this.dim.x, this.dim.y);}
-  renderBorderOnly(){strokeWeight(this.strkWgt); stroke(this.strkCol); noFill(); rect(this.pos.x,this.pos.y,this.dim.x, this.dim.y);}
+  renderBorder(){strokeWeight(this.strkWgt); stroke(this.strkCol); noFill(); rect(this.pos.x,this.pos.y,this.dim.x, this.dim.y);}
   renderCrosshair(){line(this.mpt.x,this.mpt.y-this.CHLenHf,this.mpt.x,this.mpt.y+this.CHLenHf); line(this.mpt.x-this.CHLenHf,this.mpt.y,this.mpt.x+this.CHLenHf,this.mpt.y);}
 } // Ends Class BBox

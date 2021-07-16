@@ -2,11 +2,12 @@
 <html>
   <head>
     <meta charset="UTF-8"/>
-    <title>Fun With Voronoi</title>
+    <title>Fun With Voronoi Diagrams</title>
     <!-- Basic Style -->
     <style>
       body {color: darkblue; font-family:verdana;}
       h1 {margin-block-start: 4px; margin-block-end: 4px;}
+      p {width: 1200px; margin-block-start: 4px; margin-block-end: 4px; text-align: justify; text-justify: inter-word;}
     </style>
     <!-- P5JS Lib Imports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
@@ -17,5 +18,6 @@
     <script src="utils.js"></script>     
     <script src="main.js"></script>
   </head>
-  <body><h1>Fun With Voronoi</h1><div id="viz"></div><div id="ui"></div></body>
+  <body><h1>Fun With Voronoi Diagrams (VD)</h1><div id="viz"></div><div id="ui"></div></body>
+  <p><strong>Instructions (QAD):</strong> Click+Drag to move existing VD points around. Drag VD point off the VD border <strong><em>(shown in transparent blue color)</em></strong> to remove it. Click within the VD border to place a point. Press <strong>'m'</strong> to perform 1 round of <em>Min. Bound. Rect. Smoothing</em> upon the VD. Press <strong>'r'</strong> to reset the VD to new random coords. Press <strong>'g'</strong> to toggle grid. See code comments for VD generator code's source and other implementation info.</p>
 </html>
