@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Procedural Landmass Experiment (P5JS)</title>
+    <!-- Style (note: defined inline as well) -->
+    <style>
+      body {font-family: verdana;}
+      #h1_header {color: darkblue; margin-block-start: 4px; margin-block-end: 4px;}
+      .ui_labl {color: white; margin-block-start: 4px; margin-block-end: 4px;}
+      .ui_subl {color: white;}
+      #ui {margin-left: 8px;} /* Give UI Panel a small margin */
+      #pane_viz {width: 800px;} #pane_ui {width: 400px;}
+      #pane_tab {width: 1200px; display: table; table-layout: fixed;}
+      #pane_row {display: table-row; height: 800px;}
+      .pane_col {display: table-cell; background: #3c3c3c; vertical-align: top;}
+      .pane_col div {overflow: hidden; height: 800px;}
+    </style>
+    <!-- P5JS Lib Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+    <!-- Project Code -->
+    <script src="ui_init.js"></script>
+    <script src="objects.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <h1 id="h1_header">Procedural Landmass Experiment (P5JS)</h1>
+    <div id="pane_tab"><div id="pane_row">
+      <div class="pane_col" id="pane_viz"><div id="viz"></div></div>
+      <div class="pane_col" id="pane_ui"><div id="ui"></div></div>
+    </div></div>
+  </body>
+</html>
