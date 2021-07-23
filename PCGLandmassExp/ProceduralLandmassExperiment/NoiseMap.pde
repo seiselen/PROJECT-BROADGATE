@@ -1,88 +1,109 @@
+// Cleaned up (and other minor refactors) on 7/21/21 while working on P5JS improved verz
 class ProceduralLandmass{
-  void increaseNoiseScale(){noiseScale+=0.1; generateNoiseMap(); println(noiseScale);}
-  void decreaseNoiseScale(){noiseScale-=0.1; generateNoiseMap(); println(noiseScale);}
-  void increaseOctaves(){octaves++;       generateNoiseMap(); println(octaves);}
-  void decreaseOctaves(){octaves--;       generateNoiseMap(); println(octaves);}
-  void increasePersist(){persist+=0.1;       generateNoiseMap(); println(persist);}
-  void decreasePersist(){persist-=0.1;       generateNoiseMap(); println(persist);}
-  void increaseLacunar(){lacunar++;          generateNoiseMap(); println(lacunar);}
-  void decreaseLacunar(){lacunar--;          generateNoiseMap(); println(lacunar);}
-  void increaseOffsetX(){offsetX+=0.1;          generateNoiseMap(); println(offsetX);}
-  void increaseOffsetY(){offsetY-=0.1;          generateNoiseMap(); println(offsetY);}
-  void decreaseOffsetX(){offsetX-=0.1;          generateNoiseMap(); println(offsetX);}
-  void decreaseOffsetY(){offsetY+=0.1;          generateNoiseMap(); println(offsetY);}  
-     
   float noiseScale; 
-  int   octaves; 
+  int   octaves;
+  PVector[] octOffsets; // added 7/21/21 while working on P5JS improved verz
   float persist; 
   float lacunar;
   float[][] map;
   float offsetX,offsetY;
-  int cellsWide,cellsTall;
+  int cols,rows;
   int seed;
+  boolean toggleGrid = false;
   
-  public ProceduralLandmass(float nScale, int oct, float per, float lac, int s, float[][] m, int cWide, int cTall){
-    setValues(nScale, oct, per, lac, s);
-    bindMap(m,cWide,cTall);
+  // defined within obj (<vs> function) 7/21/21 while working on P5JS improved verz
+  float noiseScaleDelta = 0.1f;
+  float persistDelta    = 0.1f;  
+  float octaveOffDelta  = 0.1f; 
+  int octaveNumDelta    = 1;
+  int lacunarDelta      = 1;
+  
+  public ProceduralLandmass(int nRows, int nCols, float nScale, int oct, float per, float lac, int rSeed){
+    initMap(nRows,nCols);
+    setValues(nScale, oct, per, lac, rSeed);
+    generateOctaveOffsets();
   }
   
-  void setValues(float nScale, int oct, float per, float lac, int s){
+  void initMap(int nRows, int nCols){rows=nRows; cols=nCols; map = new float[rows][cols];}
+  
+  void setValues(float nScale, int oct, float per, float lac, int rSeed){
     noiseScale = nScale;
     octaves = oct;
     persist = per;
     lacunar = lac;  
-    seed = s;
+    seed = rSeed;
+    randomSeed(seed);
+    noiseSeed(seed);
   } // Ends Function setValues
   
-  void clearMap(){
-    if(map!=null){
-      for(int r=0;r<cellsTall;r++){
-        for(int c=0;c<cellsWide;c++){
-          map[r][c] = 0;
-        }
-      }
+  // added 7/21/21 while working on P5JS improved verz
+  void generateOctaveOffsets(){
+    octOffsets = new PVector[octaves];
+    for(int i=0;i<octaves;i++){
+      octOffsets[i] = new PVector((random(-100000,100000)+offsetX),(random(-100000,100000)+offsetY));
     }
-  } // Ends Function clearMap
+  } // Ends Function generateOctaveOffsets
   
-  void bindMap(float[][] bMap, int cWide, int cTall){
-    map=bMap;
-    cellsWide=cWide;
-    cellsTall=cTall;
-  } // Ends Function bindMap
+  // added 7/21/21 while working on P5JS improved verz
+  void toggleGrid(){showGrid = !showGrid;}
   
-  public void generateNoiseMap(){
-    if(map==null){println("ProceduralLandmass/generateNoiseMap : No map is currently bound!");return;}
-    clearMap();
-    
+  // added 7/21/21 while working on P5JS improved verz
+  void adjNScale(char op){switch(op){case '+': noiseScale += noiseScaleDelta; break; case '-': noiseScale -= noiseScaleDelta; break;}}
+  void adjPersist(char op){switch(op){case '+': persist += persistDelta; break; case '-': persist -= persistDelta; break;}}
+  void adjLacunar(char op){switch(op){case '+': lacunar += lacunarDelta; break; case '-': lacunar -= lacunarDelta; break;}}
+  void adjOctaveVal(char op){switch(op){case '+': octaves += octaveNumDelta; break; case '-': octaves -= octaveNumDelta; break;} generateOctaveOffsets();}
+  void adjOctOff(char dim, char op){
+    // cool example of switch/ternary construct!
+    switch(dim){
+      case 'x': offsetX += (op=='+') ? 0.1 : -0.1; break; 
+      case 'y': offsetY += (op=='+') ? 0.1 : -0.1; break;
+      default : println(">>> adjOctaveOff Error: Invalid input for 'dim' ["+dim+"]; returning now!"); return;
+    }
+    generateOctaveOffsets();
+  } // Ends Function adjOctaveOff
+  
+  // modified 7/21/21 while working on P5JS improved verz 
+  void incNoiseScale(){adjNScale('+');  generateNoiseMap();}
+  void decNoiseScale(){adjNScale('-');  generateNoiseMap();}
+  void incOctaves(){adjOctaveVal('+');  generateNoiseMap();}
+  void decOctaves(){adjOctaveVal('-');  generateNoiseMap();}
+  void incPersist(){adjPersist('+');    generateNoiseMap();}
+  void decPersist(){adjPersist('-');    generateNoiseMap();}
+  void incLacunar(){adjLacunar('+');    generateNoiseMap();}
+  void decLacunar(){adjLacunar('-');    generateNoiseMap();}
+  void incOffsetX(){adjOctOff('x','+'); generateNoiseMap();}
+  void incOffsetY(){adjOctOff('y','+'); generateNoiseMap();}
+  void decOffsetX(){adjOctOff('x','-'); generateNoiseMap();}
+  void decOffsetY(){adjOctOff('y','-'); generateNoiseMap();}  
+  
+  // defined in separate function 7/21/21 from 'generateNoiseMap' while working on P5JS improved verz 
+  void validateNoiseParms(){
     if(octaves<0){octaves=0;}
     if(lacunar<1){lacunar=1;}
     if(persist<0){persist=0;}
-    if(persist>1){persist=1;}
-    
-    randomSeed(seed);
-     
+    if(persist>1){persist=1;} 
     if(noiseScale<=0){noiseScale = 0.0001;}
-    
-    PVector[] octaveOffsets = new PVector[octaves];
-    for(int i=0;i<octaves;i++){octaveOffsets[i] = new PVector((random(-100000,100000)+offsetX),(random(-100000,100000)+offsetY));}
+  } // Ends Function validateNoiseParms
   
-    float maxNoiseHeight = Float.MIN_VALUE;
-    float minNoiseHeight = Float.MAX_VALUE; 
+  public ProceduralLandmass generateNoiseMap(){
+    validateNoiseParms();
+
+    float maxNoiseHeight = -9999;
+    float minNoiseHeight = 9999; 
     float halfWide = cellsWide/2.0;
     float halfTall = cellsTall/2.0;
   
-    for(int r=0;r<cellsTall;r++){
-      for(int c=0;c<cellsWide;c++){
+    for(int r=0;r<rows;r++){
+      for(int c=0;c<cols;c++){
         float amplitude = 1;
         float frequency = 1;
         float noiseHeight = 0;
       
         for(int o=0;o<octaves;o++){
-          float sampleC = (((c-halfWide)/noiseScale)*frequency)+octaveOffsets[o].x;
-          float sampleR = (((r-halfTall)/noiseScale)*frequency)+octaveOffsets[o].y;
+          float sampleC = (((c-halfWide)/noiseScale)*frequency)+octOffsets[o].x;
+          float sampleR = (((r-halfTall)/noiseScale)*frequency)+octOffsets[o].y;
           float perlinValue = noise(sampleC,sampleR);   
           noiseHeight+= perlinValue * amplitude;   
-          map[r][c] = perlinValue;
           amplitude *= persist;
           frequency *= lacunar;
         }        
@@ -96,5 +117,25 @@ class ProceduralLandmass{
         map[r][c] = map(map[r][c],minNoiseHeight,maxNoiseHeight,0,1);
       }
     }
+    return this; // for function chaining
   } // Ends Function generateNoiseMap
+  
+  // moved to obj's method 7/21/21 while working on P5JS improved verz
+  void drawCells(){
+    if(showGrid){stroke(24);strokeWeight(1);} else{noStroke();} fill(0);
+    for(int r=0;r<rows;r++){
+      for(int c=0;c<cols;c++){
+        if(map[r][c]<0.3){fill(0,0,255);}
+        else if(map[r][c]<0.4){fill(0,120,255);}
+        else if(map[r][c]<0.45){fill(228,216,96);}
+        else if(map[r][c]<0.55){fill(0,255,0);}
+        else if(map[r][c]<0.6){fill(36,84,0);}
+        else if(map[r][c]<0.7){fill(108,60,0);}
+        else if(map[r][c]<0.85){fill(96,96,96);}
+        else if(map[r][c]<=1.0){fill(240);}    
+        rect(c*cellSize,r*cellSize,cellSize,cellSize);
+      }
+    }
+  } // Ends Function drawCells
+
 } // Ends Class ProceduralLandmass

@@ -6,15 +6,17 @@
     <!-- Style (note: defined inline as well) -->
     <style>
       body {font-family: verdana;}
-      #h1_header {color: darkblue; margin-block-start: 4px; margin-block-end: 4px;}
-      .ui_labl {color: white; margin-block-start: 4px; margin-block-end: 4px;}
-      .ui_subl {color: white;}
-      #ui {margin-left: 8px;} /* Give UI Panel a small margin */
-      #pane_viz {width: 800px;} #pane_ui {width: 400px;}
-      #pane_tab {width: 1200px; display: table; table-layout: fixed;}
-      #pane_row {display: table-row; height: 800px;}
-      .pane_col {display: table-cell; background: #3c3c3c; vertical-align: top;}
-      .pane_col div {overflow: hidden; height: 800px;}
+      #h1_header {background: #3c3c3c; color: white; margin-block-start: 0px; margin-block-end: 0px; max-width: 960px;}
+      #pane_viz {width: 960px; height: 720px;} 
+      #pane_ui {width: 960px; height: 132px;}
+      #table_ui {margin-left: auto; margin-right: auto; border-collapse: collapse; border: 1px solid #FFFFFF80}
+      .pane_col {background: #3c3c3c; vertical-align: top;}
+      .pane_col td {color: white; vertical-align: middle; padding-top: 2px; padding-bottom: 2px; border: none;}
+      .pane_col tr:nth-child(even){background-color: #FFFFFF40;}
+      .lab_thing  {font-size: 18px; min-width: 108px;}
+      .lab_curVal {font-size: 18px; min-width: 52px; text-align: center;}
+      #dirButs_ui {font-size: 0; background: rgb(240, 108, 24);}
+      #dirButs_ui button {padding: 1px; min-width: 36px; min-height: 36px; font-size: 14px; font-weight: bold;}
     </style>
     <!-- P5JS Lib Imports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
@@ -26,9 +28,34 @@
   </head>
   <body>
     <h1 id="h1_header">Procedural Landmass Experiment (P5JS)</h1>
-    <div id="pane_tab"><div id="pane_row">
-      <div class="pane_col" id="pane_viz"><div id="viz"></div></div>
-      <div class="pane_col" id="pane_ui"><div id="ui"></div></div>
-    </div></div>
+    <div class="pane_col" id="pane_viz"></div>
+    <div class="pane_col" id="pane_ui">
+      <table id="table_ui">
+        <tr>
+          <td class="lab_thing">Noise Scale</td>
+          <td class="lab_curVal" id="td_nScale_labItem"></td>
+          <td id="td_nScale_sldItem" colspan="2"></td>
+          <td id="dirButs_ui" rowspan="4">
+            <button id="dirBut_NW" type="button">NW</button>
+            <button id="dirBut_N" type="button">N</button>
+            <button id="dirBut_NE" type="button">NE</button>
+            <br>
+            <button id="dirBut_W" type="button">W</button>
+            <p style="display: inline-block; min-width: 36px; margin-top: 0px; margin-bottom: 0px; font-size:14px"> </p>
+            <button id="dirBut_E" type="button">E</button>
+            <br>
+            <button id="dirBut_SW" type="button">SW</button>
+            <button id="dirBut_S" type="button">S</button>
+            <button id="dirBut_SE" type="button">SE</button>
+          </td>
+        </tr>
+        <tr>
+          <td class="lab_thing"># Octaves</td><td class="lab_curVal" id="td_nOctv_labItem"></td><td id="td_nOctv_sldItem"></td>
+          <td rowspan="3" style="vertical-align: top; background: rgb(12, 84, 156);"><p style="word-wrap: normal; text-align: justify; margin: 0px; padding-left: 4px; padding-right: 4px; font-size: 14px; width: 288px;"><strong>Instructions: </strong>Adjusting slider values will update the respective setting and auto-regenerate map. Pressing arrow keys and/or directional buttons will 'pan' map (i.e. change rows/cols within view).</p></td>
+        </tr>
+        <tr><td class="lab_thing">Lacunarity</td><td class="lab_curVal" id="td_vLacu_labItem"></td><td id="td_vLacu_sldItem"></td></tr>
+        <tr><td class="lab_thing">Persistence</td><td class="lab_curVal" id="td_vPers_labItem"></td><td id="td_vPers_sldItem"></td></tr>
+      </table>
+    </div>
   </body>
 </html>

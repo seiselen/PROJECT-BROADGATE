@@ -19,42 +19,50 @@
 // Basically: 'Input Args' (and trying something new with dict-based def)
 var argz = {
   // dims, 'Nuff Said
-  canvWide: 800, canvTall: 800, cellSize: 8,
+  canvWide: 960, canvTall: 720, cellSize: 8,
   rows: function(){return this.canvTall/this.cellSize},
   cols: function(){return this.canvWide/this.cellSize},
-  // rand. seed | noise scale | # octaves | persistence | lacunarity
-     seed: 21,    scal: 25,     octv: 4,    pers: 0.5,    lacu: 2
+  //      rand. seed | noise scale | # octaves | persistence | lacunarity
+  nVals: {seed: 21,    scale: 25,    oct: 4,     per: 0.5,     lac: 2},
+  // constraints and bounds for noise parm values
+  nInfo: {scaleDel:0.1, scaleMin:4, scaleMax:32, octDel:1, octMin:0, octMax:8, perDel:.05, perMin:.1, perMax:.7, lacDel:1, lacMin:0, lacMax:8}
 }; // Ends Input Argzzz
+
+var uiItems;
 
 var landmass;
 
 function setup(){
-  createCanvas(argz.canvWide,argz.canvTall).parent("viz");
+  createCanvas(argz.canvWide,argz.canvTall).parent("pane_viz");
   init_ui();
-  landmass = new ProceduralLandmass(argz.rows(), argz.cols(), argz.cellSize, argz.seed, argz.scal, argz.octv, argz.pers, argz.lacu).generateMap();;
+  landmass = new ProceduralLandmass(argz.rows(), argz.cols(), argz.cellSize, argz.nVals, argz.nInfo);
+  landmass.setAllUILabels();
+  landmass.generateMap();
 } // Ends P5JS Function setup
 
 function draw(){
   //>>> UPDATE CALLS
   keyDown();
+  uiItems.updateDirReqs();
 
   //>>> RENDER CALLS
   background(60);
-  drawCanvasBorder();
   landmass.render();
+
   drawFPS();
   drawMouseCoordCursor();
   drawMouseCoordTooltip();
+  drawCanvasBorder();
 } // Ends P5JS Function draw
 
 function keyDown(){
-  if(frameCount%2==0){
-    if(keyIsDown(UP_ARROW)){landmass.setCellOffAndRegen('U');}
-    if(keyIsDown(DOWN_ARROW)){landmass.setCellOffAndRegen('D');}
-    if(keyIsDown(LEFT_ARROW)){landmass.setCellOffAndRegen('L');}
-    if(keyIsDown(RIGHT_ARROW)){landmass.setCellOffAndRegen('R');}
-  }
+  if(keyIsDown(UP_ARROW)){reqLandmassPan('U');}
+  if(keyIsDown(DOWN_ARROW)){reqLandmassPan('D');}
+  if(keyIsDown(LEFT_ARROW)){reqLandmassPan('L');}
+  if(keyIsDown(RIGHT_ARROW)){reqLandmassPan('R');}
 }
+
+function reqLandmassPan(DIR){if(frameCount%2==0){landmass.setCellOffAndRegen(DIR);}}
 
 //>>> MISC UTIL METHODS (no need for a separate file {at this time})
 function drawCanvasBorder(){stroke(60); strokeWeight(4); noFill(); rect(0,0,width,height);}

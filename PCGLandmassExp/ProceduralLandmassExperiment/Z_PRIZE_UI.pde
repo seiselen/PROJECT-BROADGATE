@@ -12,7 +12,6 @@
 import java.lang.reflect.*;
 
 class UIManager{
-  
   // VFX
   PFont font;
   int defaultTextSize = 18;
@@ -153,10 +152,8 @@ class UIManager{
   // Should add support for UIObjects as well  
   void registerKeyAndNewAction(char k, Object obj, String name, Class... args){
     registerNewAction(obj, name, args);
-    //registerKeyWithAction(k, name);
+    bindKeyWithAction(k, name);
   } // Ends registerKeyAndNewAction
-  
-
   
   void keyboardEvent(char k){
     if(keyBindings[k]==null){println("ActionManager/notifyViaKeyboard : Key '"+k+"' does not map to an action!"); return;}
@@ -187,12 +184,8 @@ class UIManager{
     else{actions.get(action).execute(command);}
   } // Ends Function notifyViaStringKey
   
-  
-  
-  
-  
-  
-  /*----------------------------------------------------------------------
+
+/*----------------------------------------------------------------------
 |>>> Class UIColorScheme
 +---------------------------------------------------------------------*/
 class UIColorScheme{
@@ -228,7 +221,7 @@ class UIColorScheme{
 } // Ends Class UIColorScheme
   
   
-  /*----------------------------------------------------------------------
+/*----------------------------------------------------------------------
 |>>> Class UIObject
 +---------------------------------------------------------------------*/
 class UIObject{
@@ -418,5 +411,4 @@ public class MethodRelay{
   } // Ends Function Execute
 } // Ends Class MethodRelay
   
-
 } // Ends Class UIManager
