@@ -22,24 +22,26 @@ class CanvUtil{
 
   drawCursor(){
     if(CanvUtil.mouseInCanvas()){
+      let mVec = CanvUtil.mousePtToVec();
       noFill(); stroke(0,12,24,128); strokeWeight(2); 
-      ellipse(mouseX, mouseY,12,12);
-      line(mouseX-4,mouseY,mouseX-8,mouseY); line(mouseX+4,mouseY,mouseX+8,mouseY);
-      line(mouseX,mouseY-4,mouseX,mouseY-8); line(mouseX,mouseY+4,mouseX,mouseY+8);
+      ellipse(mVec.x, mVec.y,12,12);
+      line(mVec.x-4,mVec.y,mVec.x-8,mVec.y); line(mVec.x+4,mVec.y,mVec.x+8,mVec.y);
+      line(mVec.x,mVec.y-4,mVec.x,mVec.y-8); line(mVec.x,mVec.y+4,mVec.x,mVec.y+8);
     }
   } // Ends Function drawCursor
 
 
   drawMousePosTooltip(){
     if(CanvUtil.mouseInCanvas()){
-      let x1 = (mouseX+this.ttDim.wide>width) ? mouseX-this.ttDim.wide : mouseX;
-      let y1 = (mouseY+this.ttDim.tall>height) ? mouseY-this.ttDim.tall : mouseY;
-      let xOff = mouseX;
-      let yOff = mouseY;
-      switch(x1==mouseX){case true: xOff+=6; textAlign(LEFT); break; case false: xOff-=6; textAlign(RIGHT);}
-      switch(y1==mouseY){case true: yOff+=12; break; case false: yOff-=12;}
+      let mVec = CanvUtil.mousePtToVec();      
+      let x1 = (mVec.x+this.ttDim.wide>width) ? mVec.x-this.ttDim.wide : mVec.x;
+      let y1 = (mVec.y+this.ttDim.tall>height) ? mVec.y-this.ttDim.tall : mVec.y;
+      let xOff = mVec.x;
+      let yOff = mVec.y;
+      switch(x1==mVec.x){case true: xOff+=6; textAlign(LEFT); break; case false: xOff-=6; textAlign(RIGHT);}
+      switch(y1==mVec.y){case true: yOff+=12; break; case false: yOff-=12;}
       textSize(18); stroke(0); strokeWeight(4); fill(255);
-      text("("+mouseX+","+mouseY+")",xOff,yOff);
+      text("("+mVec.x+","+mVec.y+")",xOff,yOff);
     }
   } // Ends Function drawMousePosTooltip
 
@@ -56,7 +58,7 @@ class CanvUtil{
   renderNumVerts(blurb="# Verts: "){textSize(18); textAlign(LEFT,CENTER); strokeWeight(1); stroke(this.colBD); fill(this.colBD); text(blurb+round(voronoi.vertUtil.getNumVerts()), 120, height-15);}
 
   static mouseInCanvas(){return (mouseX > 0) && (mouseY > 0) && (mouseX < width) && (mouseY < height);}
-  static mousePtToVec(){return createVector(mouseX, mouseY);}
+  static mousePtToVec(){return createVector(round(mouseX), round(mouseY));}
 
 } // Ends Class CanvDispUtil 
 
