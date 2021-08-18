@@ -12,7 +12,16 @@ function drawGrid(spacing=10,lineColor=null,lineThick=2){
   for(let i=0; i<numLinesV; i++){line(spacing*i,0,spacing*i,height);}
 }
 
-function drawFPSSimple(blurb="FPS: "){textSize(18); textAlign(LEFT,CENTER); noStroke(); fill(60); text(blurb+nfs(frameRate(),2,2), 12, height-15);}
+
+function drawMouseCellCursor(){
+  if(!mouseInCanvas()){return;}
+  noCursor(); noFill(); stroke(240); strokeWeight(2); 
+  let cSize = worldDims.cellSize;
+  rect(floor(mouseX/cSize)*cSize, floor(mouseY/cSize)*cSize, cSize, cSize);
+} // Ends Function drawMouseCellCursor
+
+
+function drawFPS(blurb="FPS: "){noStroke();fill(0,128); rect(0,height-20,80,height-20);textSize(16); textAlign(LEFT,CENTER); strokeWeight(2); stroke(0); fill(255);text(blurb+round(frameRate()), 10, height-8);}
 function mouseInCanvas(){return (mouseX > 0) && (mouseY > 0) && (mouseX < width) && (mouseY < height);}
 function mousePtToVec(){return createVector(mouseX, mouseY);}
 function randCanvasPt(){return vec2(int(random(qtSqPixels)),int(random(qtSqPixels)));}

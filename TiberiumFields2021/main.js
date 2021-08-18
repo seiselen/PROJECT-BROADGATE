@@ -6,7 +6,11 @@ var coordSheet; // used for testing/debug
 var testAnims;  // used for testing/debug
 
 // [24×24] cells at [32×32] px/cell
-var worldDims = {canvWide:768, canvTall:768, cellSize:32};
+var worldDims = {
+  canvWide: 768, canvTall: 768, cellSize: 32, 
+  cellsTall: function(){return this.canvTall/this.cellSize},
+  cellsWide: function(){return this.canvWide/this.cellSize},  
+};
 var map;
 
 
@@ -22,6 +26,9 @@ function preload() {
 
 function setup(){
   createCanvas(worldDims.canvWide,worldDims.canvTall).parent("viz");
+  initUI();
+
+  map = new TibMap(worldDims.cellsTall(),worldDims.cellsWide(),worldDims.cellSize);
 
   //sheetTest_initAnims();
 
@@ -29,18 +36,29 @@ function setup(){
 
 
 function draw(){
-
-
-
   //>>> RENDER CALLS 
   background(240,240,255);
 
   //sheetTest_render();
+  map.render();
 
-  drawGrid(32);
+  drawMouseCellCursor();
+
+
+  //drawGrid(32);
   drawCanvasBorder();
-  drawFPSSimple();
+  drawFPS();
 } // Ends P5JS Function draw
 
 
+function mousePressed(){
+  if(mouseInCanvas()){
+    onMapEditMouseEvent('mp', drawOp.value());
+  }
+}
 
+function mouseDragged(){
+  if(mouseInCanvas()){
+    onMapEditMouseEvent('md', drawOp.value());
+  }
+}

@@ -29,12 +29,13 @@
 |   which a row is initialized, then col vals appended thereto, then the
 |   row appended to its respective [sub] map. This was also experimental
 |   in TD-P5JS but worked (and works) fine.
-| > 
 +---------------------------------------------------------------------*/
 class TibMap{
-  //>>> GameMap 'Enums' (JavaScript analogs thereto, anyway...)
-  static TerType = {DIRT:0, GRASS:1, ROAD:2, WATER:3, ERROR:-1};
-  static ResType = {NONE:0, ORE:1, GEM:2, AETH:3, ERROR:-1};
+  //>>> TibMap 'Enums' (JavaScript analogs thereto, anyway...)
+  static TerType = {DIRT:0, GRASS:1, ROAD:2, WATER:3};
+  static ResType = {NONE:0, ORE:1, GEM:2, AETH:3};
+  //>>> TibMap 'Consts'
+  static get MAX_RES_AMT(){return 100;}
 
   constructor(cT,cW,cS){
     //> General Map Info
@@ -55,7 +56,7 @@ class TibMap{
     this.showGrid    = true;   // show map cell grid    (def:false)
     this.showCoords   = true;  // show map cell coords  (def:false)
     this.showTerTiles = true;  // show terrain tiles    (def:true)
-    this.showResTiles = false; // show resource sprites (def:true)
+    this.showResTiles = true;  // show resource tiles   (def:false)
     this.showResHtMap = false; // show resource heatmap (def:false)
 
     //> Loaders And Inits
@@ -69,11 +70,16 @@ class TibMap{
       //>>> [reserved] color used for any error value
       fill_ERROR : color(255,0,255),
 
-      //>>> Colors used for displaying tilemap (in lieu of sprites)
+      //>>> Colors used for displaying tilemap (if not using sprites)
       fill_DIRT  : color(140,81,10),
       fill_GRASS : color(166,217,106),
       fill_ROAD  : color(84,84,84),
-      fill_WATER : color(0,180,255),
+      fill_WATER : color(0,60,216),
+
+      //>>> Colors used for displaying resource map (if not using sprites)
+      fill_ORE   : color(255,240,0),
+      fill_GEM   : color(0,255,0),
+      fill_AETH  : color(0,255,255),
 
       //>>> Colormap used for resource growth heatmap viz
       fill_heatL : color(240,240,216),
@@ -85,10 +91,10 @@ class TibMap{
       sWgt_coord : 6, // cell coord stroke weight
 
       //>>> Text Settings (i.e. for displaying cell coords)
-      fill_text  : color(255,255,0),
-      strk_text  : color(0),
-      sWgt_text  : 2,
-      size_text  : 24,
+      fill_text  : color(255),
+      strk_text  : color(0,0,0,60),
+      sWgt_text  : 1,
+      size_text  : 12,
     };
   } // Ends Function initGFXConfig
 
@@ -115,8 +121,6 @@ class TibMap{
     }      
   } // Ends Function initBothResMaps
 
-
-
   //##################################################################
   //>>> FUNCTIONS FOR UI/UX TOGGLE FLAGS
   //##################################################################
@@ -127,50 +131,44 @@ class TibMap{
   toggle_showResHtMap(){this.showResHtMap = !this.showResHtMap;}
 
   //##################################################################
-  //>>> FUNCTIONS FOR TILE [SUB]MAP AND ENEMY PATH
+  //>>> FUNCTIONS FOR TER/RES [SUB]MAPS
   //##################################################################
 
+  setTerCell(r,c,type){
+    if(!this.cellInBounds(r,c)){return;}
+    if(type == TibMap.TerType.ROAD || type == TibMap.TerType.WATER){this.clearResCell(r,c);}
+    this.terTileMap[r][c] = type;
+  }
 
-  isBorderCell(r,c){
-    return (r==0||c==0||r==this.cellsTall-1||c==this.cellsWide-1);
-  } // Ends Function isBorderCell
+  // DIRT cell with ORE turned to WATER -> set res cell to NONE and concentration to [0]
+  clearResCell(r,c){
+    this.resTileMap[r][c] = TibMap.ResType.NONE;
+    this.resConcMap[r][c] = 0;
+  }
 
-
-
-
-  setAllTilesTo(val){
-    for (let r = 0; r < this.cellsTall; r++) {
-      for (let c = 0; c < this.cellsWide; c++) {
-        this.tileMap[r][c]=val;
-      }
+  editResCellConc(r,c,type,act,amt=1){
+    let curAmt = this.resConcMap[r][c];
+    if(act=='mp'){
+      this.setResCellConc(r,c,type,curAmt+amt);}
+    else if(act=='md'){
+      if(frameCount%60==0){this.setResCellConc(r,c,type,curAmt+amt);}
+      else if(curAmt<=0){this.setResCellConc(r,c,type,amt);}
     }
-  } // Ends Function setAllTilesTo
+  }
+
+  setResCellConc(r,c,type,amt=1){
+    if(!this.cellInBounds(r,c)){return;}
+
+    let terTileType = this.terTileMap[r][c];
+    if(terTileType == TibMap.TerType.ROAD || terTileType == TibMap.TerType.WATER){return;}
+
+    this.resTileMap[r][c] = type;
+    this.resConcMap[r][c] = min(amt,TibMap.MAX_RES_AMT);
+  }
 
 
-  // TODO: add parm for which map one wishes to change value for?
-  setValueAt(row,col,val){
-    if(this.cellInBounds(row,col)){this.tileMap[row][col] = val;}
-    else{console.log(">>> Error: Input Out Of Bounds [row="+row+"][col="+col+"]");}
-  } // Ends Function setValueAt
+  /*### KEEPING IN CASE CAN REFACTOR/SALVAGE/USE #######################
 
-  getWayPtClosestTo(pos){
-    let closestWaypt = -1;
-    let closestDist  = 9999;
-    let curDist;
-    for (let i = 0; i < this.walkPath.length; i++){
-      curDist = pos.dist(this.walkPath[i]);
-      if(curDist < closestDist){
-        closestWaypt = i;
-        closestDist = curDist;
-      }     
-    }
-    return closestWaypt;
-  } // Ends Function getWayPtClosestTo
-
-
-  //##################################################################
-  //>>> FUNCTIONS FOR BLDG [SUB]MAP
-  //##################################################################
 
   // naiive method: finds via searching top-left to bottom-right
   findVacantCell(){
@@ -185,13 +183,7 @@ class TibMap{
   // TODO: 2 Methods with diff inputs... How Annoying! Try to change all back to 'input Array2 / output Array2' paradigm?
   isVacant(r,c){return this.cellInBounds(r,c) && (this.bldgMap[r][c]==GameMap.CellState.VACANT);}
   isVacant2(coord){return(this.isVacant(coord[0],coord[1]));}
-  // TODO: Same as aforementioned: change dependencies to isEnemyPathCell(coord)
-  isEnemyPathCell(r,c){return this.cellInBounds(r,c) && (this.tileMap[r][c]==GameMap.CellType.enemyPath);}
-  isEnemyPathCell2(coord){return this.cellInBounds(coord[0],coord[1]) && (this.tileMap[coord[0]][coord[1]]==GameMap.CellType.enemyPath);}
 
-  // TODO: Handle invalid input via 'cellInBounds'? (vis-a-vis an 'if' xor ternary)
-  setToFilled(r,c){this.bldgMap[r][c] = GameMap.CellState.FILLED;}
-  setToVacant(r,c){this.bldgMap[r][c] = GameMap.CellState.VACANT;}
 
   // tileMap[r][c]=={border, map decor, enemy path} -> then bldgMap[r][c] {FILLED}
   setInitNoBuildTiles(){
@@ -207,136 +199,98 @@ class TibMap{
     }
   } // Ends Function setInitNoBuildTiles
 
-  //##################################################################
-  //>>> FUNCTIONS FOR UNIT [SUB]MAP
-  //##################################################################
-  updatePos(unit){
-    let newCoords = this.posToCoord(unit.pos);
-
-    // am i in the same cell as last call? if so - do nothing.
-    if(unit.spCell != null && 
-      unit.spCell[0]==newCoords[0] &&
-      unit.spCell[1]==newCoords[1] ){
-      return;
-    }
-
-    if(unit.spCell != null){
-      delete this.unitMap[unit.spCell[0]][unit.spCell[1]][unit.ID];
-    } 
-  
-    this.unitMap[newCoords[0]][newCoords[1]][unit.ID] = unit;
-    unit.spCell = newCoords;
-  } // Ends Function updatePos
-
-  // Added 7/8 to [possibly] support Unit object pooling
-  removePos(unit){
-    if(unit.spCell != null){
-      delete this.unitMap[unit.spCell[0]][unit.spCell[1]][unit.ID];
-    }     
-  } // Ends Function removePos
+  */
 
 
-  getUnitsInCells(list){
-    let units = [];
-    for (let i=0; i<list.length; i++){units = units.concat(this.getUnitsAtCell(list[i]));} 
-    return units;
-  } // Ends Function getUnitsInCells
 
-  getUnitsAtCell(cell){
-    return (this.cellInBounds(cell[0],cell[1])) ? Object.values(this.unitMap[cell[0]][cell[1]]) : [];
-  } // Ends Function getUnitsAtCell
+
 
   //##################################################################
   //>>> GENERAL (SHARED) UTIL FUNCTIONS
   //##################################################################
   posToCoord(pos){return [floor(pos.y/this.cellSize),floor(pos.x/this.cellSize)];}
-
   coordToPos(r,c,i=0){return createVector((c*this.cellSize)+this.cellHalf, (r*this.cellSize)+this.cellHalf, i);}
-
-
   coordToTopLeftPos(rc,i=0){return createVector((rc[1]*this.cellSize), (rc[0]*this.cellSize), i);}
-
-  // Note: a.k.a. 'checkInBounds' or 'isValidCell' when porting old version code in
+  isBorderCell(r,c){return (r==0||c==0||r==this.cellsTall-1||c==this.cellsWide-1);}
   cellInBounds(r,c){return (r>=0 && r<this.cellsTall && c>=0 && c<this.cellsWide);}
-
 
   //##################################################################
   //>>> RENDER FUNCTIONS
   //##################################################################
-
-  // Note 1: DRAW ORDER COUNTS -> KEEP IN MIND FOR ORDER OF CALLS!
-  // Note 2: Was going to use folded ternary scheme but doing 'if/elseif list' instead to K.I.S.S.
-  render(){
-    if (this.showTileMap){this.renderTileMap();}
-    if (this.showPathMap){this.renderPathWaypts();}
-    if (this.showBldgMap){this.renderBldgMap();}
-    if (this.showUnitMap){this.renderUnitMap();}
+  render(){ // Per usual: DRAW ORDER MATTERS!
+    if (this.showTerTiles){this.renderTerTiles();}
+    if (this.showResTiles){this.renderResTiles();}
+    if (this.showResHtMap){this.renderResHeatmap();}
     if (this.showGrid){this.renderGrid();}
     if (this.showCoords){this.renderCellCoords();}
   } // Ends Function render
 
   renderGrid(){
-    stroke(this.col_gridLines); strokeWeight(this.stWgt_gridLines);
+    stroke(this.style.fill_gridL); strokeWeight(this.style.sWgt_gridL);
     for(let i=0; i<this.cellsWide; i++){line(i*this.cellSize,0,i*this.cellSize,this.areaTall);}
     for(let i=0; i<this.cellsTall; i++){line(0,i*this.cellSize,this.areaWide,i*this.cellSize);}
   } // Ends Function renderGrid
 
   renderCellCoords(){
-    stroke(0,0,0,60); strokeWeight(this.stWgt_cellCoords); fill(255); textSize(16); textAlign(CENTER, CENTER);
-    for(let row=0; row<cellsTall; row++){
-      for(let col=0; col<cellsWide; col++){
-        text("["+row+","+col+"]", (this.cellSize*col)+this.cellHalf,(this.cellSize*row)+this.cellHalf);  
+    stroke(this.style.strk_text); strokeWeight(this.style.sWgt_text); fill(this.style.fill_text); 
+    textSize(this.style.size_text); textAlign(CENTER, CENTER);
+    for(let row=0; row<this.cellsTall; row++){
+      for(let col=0; col<this.cellsWide; col++){
+        if(row==0 && col==0){text("0", (this.cellSize*col)+this.cellHalf,(this.cellSize*row)+this.cellHalf);}
+        else if(row==0){text(""+col, (this.cellSize*col)+this.cellHalf,(this.cellSize*row)+this.cellHalf);}
+        else if(col==0){text(""+row, (this.cellSize*col)+this.cellHalf,(this.cellSize*row)+this.cellHalf);}
       }
     }
   } // Ends Function renderCellCoords
 
-  renderTileMap(){
+  renderTerTiles(){
     noStroke();
     for(let r=0; r<this.cellsTall; r++){
       for(let c=0; c<this.cellsWide; c++){
-        switch(this.tileMap[r][c]){
-          case GameMap.CellType.border:    fill(this.col_cellBorder); break;
-          case GameMap.CellType.mapDecor:  fill(this.col_cellMapDecor); break;
-          case GameMap.CellType.enemyPath: fill(this.col_cellEnemyPath); break;
-          case GameMap.CellType.buildable: fill(this.col_cellBuildable); break;
-          default: fill(this.col_error);
+        switch(this.terTileMap[r][c]){
+          case TibMap.TerType.DIRT:  fill(this.style.fill_DIRT);  break;
+          case TibMap.TerType.GRASS: fill(this.style.fill_GRASS); break;
+          case TibMap.TerType.ROAD: fill(this.style.fill_ROAD); break;
+          case TibMap.TerType.WATER: fill(this.style.fill_WATER); break;          
+          default:                   fill(this.style.fill_ERROR);
         }
         rect(c*this.cellSize,r*this.cellSize,this.cellSize,this.cellSize);
       }
     }
-  } // Ends Function renderTilemap
+  } // Ends Function renderTerTiles
 
-  renderBldgMap(){
-    noStroke();
+  renderResTileType(r,c,t){
+    if(t=='X'){return;} // handles 'none'
+    textAlign(CENTER,CENTER);
+    text(this.resConcMap[r][c],(c*this.cellSize)+this.cellHalf,(r*this.cellSize)+this.cellHalf)
+  }
+
+  renderResTiles(){
+    stroke(this.style.strk_text); strokeWeight(this.style.sWgt_text);
     for(let r=0; r<this.cellsTall; r++){
-      for(let c=0; c<this.cellsWide; c++){
-        switch(this.bldgMap[r][c]){
-          case (GameMap.CellState.VACANT): fill(this.col_bldgVacant); break;
-          case (GameMap.CellState.FILLED): fill(this.col_bldgFilled); break;
-          default: fill(this.col_error);
+      for(let c=0; c<this.cellsWide; c++){   
+        switch(this.resTileMap[r][c]){
+          case TibMap.ResType.ORE:  fill(this.style.fill_ORE);   this.renderResTileType(r,c,"O"); break;
+          case TibMap.ResType.GEM:  fill(this.style.fill_GEM);   this.renderResTileType(r,c,"G"); break;
+          case TibMap.ResType.AETH: fill(this.style.fill_AETH);  this.renderResTileType(r,c,"A"); break;
+          case TibMap.ResType.NONE: fill(this.style.fill_AETH);  this.renderResTileType(r,c,"X"); break;
+          default:                  fill(this.style.fill_ERROR); this.renderResTileType(r,c,"?"); break;
         }
-        rect( (c*this.cellSize)+this.cellQuar, (r*this.cellSize)+this.cellQuar, this.cellHalf, this.cellHalf);
       }
     }
-  } // Ends Function renderBldgMap
+  } // Ends Function renderResTiles
 
-  renderUnitMap(){
+  renderResHeatmap(){
     noStroke();
     let temp = 0;
     for(let r=0; r<this.cellsTall; r++){
       for(let c=0; c<this.cellsWide; c++){
-        temp = Object.keys(this.unitMap[r][c]).length;
-        (temp==0) ? noFill() : fill(lerpColor(this.col_unitHeatL, this.col_unitHeatR, temp/5.0));
+        temp = this.resConcMap[r][c];
+        (temp==0) ? noFill() : fill(lerpColor(this.style.fill_heatL, this.style.fill_heatR, temp/100));
         rect(c*this.cellSize,r*this.cellSize,this.cellSize,this.cellSize);
         //fill(255); noStroke(); text(temp,(c*this.cellSize)+this.cellSizeH,(r*this.cellSize)+this.cellSizeH);
       }
     }
   } // Ends Function renderUnitMap
-
-  renderPathWaypts(){
-    textAlign(CENTER, CENTER); textSize(this.size_pathText);
-    fill(this.fill_pathText); stroke(this.stroke_pathText); strokeWeight(this.stWgt_pathText);
-    this.walkPath.forEach(wPt => text(wPt.z, wPt.x, wPt.y));
-  } // Ends Function renderPathWaypts
 
 } // Ends Class TibMap
