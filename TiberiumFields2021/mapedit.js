@@ -33,8 +33,8 @@ function onMapEditMouseEvent(ev,op){
     case 'tr'   : map.setTerCell(mRow, mCol, TibMap.TerType.ROAD); break;
     case 'tw'   : map.setTerCell(mRow, mCol, TibMap.TerType.WATER); break;
     case 'xr'   : map.clearResCell(mRow, mCol); break;
-    case 'or_5' : map.editResCellConc(mRow, mCol, TibMap.ResType.ORE,  ev, 5); break;
-    case 'gr_5' : map.editResCellConc(mRow, mCol, TibMap.ResType.GEM,  ev, 5); break;
-    case 'ar_5' : map.editResCellConc(mRow, mCol, TibMap.ResType.AETH, ev, 5); break;
+    case 'or_5' : map.setResCellConc(mRow, mCol, TibMap.ResType.ORE,  ev, 5); break;
+    case 'gr_5' : map.setResCellConc(mRow, mCol, TibMap.ResType.GEM,  ev, 5); break;
+    case 'ar_5' : map.setResCellConc(mRow, mCol, TibMap.ResType.AETH, ev, 5); break;
   }
 } // Ends Function onMapEditMousePressed

@@ -146,16 +146,6 @@ class TibMap{
     this.resConcMap[r][c] = 0;
   }
 
-  editResCellConc(r,c,type,act,amt=1){
-    let curAmt = this.resConcMap[r][c];
-    if(act=='mp'){
-      this.setResCellConc(r,c,type,curAmt+amt);}
-    else if(act=='md'){
-      if(frameCount%60==0){this.setResCellConc(r,c,type,curAmt+amt);}
-      else if(curAmt<=0){this.setResCellConc(r,c,type,amt);}
-    }
-  }
-
   setResCellConc(r,c,type,amt=1){
     if(!this.cellInBounds(r,c)){return;}
 

@@ -53,12 +53,12 @@ function draw(){
 
 function mousePressed(){
   if(mouseInCanvas()){
-    onMapEditMouseEvent('mp', drawOp.value());
+    onMapEditMouseEvent(drawOp.value());
   }
 }
 
 function mouseDragged(){
   if(mouseInCanvas()){
-    onMapEditMouseEvent('md', drawOp.value());
+    onMapEditMouseEvent(drawOp.value());
   }
 }
