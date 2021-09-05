@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>QAD Colormap Viewer/Interpolator</title>
+    <!-- Basic Style Formatting -->
+    <style>
+      body {color: darkblue; font-family:verdana;}
+      h1 {margin-bottom: 8px; margin-top: 16px;}
+      p {margin-bottom: 16px; margin-top: 8px;}
+    </style>
+    <!-- P5JS Lib Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <!-- Source Code Files -->
+    <script src="UIUX.js"></script>
+    <script src="color_wheel.js"></script>    
+    <script src="color_bar.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <h1>Colormap Viewer/Interpolator</h1>
+    <div id="ui">
+      <p>Interpolate from <span id = "ui_col1"></span> to <span id = "ui_col2"></span> in color mode <span id = "ui_colMode"></span> at resolution of <span id = "ui_cMapRes"></span> bars/slices. <span id = "ui_inputGO"></span></p>
+    </div>
+    <div id="viz"></div>
+  </body>
+</html>
