@@ -7,7 +7,6 @@ class IsoCellArray{
     this.cells = [];
     this.nRows = nRows;
     this.nCols = nCols;
-    this.cenOffVec = createVector(0,0);
 
     let curID = 1;
     for(let r=0; r<nRows; r++){
@@ -21,12 +20,8 @@ class IsoCellArray{
 
     this.computeCenOffVec();
 
-    let totPos = p5.Vector.add(this.pos, this.cenOffVec);
-    for(let r=0; r<this.nRows; r++){
-      for(let c=0; c<this.nCols; c++){
-        this.cells[r][c].addOffVecToPos(totPos);
-      }
-    }
+    this.totPos = p5.Vector.add(this.pos, this.cenOffVec);
+
   } // Ends Constructor
 
   /*--------------------------------------------------------------------
@@ -71,6 +66,7 @@ class IsoCellArray{
     this.cenOffVec = createVector(-RX, -RY);
   } // Ends Function computeCenOffVec
 
+
   setCellDispTo(type){
     for(let r=0; r<this.nRows; r++){
       for(let c=0; c<this.nCols; c++){
@@ -83,16 +79,64 @@ class IsoCellArray{
     return this; // for method chaining
   } // Ends Function setCellDispTo
 
+
+  advance(){
+    for(let r=0; r<this.nRows; r++){
+      for(let c=0; c<this.nCols; c++){
+        this.cells[r][c].advance();
+      }
+    }
+  } // Ends Function advance
+
+  
   render(){
     // setting here <vs> global (but still serving all cells)
-    textSize(16); textAlign(CENTER,CENTER);
+    textSize(14); textAlign(CENTER,CENTER);
 
+    push();
+    translate(this.totPos.x,this.totPos.y);
     for(let r=0; r<this.nRows; r++){
       for(let c=0; c<this.nCols; c++){
         this.cells[r][c].render();
       }
     }
+
+    stroke(255); strokeWeight(2);
+
+    let TL = this.cells[0][0].p1;
+    let TR = this.cells[0][this.nCols-1].p2;
+    let LL = this.cells[11][0].p4;
+    let LR = this.cells[this.nRows-1][this.nCols-1].p3;
+    
+    line(TL.x,TL.y,TR.x,TR.y);
+    line(TR.x,TR.y,LR.x,LR.y);
+    line(LR.x,LR.y,LL.x,LL.y);
+    line(LL.x,LL.y,TL.x,TL.y);
+    pop();
   } // Ends Function render
+
+
+  renderTopDownRep(xOff,yOff,xAlign='l'){
+    switch(xAlign){
+      case 'r': xOff -= this.nCols*cellDim; break;
+      case 'c': xOff -= (this.nCols*cellDim)/2; break;
+    }
+
+    push(); translate(xOff,yOff);
+
+    stroke(255,120); strokeWeight(1); 
+    for(let r=0; r<this.nRows; r++){
+      for(let c=0; c<this.nCols; c++){
+        fill(this.cells[r][c].colVal);    
+        rect(c*cellDim, r*cellDim, cellDim, cellDim);
+      }
+    }
+
+    stroke(255); strokeWeight(2); noFill();
+    rect(-1, -1, (this.nCols*cellDim)+1, (this.nRows*cellDim)+1);
+    pop();
+  } // Ends Function renderTopDownRep
+
 
 } // Ends Class IsoCellArray
 
@@ -113,6 +157,7 @@ class IsoCell{
     this.setDispTo("none");
     this.nScale = 0.25;
     this.fScale = 0.01;
+    this.colVal = color(255,0,255);
   } // Ends Constructor
 
   initPts(){
@@ -156,6 +201,12 @@ class IsoCell{
     return this; // for method chaining
   } // Ends Function setDispTo
 
+
+  advance(){
+    //this.setFillViaCoords();
+    this.setFillViaNoise();
+  } // Ends Function advance
+
   /*--------------------------------------------------------------------
   |>>> Function setFillViaNoise
   +---------------------------------------------------------------------
@@ -164,17 +215,15 @@ class IsoCell{
   |                  actually are can be changed as desired).
   +-------------------------------------------------------------------*/
   setFillViaNoise(){
-    fill(lerpColor(col_D,col_W, noise(this.row*this.nScale,this.col*this.nScale,(frameCount%1000)*this.fScale)));
+    this.colVal = lerpColor(col_D,col_W, noise(this.row*this.nScale,this.col*this.nScale,(frameCount%1000)*this.fScale));
   } // Ends Function setFillViaNoise
 
   setFillViaCoords(){
-    fill(lerp(16,255,(this.row/numRows)), 0, lerp(16,255,(this.col/numCols)), 128);  
+    this.colVal = color(lerp(16,255,(this.row/numRows)), 0, lerp(16,255,(this.col/numCols)), 128);  
   } // Ends Function setFillViaCoords
 
   render(){
-    stroke(0); strokeWeight(1);
-    //this.setFillViaCoords();
-    this.setFillViaNoise();
+    stroke(255,120); strokeWeight(1); fill(this.colVal);
     quad( this.p1.x, this.p1.y, this.p2.x, this.p2.y, this.p3.x, this.p3.y, this.p4.x, this.p4.y);
     stroke(0); fill(255);
     if(this.dispType != this.DispOpts.none){

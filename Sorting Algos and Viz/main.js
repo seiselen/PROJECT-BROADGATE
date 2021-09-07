@@ -20,6 +20,9 @@ var lastFrames = 0;
 var frameDelay = 240;
 var lFramesRec = false;
 function draw() {
+
+
+
   testerIns.advance();
   testerBub.advance();
 
@@ -36,9 +39,22 @@ function draw() {
     doSortingRun();
     lFramesRec = false;
   }
-
-
 }
+
+var isPaused = false;
+function keyPressed(){
+  if(key == 'p'){
+    isPaused = !isPaused;
+  }
+}
+
+
+
+
+
+
+
+
 
 function println(s){
   console.log(s);
