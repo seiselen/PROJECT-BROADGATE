@@ -1,202 +1,88 @@
+/*----------------------------------------------------------------------
+|> QAD TEMP Note on 'Merge Sort' (and/or its basic algorithm)
++-----------------------------------------------------------------------
+| Main Idea / Algorithm:
+|  (!) *DO* utilize Divide-And-Conquer vis-a-vis first sorting on array
+|      subsets of every |2| elements, then merge-op on every |4|, then
+|      on every [8], etc. until merging the two sets of |n/2|, but...
+|  (!) *DON'T* utilize more than 1 external array: I should (in theory)
+|      be able to utilize exactly one (and maybe visualize IT instead of
+|      the input array, especially as the input won't change but it will
+|      {and in a manner which shows incremental progress}). This array
+|      could have elements initialized to [-1] or some sentinel, as for
+|      the viz to do some special effect to show that this part is not
+|      yet merge[sorted].      
+|  (!) Lastly: if not even set, disregard final element. We'll do a O(n)
+|      insertion operation on it at the end as to make things easier;
+|      especially as 'vanilla' Merge Sort is O(n*log(n)), so we're only
+|      affording a worst-case extra O(n) on top. This ironically won't
+|      even hurt in the worst case effeciency scenario of a 'small' size
+|      to 'n', as the corresponding O(n) will likewise be a small const.
+|      (whereas the O(n) will be 'felt much less' with large |n| sets).
++---------------------------------------------------------------------*/
 
 
-var maxVal = 100;
-var setSize = 100;
-var inputSet = Array(setSize).fill(0);
 
+//======================================================================
+//>>> 'Enum' Initializations
+//======================================================================
+var Globals  = {MAX_VAL:100, SET_SIZE:100};
+var SortType = {INS:'i', SEL:'s', BUB:'b'};
+
+//======================================================================
+//>>> [Sorting Algo] Data Structure Declarations
+//======================================================================
 var testerIns;
 var testerBub;
 
-function setup() {
-  createCanvas(1280,720);
-  for (var i = 0; i < inputSet.length; i++){inputSet[i]=i;}
-  inputSet = shuffle(inputSet);
-
-  testerIns = new SortIterViz("I",inputSet.slice(),10,10,620,700);
-  testerBub = new SortIterViz("B",inputSet.slice(),650,10,620,700);
-}
-
+//======================================================================
+//>>> Variables Involving Animation/Reset
+//======================================================================
+var inputSet   = Array(Globals.SET_SIZE).fill(0);
 var lastFrames = 0;
 var frameDelay = 240;
 var lFramesRec = false;
-function draw() {
+
+//======================================================================
+//>>> Setup / Draw / Misc. Functions
+//======================================================================
+function setup() {
+  createCanvas(1280,720);
+  for (var i = 0; i < inputSet.length; i++){inputSet[i]=i;} 
+  testerIns = new InsertSort(vec2(0,0),vec2(640,720),vec2(60,60));
+  testerBub = new BubbleSort(vec2(640,0),vec2(640,720),vec2(60,60));
+  doSortingRun();
+} // Ends P5JS Function setup
 
 
-
+function draw(){
+  //>>> UPDATE CALLS
+  handleAutoReset();
   testerIns.advance();
   testerBub.advance();
-
+  //>>> RENDER CALLS
   background(60);
-  testerIns.display();
-  testerBub.display();
-
-  if(lFramesRec == false && testerIns.isSorted && testerBub.isSorted){
-    lastFrames = frameCount;
-    lFramesRec = true;
-  }
-
-  if(lFramesRec == true && frameCount - lastFrames >= frameDelay ){
-    doSortingRun();
-    lFramesRec = false;
-  }
-}
-
-var isPaused = false;
-function keyPressed(){
-  if(key == 'p'){
-    isPaused = !isPaused;
-  }
-}
+  testerIns.render();
+  testerBub.render();
+} // Ends P5JS Function draw
 
 
+function handleAutoReset(){
+  if(lFramesRec == false && testerIns.isSorted && testerBub.isSorted){lastFrames = frameCount; lFramesRec = true;}
+  if(lFramesRec == true && frameCount - lastFrames >= frameDelay ){doSortingRun(); lFramesRec = false;}  
+} // Ends Function handleAutoReset
 
-
-
-
-
-
-
-function println(s){
-  console.log(s);
-}
 
 function doSortingRun(){
   inputSet = shuffle(inputSet);
-  testerIns.resetInput(inputSet.slice());
-  testerBub.resetInput(inputSet.slice());
-}
+  testerIns.loadInput(inputSet.slice());
+  testerBub.loadInput(inputSet.slice());
+} // Ends Function doSortingRun
 
 
-class SortIterViz{
-
-  constructor(sType,input,xO,yO,w,t){
-    this.dataset  = input;
-    this.sortType = sType;
-    this.xOffset  = xO;
-    this.yOffset  = yO;
-    this.viewWide = w;
-    this.viewTall = t;
-    this.rectWide = this.viewWide/this.dataset.length;
-    this.rectTall = this.viewTall/maxVal; // Note: SCALAR WRT maxVal i.e. rect height = val*rectTall
-    this.initCacheVals();
-  }
-
-  initCacheVals(){
-
-    this.animIndx = 0;
-    this.isLocked = false; // locked -> searching in buffer prefix for place to put element
-    this.isSorted = false; // how manager knows this obj finished sorting for stuff like waiting until all types done before sweep anim and reset
- 
-    // FOR INSERTION
-    if(this.sortType=="I"){
-      this.progIndx = 1;  // '1' because at init: buffer will be zero
-      this.buffIndx = 0;  // '0' because at init: trivially comparing A[1] against A[0]
-      this.swapIndx = -1; // '-1' because at init: no swap occured yet
-      this.tempVal  = -1; // value at progIndx i.e. A[progIndx]
-    }
-
-    // FOR BUBBLE
-    if(this.sortType=="B"){
-      this.progIndx = this.dataset.length;  // |A| because progress advances A[n]->A[0]
-      this.buffIndx = 1;  // '1' because at init: trivially comparing A[0] against A[1]
-      this.swapIndx = -1; // '-1' because at init: no swap occured yet
-      this.tempVal  = -1; // value at progIndx i.e. A[progIndx]
-    }
-
-  }
-
-  resetInput(input){
-    this.dataset  = input;
-    this.rectWide = this.viewWide/this.dataset.length;
-    this.initCacheVals();
-  }
-
-  advance(){
-    if(this.sortType=="I"){this.advInsertSort();}
-    if(this.sortType=="B"){this.advBubbleSort();}
-    if(this.sortType=="S"){this.advSelectSort();}    
-  }
-
-  advInsertSort(){
-
-    if(this.isSorted){return;}
-
-    if(this.progIndx == this.dataset.length){this.isSorted = true;}
-
-    // If current value less than buffer, 'lock' to begin insertion process
-    if(!this.isLocked && this.progIndx < this.dataset.length){
-      this.tempVal = this.dataset[this.progIndx];
-      this.buffIndx = this.progIndx-1;
-      if(this.buffIndx >= 0 && this.dataset[this.buffIndx] > this.tempVal){
-        this.isLocked=true;
-      } 
-    }
-
-    if( this.buffIndx >= 0 && this.dataset[this.buffIndx] > this.tempVal){ 
-      this.dataset[this.buffIndx+1] = this.dataset[this.buffIndx]; 
-      this.buffIndx--;
-    }
-    else{ 
-      this.dataset[this.buffIndx+1] = this.tempVal; 
-      this.progIndx ++; 
-      this.isLocked=false; 
-      this.swapIndx = (this.buffIndx+1);
-    }
-  }
-
-
-  advBubbleSort(){
-
-    if(this.isSorted){return;}
-
-    if(this.progIndx == 1){this.isSorted = true;}
-
-    if(this.buffIndx == this.progIndx){  
-      this.progIndx--;
-      this.buffIndx=1;
-    }
-
-    if(this.dataset[this.buffIndx-1] > this.dataset[this.buffIndx]){
-      this.swapIndx = this.buffIndx;
-      this.tempVal = this.dataset[this.buffIndx-1];
-      this.dataset[this.buffIndx-1]=this.dataset[this.buffIndx];
-      this.dataset[this.buffIndx]=this.tempVal;
-    }   
-    
-    this.buffIndx++;
-  }
-
-
-  display(){
-    stroke(60);
-    for(var i=0; i<setSize; i++){
-
-      if(this.isSorted){
-        if(i == this.animIndx){fill(255,120,0);}
-        else if(i < this.animIndx){fill(0,120,255);}
-        else {fill(255,255,255);}
-      }
-
-      else{
-        if(i==this.progIndx){fill(255,120,0);}
-        else if(i==this.buffIndx){fill(0,255,0);}
-        else if(i==this.swapIndx){fill(0,120,255);}
-        else{fill(255,255,255);}
-      }
-
-      rect(
-        this.xOffset + i*this.rectWide,
-        this.yOffset + this.viewTall,
-        this.rectWide,
-        - this.dataset[i]*this.rectTall);
-    }
-
-    if(this.isSorted && this.animIndx < this.dataset.length){
-      this.animIndx++;
-    }
-
-
-  }
-
-}
-
+//======================================================================
+//>>> 'The Usual' Util Functions
+//======================================================================
+function vec2(x,y){return createVector(x,y);}
+function drawFPSSimple(){noStroke();fill(0,128); rect(0,height-20,80,height-20);textSize(16); textAlign(LEFT,CENTER); strokeWeight(2); stroke(0); fill(255);text("FPS: "+round(frameRate()), 10, height-8);}
+function drawCanMPtQAD(){strokeWeight(4); stroke(255,180,0); line(0,height/2,width,height/2); line(width/2,0,width/2,height);}
