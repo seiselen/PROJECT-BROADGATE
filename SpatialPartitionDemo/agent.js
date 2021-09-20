@@ -1,3 +1,11 @@
+/*----------------------------------------------------------------------
+|>>> Class SPAgent (Spatial Partition [supported] Agent)
++-----------------------------------------------------------------------
+| Description:  <TODO>
++-----------------------------------------------------------------------
+| Implementation Notes:
+|  > x
++---------------------------------------------------------------------*/
 class SPAgent{
   static minSpeed = 1;
   static maxSpeed = 2;
@@ -19,11 +27,26 @@ class SPAgent{
     //>>> Variables for GFX/VFX
     this.shapeDiam = 10;
     this.shapeRad  = this.shapeDiam/2;
-    this.agentStrk = color(60);
-    this.normalCol = color(255,128);
-    this.hiLiteCol = color(32,255,32);
-    this.neighStrk = color(255,180,0);
+    this. initColorPallete()
   } // Ends Constructor
+
+
+  initColorPallete(){
+    //>>> Colors for Full-Opaque Mode
+    this.fill_fullOpq_agt = color(32,255,32); 
+    this.strk_fullOpq_agt = color(60);
+    this.fill_fullOpq_nbr = color(255,180,0);
+    this.strk_fullOpq_nbr = color(255,0);
+    this.strk_fullOpq_rad = color(32,255,32);
+    //>>> Colors for Semi-Opaque Mode
+    this.fill_semiOpq_agt = color(255,120,0,128);
+    this.strk_semiOpq_agt = color(60);
+    this.fill_semiOpq_nbr = color(255,0);
+    this.strk_semiOpq_nbr = color(32,255,32);
+    this.strk_semiOpq_rad = color(255,120,0);
+    //>>> Good Ol 'Error Magenta'
+    this.col_Error        = color(255,0,255);    
+  } // Ends Function initColorPallete
 
 
   update(){
@@ -137,41 +160,49 @@ class SPAgent{
     this.neighborList = agents.filter(u => (u.ID != this.ID && p5.Vector.sub(u.pos,this.pos).magSq() <= this.rangeRadSqd));
   }
 
-
-  //####################################################################
-  //>>> MISC/SELF-QUERY FUNCTIONS
-  //####################################################################
-
   mouseOverMe(){
     return (dist(mouseX,mouseY,this.pos.x,this.pos.y)<=this.shapeDiam) ? true : false;
   } // Ends Function mouseOverMe
-
 
   //####################################################################
   //>>> RENDER FUNCTIONS
   //####################################################################
 
   render(){
-    this.renderNeighborhood();    
+    if(Config.AGT_DISP_MODE==AgtDispMode.none){return;}
+    ellipseMode(CENTER);
+    this.renderNeighborhood();  
     this.renderShape();
-  }
+  } // Ends Function render
 
   renderShape(){
-    fill(this.normalCol); strokeWeight(2); stroke(this.agentStrk); ellipseMode(CENTER);
+    strokeWeight(2);
+    switch(Config.AGT_DISP_MODE){
+      case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_agt); stroke(this.strk_semiOpq_agt); break;
+      case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_agt); stroke(this.strk_fullOpq_agt); break;
+      default: fill(this.col_Error); stroke(this.col_Error);
+    }
     ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);  
   } // Ends Function renderShape
 
 
   renderNeighborhood(){
     if(this.mouseOverMe()){
-      // this.renderNHoodCells();
-  
-      fill(240,144,0,60); stroke(240,144,0); strokeWeight(2); 
+      strokeWeight(2); noFill();
+      switch(Config.AGT_DISP_MODE){
+        case AgtDispMode.semiOpaque: stroke(this.strk_semiOpq_rad); break;
+        case AgtDispMode.fullOpaque: stroke(this.strk_fullOpq_rad); break;
+        default: stroke(this.col_Error);
+      }
       ellipse(this.pos.x,this.pos.y,this.rangeDiam,this.rangeDiam);
 
-      stroke(this.hiLiteCol); strokeWeight(4); noFill();
+      strokeWeight(4);
+      switch(Config.AGT_DISP_MODE){
+        case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_nbr); stroke(this.strk_semiOpq_nbr); break;
+        case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_nbr); stroke(this.strk_fullOpq_nbr); break;
+        default: fill(this.col_Error); stroke(this.col_Error);
+      }
       this.neighborList.forEach((n)=>{ellipse(n.pos.x,n.pos.y,this.shapeDiam+4,this.shapeDiam+4)});
-
     }
   } // Ends Function renderNeighborhood
 
@@ -183,13 +214,8 @@ class SPAgent{
   |  > This function is only intended to be used for DEBUG purposes!
   +-------------------------------------------------------------------*/  
   renderNHoodCells(){
-    stroke(32,255,32,128); strokeWeight(2); noFill();
-    let nCellPos;
-    this.inRangeCells.forEach((c)=>{
-      nCellPos = this.map.getCellTLPos(c);
-      rect(nCellPos.x,nCellPos.y,this.map.cellSize,this.map.cellSize);
-    });
+    stroke(32,255,32,128); strokeWeight(2); noFill(); 
+    let cPos; this.inRangeCells.forEach((c)=>{cPos = this.map.getCellTLPos(c); rect(cPos.x,cPos.y,this.map.cellSize,this.map.cellSize);});
   } // Ends Function renderNHoodCells
-
 
 } // Ends Class SPAgent

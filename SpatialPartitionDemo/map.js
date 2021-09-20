@@ -1,9 +1,7 @@
-
-
 /*----------------------------------------------------------------------
-|>>> Class SPMap
+|>>> Class SPMap (Spatial Partition [supporting] [2D Gridworld] Map)
 +-----------------------------------------------------------------------
-| Description:  Purpose of the Class
+| Description:  <TODO>
 +-----------------------------------------------------------------------
 | Implementation Notes:
 |  > Tightly coupled with the following properties of the global object 
@@ -13,21 +11,38 @@
 +---------------------------------------------------------------------*/
 class SPMap{
   constructor(cellsTall,cellsWide, cellSize){
-    this.cellsTall = cellsTall;
-    this.cellsWide = cellsWide;
-    this.cellSize  = cellSize;
-    this.cellSizeH = this.cellSize/2;
-    this.map       = [];
-    this.dim       = {wide:this.cellsWide*this.cellSize, tall:this.cellsTall*this.cellSize};
-    this.showGrid  = true; // show grid (cell borders)
-    this.newCoords = []; // cache variable used by 'updatePos' function group
+    // Object State
+    this.cellsTall  = cellsTall;
+    this.cellsWide  = cellsWide;
+    this.cellSize   = cellSize;
+    this.cellSizeH  = this.cellSize/2;
+    this.map        = [];
+    this.dim        = {wide:this.cellsWide*this.cellSize, tall:this.cellsTall*this.cellSize};
+    this.showGrid   = true;
+    // Cache Values
+    this.newCoords  = []; // cache variable used by 'updatePos' function group
+    this.curCellPop = -1  // cache variable used by 'renderHeatMap' and 'renderCellPop'
+    // Init/Loader Calls
+    this.initSPGrid();
+    this.initColorPallete();   
+  } // Ends Constructor
 
-    // Color Defs (For Heatmap)
-    this.colL = color(222,235,247);
-    this.colR = color(33,113,181);
 
-    this.initSPGrid();    
-  }
+  initColorPallete(){
+    //>>> Colors for Heatmap Mode
+    this.hm_colormapL = color(222,235,247);
+    this.hm_colormapR = color(33,113,181);
+    this.hm_strk_grid = color(60,128);
+    //>>> Colors for Cell Population Mode
+    this.cp_col_bGrnd = color(24);  // background
+    this.cp_strk_grid = color(180); // grid lines
+    this.cp_fill_text = color(180); // text labels
+    this.cp_size_text = 14;         // font size
+    //>>> Other GFX/VFX Setttings
+    this.hm_sWgt_grid = 1;          // [grid] line stroke weight
+    this.cp_sWgt_grid = 2;          // [grid] line stroke weight    
+  } // Ends Function initColorPallete
+
 
   /*--------------------------------------------------------------------
   |>>> Function initSPGrid
@@ -159,11 +174,6 @@ class SPMap{
   } // Ends Function getUnitsAtCell
 
 
-
-
-
-
-
   /*--------------------------------------------------------------------
   |>>> Functions [toggleGrid/toggleHMap/toggleCPop and setFlagValue]
   +---------------------------------------------------------------------
@@ -185,6 +195,36 @@ class SPMap{
   getCellTLPos(rc){return createVector((rc[1]*this.cellSize),(rc[0]*this.cellSize));}
   isValidCell(rc){return (rc[0]>=0 && rc[0]<this.cellsTall && rc[1]>=0 && rc[1]<this.cellsWide);}
 
+
+  /*--------------------------------------------------------------------
+  |>>> Function setCellPop (Set Cell Population)
+  +---------------------------------------------------------------------
+  | Description: Assigns current population of input cell to temp/buffer 
+  |              variable 'this.curCellPop' based on current SP mode; as
+  |              syntax differs between each mode (i.e. data structure).
+  | Modularity:  This code was originally located within two functions: 
+  |              'renderHeatMap' and 'renderCellPop' (else sub-function
+  |              components thereof). Partitioning it therefrom and into
+  |              its own function supports modularity via reducing code
+  |              repetition and providing only one definition called by
+  |              both map display implementations; while retaining the 
+  |              buffer variable may have further performance benefits
+  |              (see 'Var Note') below.
+  | Var Note:    As aforementioned, cell population values are assigned
+  |              to the buffer variable 'curCellPop'; i.e. NOT returned
+  |              to the caller! This is partly for legacy reasons, and 
+  |              partly to decrease the amount of work needed. That is:
+  |              assigning directly to the buffer for immediate use on 
+  |              return to the caller should perform better than first
+  |              being returned to the caller and then assigned thereto;
+  |              though I'm [very] likely being WAY too OCD about this!
+  +-------------------------------------------------------------------*/
+  setCellPop(cellObj){
+    this.curCellPop = (Config.SPAT_PART_MODE==SpatPartMode.gridViaObj) ? Object.keys(cellObj).length
+                    : (Config.SPAT_PART_MODE==SpatPartMode.gridViaMap) ? cellObj.size 
+                    : -1;
+  } // Ends Function setCellPop
+
   /*--------------------------------------------------------------------
   |>>> Functions  render, renderHeatMap, renderCellPop
   +---------------------------------------------------------------------
@@ -202,25 +242,50 @@ class SPMap{
 
 
   renderHeatMap(){
-    let temp;
-
-    strokeWeight(1);
-    (this.showGrid) ? stroke(60,128) : noStroke();
-
+    noStroke();
     for(var r=0; r<this.cellsTall; r++){
       for(var c=0; c<this.cellsWide; c++){
-        temp = (Config.SPAT_PART_MODE==SpatPartMode.gridViaObj) ? Object.keys(this.map[r][c]).length
-          : (Config.SPAT_PART_MODE==SpatPartMode.gridViaMap) ? this.map[r][c].size 
-          : 0;
-
-
-        fill(lerpColor(this.colL,this.colR,temp/5.0));
+        this.setCellPop(this.map[r][c]);
+        fill(lerpColor(this.hm_colormapL,this.hm_colormapR,this.curCellPop/5.0));
         rect(c*this.cellSize,r*this.cellSize,this.cellSize,this.cellSize);
-        //fill(255); noStroke();
-        //text(temp, (c*this.cellSize)+this.cellSizeH, (r*this.cellSize)+this.cellSizeH);
       }
     }
-  } // Ends Function render
+    if(this.showGrid){this.renderGrid();}
+  } // Ends Function renderHeatMap
 
 
+  /*--------------------------------------------------------------------
+  |>>> Function renderCellPop
+  +---------------------------------------------------------------------
+  | Description: Renders Cell Population Grid which displays the current
+  |              number of agents reporting into each map cell. Utilizes
+  |              and partitioned into two component methods, which first
+  |              render the grid, then the per-cellpopulation counts.
+  +-------------------------------------------------------------------*/
+  renderCellPop(){
+    background(this.cp_col_bGrnd); fill(this.cp_fill_text); noStroke(); textAlign(CENTER,CENTER); textSize(this.cp_size_text);
+    for(var r=0; r<this.cellsTall; r++){
+      for(var c=0; c<this.cellsWide; c++){
+        this.setCellPop(this.map[r][c]);
+        text(this.curCellPop, (c*this.cellSize)+this.cellSizeH, (r*this.cellSize)+this.cellSizeH);
+      }
+    }
+    if(this.showGrid){this.renderGrid();}    
+  } // Ends Function renderCellPop
+
+  /*--------------------------------------------------------------------
+  |>>> Function renderGrid
+  +---------------------------------------------------------------------
+  | Description: Draws map cell grid via line primitives. Intended to be
+  |              called only by 'renderCellPop' as a component thereof,
+  |              though might also utilize for the HeatMap viz... <TBD>
+  +-------------------------------------------------------------------*/
+  renderGrid(){
+    switch(Config.MAP_DISP_MODE){
+      case MapDispMode.heatMap: stroke(this.hm_strk_grid); strokeWeight(this.hm_sWgt_grid); break;
+      case MapDispMode.cellPop: stroke(this.cp_strk_grid); strokeWeight(this.cp_sWgt_grid); break;
+    }
+    for(let i=0; i<=this.cellsTall; i++){line(0,this.cellSize*i,width,this.cellSize*i);}
+    for(let i=0; i<=this.cellsWide; i++){line(this.cellSize*i,0,this.cellSize*i,height);}
+  } // Ends Function renderGrid
 } // Ends Class SPMap

@@ -22,12 +22,11 @@ var SpatPartMode = {
   toString: function(mode){switch(mode){case this.gridViaObj: return "[Grid] via JS Properties"; case this.gridViaMap: return "[Grid] via JS Map Object"; case this.none: return "[None] O(n^2) 'All-Pairs'";}}
 };
 
+
 var Config = {
-  CANV_WIDE:      1024, 
-  CANV_TALL:      768, 
-  CELLS_TALL:     24, 
-  CELLS_WIDE:     32, 
-  CELL_SIZE:      32,
+  /*> Cell Size [32] Config: {CELLS_TALL: 24,  CELLS_WIDE: 32, CELL_SIZE: 32} */
+  /*> Cell Size [64] Config: {CELLS_TALL: 12,  CELLS_WIDE: 16, CELL_SIZE: 64} */  
+  CANV_WIDE: 1024, CANV_TALL: 768, CELLS_TALL: 12,  CELLS_WIDE: 16, CELL_SIZE: 64,
   FRAME_RATE:     60, 
   PAUSED:         false,
   MAP_DISP_MODE:  MapDispMode.heatMap,
@@ -79,11 +78,10 @@ function draw(){
 //###[ P5JS UI I/O Handlers ]###########################################
 //######################################################################
 function keyPressed(){
-  //if(key=='p' || key=='P'){Config.PAUSED = !Config.PAUSED;}
+  if(key=='p' || key=='P'){Config.togglePauseVal(); checkbox_pauseSim.elt.checked = Config.PAUSED;}
   //if(keyCode == UP_ARROW && Config.FRAME_RATE<60){Config.FRAME_RATE++;}
   //if(keyCode == DOWN_ARROW && Config.FRAME_RATE>0){Config.FRAME_RATE--;}
   //if(key=='x' || key=='X'){createAgents(10);}
-
 }
 
 function mousePressed(){
@@ -152,7 +150,7 @@ function initUI(){
   radioGrp_mapDispMode.option(MapDispMode.heatMap, MapDispMode.toString(MapDispMode.heatMap));
   radioGrp_mapDispMode.option(MapDispMode.none, MapDispMode.toString(MapDispMode.none));
   radioGrp_mapDispMode.selected(Config.MAP_DISP_MODE);
-
+  radioGrp_mapDispMode.changed( ()=>(Config.MAP_DISP_MODE = radioGrp_mapDispMode.value()) );    
   appendBRsToRadioItems("#mapDispMode");
 
   radioGrp_agtDispMode = createRadio("agtDispMode").parent("#agtDispMode");
@@ -160,6 +158,7 @@ function initUI(){
   radioGrp_agtDispMode.option(AgtDispMode.fullOpaque, AgtDispMode.toString(AgtDispMode.fullOpaque));
   radioGrp_agtDispMode.option(AgtDispMode.none, AgtDispMode.toString(AgtDispMode.none));
   radioGrp_agtDispMode.selected(Config.AGT_DISP_MODE);
+  radioGrp_agtDispMode.changed( ()=>(Config.AGT_DISP_MODE = radioGrp_agtDispMode.value()) );   
   appendBRsToRadioItems("#agtDispMode");
 
   radioGrp_spatPartMode = createRadio("spatPartMode").parent("#spatPartMode");
@@ -180,6 +179,8 @@ function appendBRsToRadioItems(elmtID){
   elmt[4].parentNode.insertBefore(createElement('br').elt,elmt[4].nextSibling);
   elmt[7].parentNode.insertBefore(createElement('br').elt,elmt[7].nextSibling);
 }
+
+
 
 
 
