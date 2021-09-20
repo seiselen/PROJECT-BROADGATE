@@ -15,7 +15,7 @@ var colorMapRaw_3 = [[158,202,225],[107,174,214],[66,146,198],[33,113,181],[8,81
 
 //> make your choice HERE (and leave everything below procedural {i.e. AS-IS})
 var colMap  = colorMapRaw_3;
-var colMode = 1; // where {[0]:linear, [1]:logarithmic}
+var colMode = 0; // where {[0]:linear, [1]:logarithmic}
 
 
 function setup(){

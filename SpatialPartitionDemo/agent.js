@@ -18,14 +18,14 @@ class SPAgent{
 
     //>>> Variables for SP/Neighbors
     this.curCoord = map.cellViaPos(this.pos);
-    this.rangeRad  = 50; // visibility range radius
+    this.rangeRad  = 75; // visibility range radius
     this.rangeDiam = this.rangeRad*2;
     this.rangeRadSqd  = this.rangeRad*this.rangeRad;
     this.neighborList = [];
     this.inRangeCells = this.getCellsInRange();
 
     //>>> Variables for GFX/VFX
-    this.shapeDiam = 10;
+    this.shapeDiam = 15;
     this.shapeRad  = this.shapeDiam/2;
     this. initColorPallete()
   } // Ends Constructor

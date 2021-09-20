@@ -5,27 +5,18 @@
     <title>Spatial Partition Demo</title>
     <style>
       body {color: darkblue; font-family:verdana;}
-      #h1_header {background: #3c3c3c; color: white; margin-block-start: 0px; margin-block-end: 0px; max-width: 1296px;}
-      #pane_viz  {width: 1024px} 
-      #pane_ui   {width: 272px}
-      #pane_tab  {width: 1296px; display: table; table-layout: fixed;}
-      #pane_row  {display: table-row; height: 768px;}
-      .pane_col  {display: table-cell; background: #3c3c3c; vertical-align: top; overflow: hidden; height: 768px;}
-      #tab_ui    {margin-left: auto; margin-right: auto; border-collapse: collapse; border: 1px solid #FFFFFFFF}
-      #tab_ui td {color: white; vertical-align: middle; border: 1px solid limegreen;}
-
-      /*
-      #tab_ui tr:nth-child(1){border-bottom: 1px solid #FFFFFF80;}
-      #tab_ui tr:nth-child(2){border-bottom: 1px solid #FFFFFF80; border-top: 1px solid #FFFFFF80;}
-      #tab_ui tr:nth-child(3){border-top: 1px solid #FFFFFF80;}   
-      */
-
-      .lab_title  {font-size: 24px; min-width: 270px;text-align: center; padding: 0px; padding-top: 8px; /*border-right: 1px solid #FFFFFF80;*/}         
-      .lab_thing  {font-size: 18px; min-width: 172px; padding-left: 2px; padding-right: 0px;}
-      .lab_curVal {font-size: 18px; min-width: 84px; text-align: center; /*border-right: 1px solid #FFFFFF80;*/}
-      .cbox       {padding-inline-start: 4px; margin-top: 4px; margin-bottom: 4px; font-size: 14px;}
-      .cbox label {margin-left: 4px; font-size: 14px;}
-      .radioVert  {padding-inline-start: 4px; margin-top: 4px; margin-bottom: 4px;}
+      table {margin-left: auto; margin-right: auto; border-collapse: collapse; border: 1px solid #FFFFFFFF; color: white;}
+      td {vertical-align: middle; padding-top: 4px; padding-bottom: 4px;}
+      #h1_head  {background: #3c3c3c; color: white; margin-block-start: 0px; margin-block-end: 0px; max-width: 1296px;}
+      #pane_viz {width: 1024px} 
+      #pane_ui  {width: 272px}
+      #pane_tab {width: 1296px; display: table; table-layout: fixed;}
+      #pane_row {display: table-row; height: 768px;}
+      .pane_col {display: table-cell; background: #3c3c3c; vertical-align: top; overflow: hidden; height: 768px;}
+      .lab_head {font-size: 24px; min-width: 270px;text-align: center; padding: 0px; padding-top: 6px; padding-bottom: 6px; border-top: 2px solid #FFFFFFFF; border-bottom: 2px solid #FFFFFF80; background: rgb(0,12,60);}         
+      .lab_desc {font-size: 18px; min-width: 172px; padding-left: 2px; padding-right: 0px;}
+      .lab_cVal {font-size: 18px; min-width: 84px; text-align: center;}
+      .optsVert {padding-inline-start: 4px; margin-top: 4px; margin-bottom: 4px;}
     </style>
     <!-- P5JS Lib Import -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
@@ -36,35 +27,34 @@
     <script src="main.js"></script>
   </head>
   <body>
-  	<h1 id="h1_header">&nbspSpatial Partition Demo</h1>
+  	<h1 id="h1_head">&nbspSpatial Partition Demo</h1>
     <div id="pane_tab"><div id="pane_row">
       <div class="pane_col" id="pane_viz"></div>
-      <div class="pane_col" id="pane_ui"><table id="tab_ui">
-          <tr><td class="lab_title" colspan="2">Mouse Position Info</td></tr>
-          <tr><td class="lab_thing">Current Coord</td><td class="lab_curVal" id="labl_mousePos" style="font-size: 14px; padding-bottom: 3px;"></td></tr>
-          <tr><td class="lab_thing">Current Cell</td><td class="lab_curVal" id="labl_mouseCell"></td></tr>
+      <div class="pane_col" id="pane_ui"><table id="tablUI">
+        <tr><td class="lab_head" colspan="2">Mouse Position Info</td></tr>
+        <tr><td class="lab_desc">Current Coord</td><td class="lab_cVal" id="labl_mousePos" style="font-size: 14px; padding-bottom: 3px;"></td></tr>
+        <tr><td class="lab_desc">Current Cell</td><td class="lab_cVal" id="labl_mouseCell"></td></tr>
 
-          <tr><td class="lab_title" colspan="2">FPS/Speed</td></tr>
-          <tr><td class="lab_thing">Current Sim FPS</td><td class="lab_curVal" id="labl_fps">hi</td></tr>
-          <tr><td class="lab_thing">Current Max FPS</td><td class="lab_curVal" id="ddown_maxFPS"></td></tr>
-          <tr><td class="lab_thing" colspan="2"><span class="cbox"><input type="checkbox" id="cBox_pauseTog"/><label for="cBox_pauseTog">Paused (Agents Won't Update)</label></span></td></tr>
+        <tr><td class="lab_head" colspan="2">FPS/Speed</td></tr>
+        <tr><td class="lab_desc">Current Sim FPS</td><td class="lab_cVal" id="labl_fps">hi</td></tr>
+        <tr><td class="lab_desc">Current Max FPS</td><td class="lab_cVal" id="ddown_maxFPS"></td></tr>
+        <tr><td class="lab_desc" colspan="2"><span class="optsVert" ><input type="checkbox" id="cBox_pauseTog"/><label for="cBox_pauseTog" style="font-size: 15px;">Pause (No Agent Updates)</label></span></td></tr>
 
-          <tr><td class="lab_title" colspan="2">Agents In World</td></tr>
-          <tr><td class="lab_thing">Current Population</td><td class="lab_curVal" id="labl_nAgents">hi</td></tr>
-          <tr><td class="lab_thing">Add <span id="ddown_addAgents"></span> Agents</td><td class="lab_curVal" id="but_addAgents"></td></tr>
-          <!--<tr><td class="lab_thing" colspan="2"><span class="cbox"><input type="checkbox" id="cBox_agtCollide"/><label for="cBox_agtCollide">Agents Collide With Each Other</label></span></td></tr>-->
+        <tr><td class="lab_head" colspan="2">Agents In World</td></tr>
+        <tr><td class="lab_desc">Current Population</td><td class="lab_cVal" id="labl_nAgents">hi</td></tr>
+        <tr><td class="lab_desc">Add <span id="ddown_addAgents"></span> Agents</td><td class="lab_cVal" id="but_addAgents"></td></tr>
 
-          <tr><td class="lab_title" colspan="2">Agent Display</td></tr>
-          <tr><td class="lab_thing" colspan="2"><div class="radioVert" id="agtDispMode"></div></td></tr>
+        <tr><td class="lab_head" colspan="2">Display Settings</td></tr>
+        <tr><td class="lab_desc" colspan="2">
+          <div class="optsVert" id="genDispMode"></div>
+          <div class="optsVert"><input type="checkbox" id="cBox_showAgts" /><label for="cBox_showGrid">Show Agents</label></div>
+          <div class="optsVert"><input type="checkbox" id="cBox_showCell" /><label for="cBox_showGrid">Show Map Cells</label></div>
+          <div class="optsVert"><input type="checkbox" id="cBox_showGrid" /><label for="cBox_showGrid">Show Map Grid</label></div>
+        </td></tr>
 
-          <tr><td class="lab_title" colspan="2">Map Display</td></tr>
-          <tr><td class="lab_thing" colspan="2"><div class="radioVert" id="mapDispMode"></div><div class="radioVert" style="margin-top:-4px"><input type="checkbox" id="cBox_showGrid" /><label for="cBox_showGrid">Show Grid</label></div></td></tr>
-
-          <tr><td class="lab_title" colspan="2">Spatial Partitioning</td></tr>
-          <tr><td class="lab_thing" colspan="2"><div class="radioVert" id="spatPartMode"></div></td></tr>
-
-          <tr><td class="lab_thing" colspan="2" style="padding-top: 8px;"><div style="margin: auto;"><img src="eisLabs.svg" alt="EISELEN" width="264px" height="66px"></div></td></tr>
-      </table></div>
+        <tr><td class="lab_head" colspan="2">Spatial Partitioning</td></tr>
+        <tr><td class="lab_desc" colspan="2"><div class="optsVert" id="spatPartMode"></div></td></tr>
+    </table></div>
     </div></div>
   </body>
 </html>

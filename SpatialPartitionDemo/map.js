@@ -19,6 +19,7 @@ class SPMap{
     this.map        = [];
     this.dim        = {wide:this.cellsWide*this.cellSize, tall:this.cellsTall*this.cellSize};
     this.showGrid   = true;
+    this.showCells  = true;
     // Cache Values
     this.newCoords  = []; // cache variable used by 'updatePos' function group
     this.curCellPop = -1  // cache variable used by 'renderHeatMap' and 'renderCellPop'
@@ -30,8 +31,8 @@ class SPMap{
 
   initColorPallete(){
     //>>> Colors for Heatmap Mode
-    this.hm_colormapL = color(222,235,247);
-    this.hm_colormapR = color(33,113,181);
+    this.hm_colormapL = color(156,204,228); // ;color(222,235,247);
+    this.hm_colormapR = color(12,48,108); // ;color(33,113,181);
     this.hm_strk_grid = color(60,128);
     //>>> Colors for Cell Population Mode
     this.cp_col_bGrnd = color(24);  // background
@@ -175,15 +176,13 @@ class SPMap{
 
 
   /*--------------------------------------------------------------------
-  |>>> Functions [toggleGrid/toggleHMap/toggleCPop and setFlagValue]
+  |>>> Functions toggle<thing>()
   +---------------------------------------------------------------------
-  | Description: These three functions toggle their respective display 
-  |              flags WRT its current value; thus are parameterless and 
-  |              intended for quick-and-easy utilization via the UI/UX.
+  | Description: Toggle respective display flags WRT its current value;
+  |              as intended for quick-and-easy use (e.g. via UI/UX).
   +-------------------------------------------------------------------*/
   toggleGrid(){this.showGrid = !this.showGrid;}
-  toggleHMap(){this.showHMap = !this.showHMap;}
-  toggleCPop(){this.showCPop = !this.showCPop;}
+  toggleCells(){this.showCells = !this.showCells;}
 
   /*--------------------------------------------------------------------
   |>>> Functions  [Misc. Map Util Getters]
@@ -234,10 +233,14 @@ class SPMap{
   |              within the switch, it passes through with no effects.
   +-------------------------------------------------------------------*/
   render(){
-    switch(Config.MAP_DISP_MODE){
-      case MapDispMode.heatMap: this.renderHeatMap(); return;
-      case MapDispMode.cellPop: this.renderCellPop(); return;
-    } // else in all other cases => do nothing
+    if(this.showCells){
+      switch(Config.MAP_DISP_MODE){
+        case MapDispMode.heatMap: this.renderHeatMap(); break;
+        case MapDispMode.cellPop: this.renderCellPop(); break;
+        default: return; // for naive SP mode
+      }
+    }
+    if(this.showGrid){this.renderGrid();}
   } // Ends Function render
 
 
@@ -250,7 +253,6 @@ class SPMap{
         rect(c*this.cellSize,r*this.cellSize,this.cellSize,this.cellSize);
       }
     }
-    if(this.showGrid){this.renderGrid();}
   } // Ends Function renderHeatMap
 
 
@@ -269,8 +271,7 @@ class SPMap{
         this.setCellPop(this.map[r][c]);
         text(this.curCellPop, (c*this.cellSize)+this.cellSizeH, (r*this.cellSize)+this.cellSizeH);
       }
-    }
-    if(this.showGrid){this.renderGrid();}    
+    } 
   } // Ends Function renderCellPop
 
   /*--------------------------------------------------------------------
