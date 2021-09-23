@@ -1,3 +1,16 @@
+/*----------------------------------------------------------------------
+|>>> Class PZUtil ([P]an and [Z]oom [Util]ity)
++-----------------------------------------------------------------------
+| Description:  (QAD) Implements the Pan-And-Zoom Utility
+| Dependencies: Requires two functions from Steven Eiselen's 'util.js'
+|               P5JS support code library: 'mouseInCanvas' and 'vec2'.
+|               As of 9/23/21, it is located at the following link:              
+|                >>> seiselen.github.io/PROJECT-BROADGATE/utils.js <<<
+|
+|               Anyone using this could either link directly thereto via
+|               their index.html file, or simply copy-paste the needed
+|               functions' code directly into their (main) JS file.
++---------------------------------------------------------------------*/
 class PZUtil{
   constructor(cDims){
     this.canvDims = {WIDE:cDims[0], TALL:cDims[1], H_WIDE:cDims[0]/2 , H_TALL:cDims[1]/2};
@@ -6,12 +19,14 @@ class PZUtil{
     this.pButtons = [];
     this.zButtons = [];
     this.uiLabels = [];
-    this.initUIObjects();
+    this.initPZUIObjects();
   }
 
-  initUIObjects(){
+  /*--------------------------------------------------------------------
+  |### INIT/LOADER FUNCTION ############################################
+  +-------------------------------------------------------------------*/
+  initPZUIObjects(){
     let len  = 64; let lenH = len/2;
-
     let vals = {
       pan_N:    {type:"c",  act:"N",  char:String.fromCharCode(0x2B06), dim:vec2(len,len),       loc:vec2((width/2)-lenH,0)},
       pan_S:    {type:"c",  act:"S",  char:String.fromCharCode(0x2B07), dim:vec2(len,len),       loc:vec2((width/2)-lenH,height-len)},
@@ -21,9 +36,9 @@ class PZUtil{
       pan_SE:   {type:"c",  act:"SE", char:String.fromCharCode(0x2B0A), dim:vec2(len,len),       loc:vec2(width-len,height-len)},
       pan_NW:   {type:"c",  act:"NW", char:String.fromCharCode(0x2B09), dim:vec2(len,len),       loc:vec2(0,0)},
       pan_SW:   {type:"c",  act:"SW", char:String.fromCharCode(0x2B0B), dim:vec2(len,len),       loc:vec2(0,height-len)},
-      pan_RES:  {type:"cl", act:"R",  char:String.fromCharCode(0x29C8), dim:vec2(len*2,len*2),   loc:vec2((width/2)-len,(height/2)-len), lab:"RESET PAN\nTO  ORIGIN"},
+      pan_RES:  {type:"cl", act:"RP", char:String.fromCharCode(0x29C8), dim:vec2(len*2,len*2),   loc:vec2((width/2)-len,(height/2)-len), lab:"RESET PAN\nTO  ORIGIN"},
       zoom_in:  {type:"cl", act:"+",  char:String.fromCharCode(0x2A01), dim:vec2(len*2,len*1.5), loc:vec2(width-(len*2),(len)), lab:"INC. ZOOM"},
-      zoom_1x:  {type:"cl", act:"1",  char:String.fromCharCode(0x2A00), dim:vec2(len*2,len*1.5), loc:vec2(width-(len*2),(len*2.5)), lab:"RESET ZOOM"},
+      zoom_1x:  {type:"cl", act:"RZ", char:String.fromCharCode(0x2A00), dim:vec2(len*2,len*1.5), loc:vec2(width-(len*2),(len*2.5)), lab:"RESET ZOOM"},
       zoom_out: {type:"cl", act:"-",  char:String.fromCharCode(0x2296), dim:vec2(len*2,len*1.5), loc:vec2(width-(len*2),(len*4)), lab:"DEC. ZOOM"},
     };
 
@@ -33,104 +48,97 @@ class PZUtil{
         case "c"  : tempButton = new ButtonCharOnly(vals[k].loc, vals[k].dim, vals[k].char); break; 
         case "cl" : tempButton = new ButtonCharLabel(vals[k].loc, vals[k].dim, vals[k].char, vals[k].lab); 
         break; default : console.log("ERROR!"); return;}
-      tempButton.bindAction(()=>this.onButtonPressed(vals[k].act));
+      tempButton.bindAction(()=>this.action(vals[k].act));
       switch(k[0]){case "z": this.zButtons.push(tempButton); break; case "p": this.pButtons.push(tempButton); break;}
     });
 
-    this.uiLabels.push(new UILabel(vec2((width/2)-32-(len*4), 0), vec2((len*4), lenH), "PAN OFFSET: (123,456)").bindCallback(()=>this.transValToString()));
-    this.uiLabels.push(new UILabel(vec2((width/2)+32, 0), vec2((len*4), lenH), "SCALE FACTOR: [2]").bindCallback(()=>this.scaleValToString())); 
-  } // Ends Function initUIObjects
+    this.uiLabels.push(new UILabel(vec2((width/2)-32-(len*4), 0), vec2((len*4), lenH), "PAN OFFSET: (123,456)").bindCallback(()=>this.panValToString()));
+    this.uiLabels.push(new UILabel(vec2((width/2)+32, 0), vec2((len*4), lenH), "SCALE FACTOR: [2]").bindCallback(()=>this.zoomValToString())); 
+  } // Ends Function initPZUIObjects
 
-  transValToString(){
-    return "PAN OFFSET: ("+this.pan.x+","+this.pan.y+")";
-  }
+  /*--------------------------------------------------------------------
+  |### GETTER/TOSTRING FUNCTIONS #######################################
+  +-------------------------------------------------------------------*/
+  panValToString(){return "PAN OFFSET: ("+this.pan.x+","+this.pan.y+")";}
+  zoomValToString(){return "ZOOM FACTOR: ["+this.zoom.factor+"x]";}
 
-  scaleValToString(){
-    return "SCALE FACTOR: ["+this.zoom.factor+"x]";
-  }
-
+  /*--------------------------------------------------------------------
+  |### UI UPDATE/HANDLER FUNCTIONS #####################################
+  +-------------------------------------------------------------------*/
   update(){
     this.handleKeyDown();  
     if(mouseInCanvas()){
       this.handleMouseDown();
       this.uiLabels.forEach((l)=>l.update());
     }
-  }
+  } // Ends Function update
 
-  applyPZTransform(){
-    push();
-    translate(this.pan.x+this.canvDims.H_WIDE, this.pan.y+this.canvDims.H_TALL);
-    scale(this.zoom.factor, this.zoom.factor);
-  }
+  handleMouseDown(){if(mouseIsPressed){this.pButtons.forEach((b)=>b.onMousePressed());}}
 
-  undoPZTransform(){
-    pop(); // yeah yeah, but it IS proper use of Adapter D.P. in this context
-  }
+  //>>> CALL THIS IN P5JS FUNCTION: 'mousePressed'
+  handleMousePressed(){if(mouseInCanvas()){this.zButtons.forEach((b)=>b.onMousePressed());}}
 
-  onButtonPressed(key){
-    switch(key){
-      /*>>> PAN-RELATED OPS */
-      case 'N' : this.pan.y += this.pan.delta; return;
-      case 'S' : this.pan.y -= this.pan.delta; return;
-      case 'E' : this.pan.x -= this.pan.delta; return;
-      case 'W' : this.pan.x += this.pan.delta; return;
-      case 'NE': this.pan.x -= this.pan.delta; this.pan.y += this.pan.delta; return;
-      case 'SE': this.pan.x -= this.pan.delta; this.pan.y -= this.pan.delta; return;
-      case 'NW': this.pan.x += this.pan.delta; this.pan.y += this.pan.delta; return;
-      case 'SW': this.pan.x += this.pan.delta; this.pan.y -= this.pan.delta; return;
-      case 'R':  this.pan.x  = 0;              this.pan.y  = 0; return;
-      /*>>> ZOOM-RELATED OPS */
-      case '+' : this.zoom.factor = Math.min(this.zoom.max, Math.round((this.zoom.factor+this.zoom.delta)*100)/100); return;
-      case '-' : this.zoom.factor = Math.max(this.zoom.min, Math.round((this.zoom.factor-this.zoom.delta)*100)/100); return;
-      case '1' : this.zoom.factor = 1; return;   
-    }
-  }
-
-  resetPanAndZoom(){
-    this.pan.x = 0; this.pan.y = 0; this.zoom.factor = 1;
-  }
-
-  // CALL THIS IN P5JS FUNCTION: 'mouseWheel'
-  handleMouseWheel(evt){ 
-    if(!mouseInCanvas()){return;} 
+  //>>> CALL THIS IN P5JS FUNCTION: 'mouseWheel'
+  handleMouseWheel(evt){if(mouseInCanvas()){
     switch(Math.sign(evt.delta)){
-      case 1: this.onButtonPressed('-'); return; 
-      case -1: this.onButtonPressed('+'); return;
+      case 1: this.action('-'); return; 
+      case -1: this.action('+'); return;}
     }
   }
 
-  // CALL THIS IN P5JS FUNCTION: 'draw'
-  handleMouseDown(){
-    if(mouseIsPressed){this.pButtons.forEach((b)=>b.onMousePressed());}
-  }
-
-  // CALL THIS IN P5JS FUNCTION: 'mousePressed' (and reminder to return 'false' therein!)
-  handleMousePressed(){
-    if(mouseInCanvas()){this.zButtons.forEach((b)=>b.onMousePressed());}
-  }
-
-  // CALL THIS IN P5JS FUNCTION: 'keyPressed'
+  //>>> CALL THIS IN P5JS FUNCTION: 'keyPressed'
   handleKeyPressed(key){
     switch(key){
-      case 'z': this.onButtonPressed('+'); return;
-      case 'x': this.onButtonPressed('-'); return;
-      case 'c': this.onButtonPressed('1'); return;
-      case '0': this.onButtonPressed('R'); return;
+      case 'z': this.action('+'); return;
+      case 'x': this.action('-'); return;
+      case 'c': this.action('RZ'); return;
+      case '0': this.action('RP'); return;
+      case 'q': this.action('RA'); return;
+      case '`': this.action('-P'); return;
     }
   }
 
-  // CALL THIS IN P5JS FUNCTION: 'draw'
   handleKeyDown(){
-    if(keyIsDown(UP_ARROW))   {this.onButtonPressed('N');}
-    if(keyIsDown(DOWN_ARROW)) {this.onButtonPressed('S');}
-    if(keyIsDown(LEFT_ARROW)) {this.onButtonPressed('W');}
-    if(keyIsDown(RIGHT_ARROW)){this.onButtonPressed('E');}
+    if(keyIsDown(UP_ARROW))   {this.action('N');}
+    if(keyIsDown(DOWN_ARROW)) {this.action('S');}
+    if(keyIsDown(LEFT_ARROW)) {this.action('W');}
+    if(keyIsDown(RIGHT_ARROW)){this.action('E');}
   }
 
-  reverseControls(){
-    this.pan.delta *= -1;
+  /*--------------------------------------------------------------------
+  |### UI ACTION FUNCTION ##############################################
+  +-------------------------------------------------------------------*/
+  action(key){
+    switch(key){
+      /*>>> PAN-RELATED ACTIONS */
+      case 'N'  : this.pan.y += this.pan.delta; return;
+      case 'S'  : this.pan.y -= this.pan.delta; return;
+      case 'E'  : this.pan.x -= this.pan.delta; return;
+      case 'W'  : this.pan.x += this.pan.delta; return;
+      case 'NE' : this.pan.x -= this.pan.delta; this.pan.y += this.pan.delta; return;
+      case 'SE' : this.pan.x -= this.pan.delta; this.pan.y -= this.pan.delta; return;
+      case 'NW' : this.pan.x += this.pan.delta; this.pan.y += this.pan.delta; return;
+      case 'SW' : this.pan.x += this.pan.delta; this.pan.y -= this.pan.delta; return;
+      case 'RP' : this.pan.x  = 0;              this.pan.y  = 0; return;
+      /*>>> ZOOM-RELATED ACTIONS */
+      case '+'  : this.zoom.factor = Math.min(this.zoom.max, Math.round((this.zoom.factor+this.zoom.delta)*100)/100); return;
+      case '-'  : this.zoom.factor = Math.max(this.zoom.min, Math.round((this.zoom.factor-this.zoom.delta)*100)/100); return;
+      case 'RZ' : this.zoom.factor = 1; return;
+      /*>>> MISC PAN AND ZOOM ACTIONS */
+      case 'RA' : this.pan.x = 0; this.pan.y = 0; this.zoom.factor = 1; return; /*<= RESET PAN AND ZOOM */
+      case '-P' : this.pan.delta *= -1; return; /*<= REVERSE CONTROLS (APPLIES TO CANVAS AND KEYBOARD UI) */
+    }
   }
 
+  /*--------------------------------------------------------------------
+  |### APPLY/UNDO TRANSFORM FUNCTIONS ##################################
+  +-------------------------------------------------------------------*/
+  pushTF(){push(); translate(this.pan.x+this.canvDims.H_WIDE, this.pan.y+this.canvDims.H_TALL); scale(this.zoom.factor, this.zoom.factor);}
+  popTF(){pop();}
+
+  /*--------------------------------------------------------------------
+  |### RENDER FUNCTIONS ################################################
+  +-------------------------------------------------------------------*/
   render(){
     if(mouseInCanvas()){
       this.pButtons.forEach((b)=>b.render());
@@ -138,16 +146,18 @@ class PZUtil{
       this.uiLabels.forEach((l)=>l.render());
     }
   } // Ends Function render
-
 } // Ends Class PZUtil
 
 
+/*######################################################################
+|>>> Pan/Zoom Util UIObject Family Of Classes
++#####################################################################*/
+
+
 /*======================================================================
-|>>> PZUIObj Class Group
+|>>> [Abstract] Class PZUIObject
 +=====================================================================*/
-
-
-/*abstract*/ class UIObj{
+class PZUIObject{
   constructor(pos, dim){
     this.pos  = pos;
     this.dim  = dim;
@@ -168,20 +178,21 @@ class PZUtil{
   //###[ GETTER/TESTER FUNCTIONS ]######################################
   mouseOverMe(){return (mouseX>this.pos.x)&&(mouseY>this.pos.y)&&(mouseX<this.endP.x)&&(mouseY<this.endP.y);}
   mousePressedOverMe(){return mouseIsPressed && this.mouseOverMe();}
-} // Ends 'Abstract' Class UIObj
+} // Ends 'Abstract' Class PZUIObject
 
 
-/*abstract*/ class CharButton extends UIObj{
+/*======================================================================
+|>>> [Abstract] Class CharButton
++=====================================================================*/
+class CharButton extends PZUIObject{
   constructor(pos, dim, char){
     super(pos, dim);
     this.symb = char;
   } // Ends Constructor
 
-  //###[ SETTER/BEHAVIOR FUNCTIONS ]####################################
   bindAction(act){this.action = act; return this;}
   onMousePressed(){if(mouseIsPressed && this.mouseOverMe() && this.action){this.action();}}
 
-  //###[ RENDER FUNCTIONS ]#############################################
   render(){
     textAlign(CENTER,CENTER); this.renderBBox(); this.renderChar(); 
     if(this instanceof ButtonCharLabel){this.renderLabel();}
@@ -194,13 +205,15 @@ class PZUtil{
 } // Ends 'Abstract' Class CharButton
 
 
+/*======================================================================
+|>>> Class ButtonCharOnly
++=====================================================================*/
 class ButtonCharOnly extends CharButton{
   constructor(pos, dim, char){
     super(pos, dim, char);
     this.yOff = 4;
   } // Ends Constructor
 
-  //###[ RENDER FUNCTIONS ]#############################################
   renderChar(){
     textAlign(CENTER,CENTER); textSize(64); noStroke(); fill(this.fill_text);
     if(this.mousePressedOverMe()){fill(this.fill_mAct); strokeWeight(4); stroke(this.strk_mAct);}  
@@ -209,6 +222,9 @@ class ButtonCharOnly extends CharButton{
 } // Ends Class ButtonCharOnly
 
 
+/*======================================================================
+|>>> Class ButtonCharLabel
++=====================================================================*/
 class ButtonCharLabel extends CharButton{
   constructor(pos, dim, char, labl){
     super(pos, dim, char);
@@ -218,7 +234,6 @@ class ButtonCharLabel extends CharButton{
     this.label = labl;
   } // Ends Constructor
 
-  //###[ RENDER FUNCTIONS ]#############################################
   renderChar(){
     textSize(64); noStroke(); fill(this.fill_text);
     if(this.mousePressedOverMe()){fill(this.fill_mAct); strokeWeight(4); stroke(this.strk_mAct);}  
@@ -233,7 +248,10 @@ class ButtonCharLabel extends CharButton{
 } // Ends Class ButtonCharLabel
 
 
-class UILabel extends UIObj{
+/*======================================================================
+|>>> Class UILabel
++=====================================================================*/
+class UILabel extends PZUIObject{
   constructor(pos, dim, labTxt=""){
     super(pos,dim);
     this.label = labTxt;
@@ -244,13 +262,11 @@ class UILabel extends UIObj{
 
   bindCallback(cBack){
     this.cBack = cBack;
-    this.label  = this.cBack();
+    this.label = this.cBack();
     return this;
   } // Ends Function bindCallback
 
-  update(){
-    if(this.cBack){this.label = this.cBack();}
-  } // Ends Function update
+  update(){if(this.cBack){this.label = this.cBack();}}
 
   render(){
     fill(this.fill_bbox); noStroke(); rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
