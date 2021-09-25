@@ -3,48 +3,50 @@
   <head>
     <meta charset="UTF-8"/>
     <title>L-Systems Demo/Testbed</title>
-    <!-- Style (note: defined inline as well) -->
     <style>
       body {font-family: verdana;}
-      #h1_header {color: darkblue; margin-block-start: 4px; margin-block-end: 4px;}
+      table {margin-left: auto; margin-right: auto; border-collapse: collapse; color: white;}
+      td {vertical-align: middle; padding-top: 4px; padding-bottom: 4px;}
+      #h1_head {user-select: none; background: #3c3c3c; color: #FFFFFF; padding-left: 4px; margin-block-start: 0px; margin-block-end: 0px; max-width: 1340px;}
+      #pane_viz {width: 1024px;} 
+      #pane_ui  {width: 320px;}  
+      #cont_tab {width: 1344px; display: table; table-layout: fixed;}
+      #cont_row {display: table-row; height: 768px;}
+      .cont_col {display: table-cell; background: #3c3c3c; vertical-align: top; overflow: hidden; height: 768px;}
+
       .ui_labl {color: white; margin-block-start: 4px; margin-block-end: 4px;}
       .ui_subl {color: white;}
-      #ui {margin-left: 8px;} /* Give UI Panel a small margin */
-      /*----------------------------------------------------------------
-      |>>> Implementation Note: I (finally) found a nice config towards
-      |    effecting side-by-side VIZ|UI panels for DOM-based UI! Some
-      |    instructions for future projects utilizing it are as follows:
-      +-----------------------------------------------------------------
-      |> Set the width of #pane_viz to that of the canvas, and the width
-      |  of #pane_ui to that given thereto (e.g. 800px and 400px, resp.
-      |  in this case). If a browser ignores these vals when rendering:
-      |  try setting each as the % of their sum (e.g. 66.66% / 33.33%).
-      |> Set the width of #pane_tab to that of [#pane_viz + #pane_ui] as
-      |  aforementioned (e.g. [800px + 400px]=[1200px] in this case).
-      |> Set the height of .pane_col and #pane_row to that of the canvas
-      |  (e.g. 800 in this case).
-      +---------------------------------------------------------------*/
-      #pane_viz {width: 800px;} #pane_ui {width: 400px;}
-      #pane_tab {width: 1200px; display: table; table-layout: fixed;}
-      #pane_row {display: table-row; height: 800px;}
-      .pane_col {display: table-cell; background: #3c3c3c; vertical-align: top;}
-      .pane_col div {overflow: hidden; height: 800px;}
-    </style>
-    <!-- P5JS Lib Imports -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
-    <!-- Project Code -->
 
-    <script src="ui_init.js"></script>
+      .lab_head {user-select: none; font-size: 24px; min-width: 270px;text-align: center; padding: 0px; padding-top: 6px; padding-bottom: 6px; border-top: 2px solid #FFFFFF80; border-bottom: 2px solid #FFFFFF80; background: rgb(0,12,60);}         
+      .lab_desc {user-select: none; font-size: 18px; min-width: 84px; padding-left: 2px; padding-right: 0px;}
+      .lab_cVal {user-select: none; font-size: 18px; min-width: 84px; text-align: center;}
+
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+
     <script src="LSys_objects.js"></script>
+    <script src="ui_DOM.js"></script>
     <script src="example_configs.js"></script>
+
+    <!-- <script src="https://seiselen.github.io/PROJECT-BROADGATE/PanAndZoomUtil/pzUtil.js"></script> -->
+    <script src="../PanAndZoomUtil/pzUtil.js"></script>
+    <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script>  
     <script src="main.js"></script>
   </head>
   <body>
-    <h1 id="h1_header">L-Systems Demo/Testbed</h1>
-    <div id="pane_tab"><div id="pane_row">
-      <div class="pane_col" id="pane_viz"><div id="viz"></div></div>
-      <div class="pane_col" id="pane_ui"><div id="ui"></div></div>
+    <h1 id="h1_head">L-Systems Demo/Testbed</h1>
+    <div id="cont_tab"><div id="cont_row">
+      <div class="cont_col" id="pane_viz"><div id="viz"></div></div>
+      <div class="cont_col" id="pane_ui"><div id="ui"></div>
+        <table>
+          <tr><td class="lab_head" colspan="3">General Settings</td></tr>
+          <tr><td class="lab_desc">Template</td><td onkeydown="event.preventDefault()" id="down_exs" colspan="2" ></td></tr>
+          <tr><td class="lab_desc">Length  </td><td onkeydown="event.preventDefault()" id="sldr_len"  ></td><td class="lab_cVal" id="labl_len">hi</td></tr>
+          <tr><td class="lab_desc">Theta   </td><td onkeydown="event.preventDefault()" id="sldr_theta"></td><td class="lab_cVal" id="labl_theta"></td></tr>
+          <tr><td class="lab_desc">Rotation</td><td onkeydown="event.preventDefault()" id="sldr_rot"  ></td><td class="lab_cVal" id="labl_rot">hi</td></tr>
+        </table>
+      </div>
     </div></div>
   </body>
 </html>

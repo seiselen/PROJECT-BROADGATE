@@ -14,28 +14,20 @@ State Desc. QAD:
  > theta  = rotation delta for this system (as radians, default = 0)
  > curGen = current # generations this L-Sys was expanded
  > maxGen = maximum # generations this L-Sys can expand (default = 4)
- > offUI  = offset via UI input
  > offLS  = offset specified by L-Sys 
 +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
 class LSystem{
   // NOTE: Object state is 'properly'/officially' assigned via init function
   constructor(){
-    this.axiom   = null;
-    this.corpus  = null;
-    this.rules   = null;
-    this.theta   = 0;
-    this.curGen  = -1;
-    this.maxGen  = 4;
-    this.offUI   = {x:0, y:0};
-    this.offLS   = {x:0, y:0};
-    this.initLen = 400;
-    this.initRot = -PI/2;
-    this.lenFac  = 0.5;
-
-
+    // A/O 9/24: used to put berries on trees :-)
+    this.fixedRandom = Array(100).fill(0).map((v)=>v=random(100));
     // QAD Wind Simulation
     this.doQADWind = false;
     this.windSpeed = 240;
+    this.cfigKey   = 'none'; // key of config
+
+
+    this.prevBracket; // used with QAD fruit growth
   } // Ends Constructor
 
   //####################################################################
@@ -47,32 +39,20 @@ class LSystem{
   getCurGen(){return this.curGen;}
   getMaxGen(){return this.maxGen;}
 
-  //####################################################################
-  //>>> SETTERS
-  //####################################################################
-
-  // Inits xor Recycles init L-Sys state (can add/edit via resp. setter)
-  init(axiom,rules,theta,maxGen){
-    this.axiom  = axiom;
-    this.corpus = this.axiom;
-    this.rules  = rules;
-    this.theta  = (theta)  ? theta  : 0;
-    this.maxGen = (maxGen) ? maxGen : 4;
-    this.curGen = 0;
-    return this; // for function chaining
-  } // Ends Function init
 
   // Function 'init', but loads in a pre-defined config (per old def.)
-  loadConfig(config){
-    this.axiom  = config.axiom;
-    this.corpus = this.axiom;
-    this.rules  = config.rules;
-    this.theta  = config.theta;
-    this.curGen = 0;
-    this.maxGen = config.maxGen;
-    this.initLen = config.initLen;
-    this.initRot = config.initRot;
-    this.offLS   = config.offLS;
+  loadConfig(configKey){
+    this.cfigKey = configKey;
+    let config   = templates[configKey];
+    this.axiom   = config.axiom;
+    this.corpus  = this.axiom;
+    this.rules   = config.rules;
+    this.theta   = config.theta;
+    this.curGen  = 0;
+    this.maxGen  = config.maxGen;
+    this.baseLen = config.baseLen;
+    this.baseRot = radians((360+config.baseRot)%360); // xtra syntax converts negative degs to positive equivalent
+    this.offset  = templates.getOffset(config);
     return this; // for function chaining
   }
 
@@ -81,14 +61,18 @@ class LSystem{
   setTheta(nT)  {this.theta = nT;}
   setMaxGen(nMx){this.maxGen = mMx;}
 
-  setInitRot(val){this.initRot=val;}
-  setInitLen(val){this.initLen=val;}
+  setInitRot(val){this.baseRot=val;}
+  setInitLen(val){this.baseLen=val;}
+  setInitTheta(val){this.theta=val;} // MISNOMER, as used by slider 'onChanged' to [re]set theta
   setLenFac(val){this.lenFac=val;}
 
+  handleKeyPressed(key){
+    if(key == 'g'){this.generate();}
+  }
 
   //>>> Function generate: Advances L-System Sentence forward by 1 generation
   generate() {
-    //if(this.curGen < this.maxGen){
+    if(this.curGen < this.maxGen){
       let nextgen = ''; // buffer string to populate and replace sentence via generation
       for (let i=0; i<this.corpus.length; i++) {
         // cur char generates string [if rule antecedent] <xor> remains for new sentence
@@ -102,7 +86,7 @@ class LSystem{
       // Replace sentence and advance generation #
       this.corpus = nextgen;
       this.curGen++;
-    //}
+    }
   } // Ends Function generate
 
   // Used to insta-advance to max generations i.e. skip iter key presses
@@ -120,8 +104,8 @@ class LSystem{
 
   render(){
     fill(0);
-    translate(this.offUI.x+this.offLS.x, this.offUI.y+this.offLS.y); 
-    rotate(this.initRot);
+    translate(this.offset.x, this.offset.y); 
+    rotate(this.baseRot);
     //if(this.doQADWind){this.QAD_WindSim();}
     this.turtleRender();
   } // Ends Function render
@@ -129,17 +113,24 @@ class LSystem{
 
   turtleRender(){
     let sen = this.corpus;
-    let len = this.initLen * pow(this.lenFac, this.curGen);
-    let ang = this.theta;
+    let len = this.baseLen;
+    let ang = radians(this.theta);
     let idx = this.curGen;
 
-    stroke(255);
+    stroke("#8c510a");
+
+    this.prevBracket = '?';
+
 
     for (let i = 0; i < sen.length; i++) {
       let c = sen.charAt(i);
       if (c === 'F') {
-        strokeWeight(1);
+        strokeWeight(1); //strokeWeight((idx*1.5)+1);
+        stroke(lerpColor(color("#bf812d"),color("#543005"), idx/this.maxGen));
         line(0,0,len,0);
+
+        //this.QADDrawFruit();
+ 
         translate(len,0);
       }
       else if (c === '+') {rotate(ang);}
@@ -149,5 +140,18 @@ class LSystem{
       else if (c === ']') {pop();idx++;}
     }
   } // Ends Function turtleRender
+
+  QADDrawFruit(sen){
+    if(sen.charAt(i+1) === ']' && this.prevBracket === '['){
+      this.prevBracket = '?';
+      if(idx<=1 && this.fixedRandom[(i%100)]<50){
+        stroke(24,168,72); strokeWeight(0.5); fill(96,int(lerp(180,240,(i%100)/100)),108); 
+        ellipse(len,0,int(lerp(8,12,(i%100)/100)),int(lerp(8,12,(i%100)/100)));
+      };
+    }
+    else if(sen.charAt(i+1) === '[' && this.prevBracket === '?'){
+      this.prevBracket = '[';
+    }    
+  }
 
 } // Ends Class LSystem
