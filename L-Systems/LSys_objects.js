@@ -125,12 +125,11 @@ class LSystem{
     for (let i = 0; i < sen.length; i++) {
       let c = sen.charAt(i);
       if (c === 'F') {
-        strokeWeight(1); //strokeWeight((idx*1.5)+1);
-        stroke(lerpColor(color("#bf812d"),color("#543005"), idx/this.maxGen));
+        strokeWeight(1); stroke(60);
         line(0,0,len,0);
-
-        //this.QADDrawFruit();
- 
+        translate(len,0);
+      }
+      if (c === 'G') {
         translate(len,0);
       }
       else if (c === '+') {rotate(ang);}
@@ -141,7 +140,15 @@ class LSystem{
     }
   } // Ends Function turtleRender
 
-  QADDrawFruit(sen){
+
+  // called this <vs> "strokeWeight(1); stroke(60);" in handling of 'F' production symbol
+  QADTreeColor(idx,len){
+    strokeWeight((idx*1.5)+1);
+    stroke(lerpColor(color("#bf812d"),color("#543005"), idx/this.maxGen));
+  }
+
+  // called this below call of line(...) in handling of 'F' production symbol
+  QADTreeFruit(sen,len){
     if(sen.charAt(i+1) === ']' && this.prevBracket === '['){
       this.prevBracket = '?';
       if(idx<=1 && this.fixedRandom[(i%100)]<50){

@@ -1,9 +1,10 @@
 //######################################################################
 //>>> PRE-BAKED EXAMPLE DEFINITIONS
 //######################################################################
-
 var templates = {
-
+  /*--------------------------------------------------------------------
+  |>>> TEMPLATE GETTERS/PARSERS
+  +-------------------------------------------------------------------*/
   getOffset : function(val){
     let off = val.offset;
     return {
@@ -13,18 +14,26 @@ var templates = {
   },
 
   parseLenStr : function(str){
-    let len = str.length;
-    if(len==1){
-      if(str=="t"){return PaneDims.TALL;}
+    let opr = str.split(',');
+    let num = parseFloat(opr[0]);
+    let dim = (opr[2]=='t') ? PaneDims.TALL : (opr[2]=='w') ? PaneDims.VIZ_WIDE : 0;
+
+    switch(opr[1]){
+      case '+' : return num+dim; 
+      case '*' : return num*dim;
     }
-    if(len==3){
-      if(str.substring(0,2)=="t/"){return PaneDims.TALL/parseInt(str.charAt(2));}
-      if(str.substring(0,2)=="w/"){return PaneDims.VIZ_WIDE/parseInt(str.charAt(2));}
-    }
-    console.log("Error: Input ["+str.substring(0,2)+"] NOT handled!"); return 0;
+
+    console.log("Error: Input ["+str+"] NOT handled!"); return 0;
   },
 
-  /*>>> AND NOW, THE TEMPLATES THEMSELVES... */
+  /*--------------------------------------------------------------------
+  |>>> TEMPLATE EXAMPLE DEFINITIONS
+  +---------------------------------------------------------------------
+  | > The following are REQUIRED settings for a template:
+  |    {axiom, rules, theta, maxGen, baseLen, baseRot, offset}
+  | > The following are OPTIONAL settings for a template:
+  |    disblUI: "theta,len,etc." // disables slider for a setting
+  +-------------------------------------------------------------------*/
 
   ex_tree_01 : {
     axiom   : 'X',
@@ -36,7 +45,7 @@ var templates = {
     maxGen  : 6, 
     baseLen : 4,
     baseRot : -90,  
-    offset  : {x:0, y:"t/2"}
+    offset  : {x:0, y:".5,*,t"}
   },
 
   ex_tree_02 : {
@@ -48,7 +57,7 @@ var templates = {
     maxGen  : 4, 
     baseLen : 20,
     baseRot : -90,
-    offset  : {x:0, y:"t/2"}
+    offset  : {x:0, y:".5,*,t"}
   },
 
   ex_tree_03 : {
@@ -60,7 +69,20 @@ var templates = {
     maxGen  : 5,
     baseLen : 10,
     baseRot : -90,
-    offset  : {x:0, y:"t/2"}
+    offset  : {x:0, y:".5,*,t"}
+  },
+
+  /* a.k.a. 'shiff[man]01' */
+  ex_tree_04 : {
+    axiom   : 'F',
+    rules   : [
+      new Rule('F', "FF+[+F-F-F]-[-F+F+F]")
+    ],
+    theta   : 22.5, /* orig 25 */
+    maxGen  : 4,
+    baseLen : 11,
+    baseRot : -90,
+    offset  : {x:0, y:".5,*,t"}
   },
 
   ex_grass_01 : {
@@ -74,10 +96,10 @@ var templates = {
     maxGen  : 6,
     baseLen : 5,
     baseRot : -90,
-    offset  : {x:0, y:"t/2"}
+    offset  : {x:0, y:".5,*,t"}
   },
 
-  ex_FracShape_01 : {
+  ex_frac_01 : {
     axiom   : "F+F+F",
     rules   : [
       new Rule('F', "F-F+F")
@@ -86,57 +108,62 @@ var templates = {
     maxGen  : 6, 
     baseLen : 20,
     baseRot : -90,
-    offset  : {x:0, y:"t/2"}
+    offset  : {x:0, y:".5,*,t"}
   },
 
-/*
-
-  ex_5 : {
+  ex_frac_02 : {
     axiom   : "F++F++F++F++F",
     rules   : [
       new Rule('F', "F++F++F|F-F++F")
     ],
     theta   : 36,
     maxGen  : 3, 
-    baseLen : 75,
+    baseLen : 20,
     baseRot : 0,
-    offset  : {x:"-w/2", y:"-t/2"}
+    offset  : {x:"-.15,*,w", y:"-.35,*,t"},
+    disblUI : "theta"
   },
 
-
-
-
-  ex_shiff01 : {
-    baseLen = 150;
-    lsys = new LSystem("F");
-    lsys.addRule(new Rule('F', "FF+[+F-F-F]-[-F+F+F]"));
-    lsys.setTheta(radians(22.5)) // orig 25
-    lsys.setMaxGen(4);
-    initRotate = -PI/2;
-    curXOff = PaneDims.VIZ_WIDE/2;
-    curYOff = PaneDims.TALL;
+  /* a.k.a. 'koch snowflake 01' */
+  ex_frac_03 : {
+    axiom   : "F--F--F",
+    rules   : [
+      new Rule('F', "F+F--F+F")
+    ],
+    theta   : 60,
+    maxGen  : 3, 
+    baseLen : 16,
+    baseRot : 90,
+    offset  : {x:"-.1,*,w", y:"-.25,*,t"},
+    disblUI : "theta,len"
   },
 
+  /* a.k.a. 'sierpinkski carpet 01' */
+  ex_frac_04 : {
+    axiom   : "F",
+    rules   : [
+      new Rule('F', 'F+F-F-F-G+F+F+F-F'),
+      new Rule('G', 'GGG')
+    ],
+    theta   : 90,
+    maxGen  : 4, 
+    baseLen : 16,
+    baseRot : 90,
+    offset  : {x:"0,*,w", y:"-.86,*,t"},
+    disblUI : "theta,len"
+  },  
 
-  ex_kochSnowflake01 : {
-    baseLen = 60;
-    lsys = new LSystem("F-F-F-F");
-    lsys.addRule(new Rule('F', "FF-F-F-F-F-F+F"));
-    lsys.setTheta(radians(90))
-    lsys.setMaxGen(4);
-    curXOff = 420;
-    curYOff = 520;
+  /* a.k.a. 'koch checker 01' */
+  ex_frac_05 : {
+    axiom   : "F-F-F-F",
+    rules   : [
+      new Rule('F', "FF-F-F-F-FF")
+    ],
+    theta   : 90,
+    maxGen  : 4, 
+    baseLen : 16,
+    baseRot : 90,
+    offset  : {x:"-.64,*,w", y:"-.85,*,t"},
+    disblUI : "theta,len"
   },
-
-  ex_kochChecker01 : {
-    baseLen = 60;
-    lsys = new LSystem("F-F-F-F");
-    lsys.addRule(new Rule('F', "FF-F-F-F-FF"));
-    lsys.setTheta(radians(90))
-    lsys.setMaxGen(4);
-    curXOff = 150;
-    curYOff = 450;
-  },
-
-  */
-}
+} // Ends Object templates
