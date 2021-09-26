@@ -2,6 +2,14 @@
 |>>> Example Project for PZUtil
 +-----------------------------------------------------------------------
 | Description: (QAD) Demonstrates how to use the PZUtil
++-----------------------------------------------------------------------
+| Present/Future Implementation Notes (via OneNote):
+|  > Tricky(?) Part: Handling in-canvas interactions (i.e. effectively
+|    ALL mouse actions/events) with objects transformed via the PZUtil;
+|    as mouse coords will need to be transformed from 'global space' to
+|    'in-PZ-space' (and vice-versa). This should [theoretically] require
+|    only a 'mapTo' and 'mapFrom' method; and making sure that spatial
+|    values are correctly transformed back-and-forth.
 *=====================================================================*/
 
 ///*>>> UNCOMMENT ONLY WHEN SERVER IS TURNED ON!
