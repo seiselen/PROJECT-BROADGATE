@@ -22,7 +22,6 @@ var templates = {
       case '+' : return num+dim; 
       case '*' : return num*dim;
     }
-
     console.log("Error: Input ["+str+"] NOT handled!"); return 0;
   },
 
@@ -35,6 +34,9 @@ var templates = {
   |    disblUI: "theta,len,etc." // disables slider for a setting
   +-------------------------------------------------------------------*/
 
+  //####################################################################
+  //>>> TREE-LIKE VEGETATION
+  //####################################################################
   ex_tree_01 : {
     name    : "Tree 01 (Thin and Sparse)",
     axiom   : 'X',
@@ -75,7 +77,6 @@ var templates = {
     offset  : {x:0, y:".5,*,t"}
   },
 
-  /* a.k.a. 'shiff[man]01' */
   ex_tree_04 : {
     name    : "Tree 04 (Bushy Lightbulb)",
     axiom   : 'F',
@@ -89,8 +90,25 @@ var templates = {
     offset  : {x:0, y:".5,*,t"}
   },
 
-  ex_grass_01 : {
-    name    : "Grass 01 (Wheat-Like)",
+  ex_tree_05 : {
+    name    : "Tree 05 (Thin Pine-Like)",
+    axiom   : 'X',
+    rules   : [
+      new Rule('X', "F[+X][-X]FX"),
+      new Rule('F', "FF")
+    ],
+    theta   : 25,
+    maxGen  : 6,
+    baseLen : 5,
+    baseRot : -90,
+    offset  : {x:0, y:".5,*,t"}
+  },
+
+  //####################################################################
+  //>>> PLANT-LIKE VEGETATION
+  //####################################################################
+  ex_plant_01 : {
+    name    : "Plant 01 (Wheat-Like Grass)",
     axiom   : 'F',
     rules   : [
       new Rule('F', "FF-[XY]+[XY]"),
@@ -104,6 +122,41 @@ var templates = {
     offset  : {x:0, y:".5,*,t"}
   },
 
+  ex_plant_02 : {
+    name    : "Plant 02 (Desert Pine-Like)",
+    axiom   : 'Z',
+    rules   : [
+      new Rule('Z', "ZFX[>3+Z][>3-Z]"),
+      new Rule('X', "X[>-FFF][>+FFF]FX")
+    ],
+    theta   : 25,
+    maxGen  : 4,
+    baseLen : 25,
+    baseRot : -90,
+    offset  : {x:0, y:".5,*,t"}
+  },
+
+  ex_plant_03 : {
+    name    : "Plant 03 (Short Shrub-Like)",
+    axiom   : 'SLFFF',
+    rules   : [
+      new Rule('S', "[5+++Z][5---Z]TS"),
+      new Rule('Z', "+H[-Z]L"),
+      new Rule('H', "-Z[+H]L"),
+      new Rule('T', "TL"),
+      new Rule('L', "[-FFF][+FFF]F")
+    ],
+    theta   : 18,
+    maxGen  : 5,
+    baseLen : 25,
+    baseRot : -90,
+    offset  : {x:0, y:".5,*,t"}
+  },
+
+
+  //####################################################################
+  //>>> FRACTAL SHAPES
+  //####################################################################
   ex_frac_01 : {
     name    : "Frac 01 (Terdragon Curve)",
     axiom   : "F+F+F",
@@ -131,7 +184,6 @@ var templates = {
     disblUI : "theta"
   },
 
-  /* a.k.a. 'koch snowflake 01' */
   ex_frac_03 : {
     name    : "Frac 03 (Koch Snowflake)",
     axiom   : "F--F--F",
@@ -161,7 +213,6 @@ var templates = {
     disblUI : "theta,len"
   },  
 
-  /* a.k.a. 'koch checker 01' */
   ex_frac_05 : {
     name    : "Frac 05 (Koch 'Checkerboard')",
     axiom   : "F-F-F-F",

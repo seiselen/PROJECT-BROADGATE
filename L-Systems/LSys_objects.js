@@ -51,7 +51,7 @@ class LSystem{
     this.baseRot = radians((360+config.baseRot)%360); // xtra syntax converts negative degs to positive equivalent
     this.offset  = templates.getOffset(config);
 
-    this.isVeg   = (configKey.includes("tree")||configKey.includes("grass")) ? true : false;
+    this.isVeg   = (configKey.includes("tree")||configKey.includes("plant")) ? true : false;
     this.colBrch = false;
     this.simWind = false;
     return this; // for function chaining

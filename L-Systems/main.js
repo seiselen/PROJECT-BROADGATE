@@ -5,11 +5,32 @@
 |               PCG of simple 2D L-System objects for mostly vegetation
 |               (e.g. trees bushes, etc.); as well as other things that
 |               can be generated utilizing [L-System] shape grammars. 
-| Author:     > Dan Shiffman (NYU / The Coding Train / Nature Of Code) 
-|                for a chunk of the base L-System init and render code.
-|              > Steven Eiselen (Eiselen Laboratories) for expansion and
-|                enhancement thereupon, as well as UI/UX interactivity.
-| Lang./Lib.:  JavaScript via P5JS
+| Author:       > Steven Eiselen (WRT contributions of below references)
+| References:   > Dan Shiffman (NYU / The Coding Train / Nature Of Code) 
+|                 whose L-System code provided a base from which this
+|                 implementation expanded upon.
+|                  <https://natureofcode.com/book/chapter-8-fractals/>
+|               > Christopher G. Jennings whose analogous L-System demo,
+|                 despite being discovered late into my own realization,
+|                 provided some additional template and production rule 
+|                 definitions. He also implemented UI/UX that is in my
+|                 opinion superior to my own: such that if I produce a
+|                 major update to this project in the future: its UI/UX
+|                 will be inspired thereby; as discussed in the 'Future
+|                 UI/UX' note further below.
+|                  <https://cgjennings.ca/articles/l-systems/>
++-----------------------------------------------------------------------
+| Note on Future UI/UX: Derived from the one implemented by Jennings...
+|  > Whenever a template L-System definition is selected (i.e. either 
+|    on-init and/or via the user), two things happen;
+|     [1] It is loaded into ergo modifies the lsys object per usual; AND
+|     [2] Its data definition is placed into a multi-line text-input DOM
+|         element whereby the user can first modify it as desired, then
+|         click a button to effect the changes accordingly. 
+|  > Although I'm compelled to implement this feature NOW, let's not and
+|    say we did; as at the time of writing: this project was planned to 
+|    be the last of the P5JS 'Broadgate II/III' series of code demos, as
+|    I'd like to return to Unity3D for other Genesis/Fea/other projects.
 +=====================================================================*/
 
 /*----------------------------------------------------------------------
@@ -21,7 +42,7 @@ var pzUtil, lsys;
 function setup() {
   createCanvas(PaneDims.VIZ_WIDE, PaneDims.TALL).parent("pane_viz");
   pzUtil = new PZUtil([PaneDims.VIZ_WIDE, PaneDims.TALL]);
-  lsys   = new LSystem().loadConfig('ex_tree_01').fullyGenerate();
+  lsys   = new LSystem().loadConfig('ex_tree_05').fullyGenerate();
   init_ui();
   frameRate(30);
 } // Ends P5JS Function setup
