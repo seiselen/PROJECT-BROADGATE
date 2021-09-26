@@ -36,6 +36,7 @@ var templates = {
   +-------------------------------------------------------------------*/
 
   ex_tree_01 : {
+    name    : "Tree 01 (Thin and Sparse)",
     axiom   : 'X',
     rules   : [
       new Rule('X', "F+[[X]-X]-F[-FX]+X"),
@@ -49,6 +50,7 @@ var templates = {
   },
 
   ex_tree_02 : {
+    name    : "Tree 02 (Bushy Inverse Cone)",
     axiom   : 'F',
     rules   : [
       new Rule('F', "F[+F][-F[-F]F]F[+F][-F]")
@@ -61,6 +63,7 @@ var templates = {
   },
 
   ex_tree_03 : {
+    name    : "Tree 03 (Bushy And Slender)",
     axiom   : 'F',
     rules   : [
       new Rule('F', "F[+F]F[-F][F]")
@@ -74,6 +77,7 @@ var templates = {
 
   /* a.k.a. 'shiff[man]01' */
   ex_tree_04 : {
+    name    : "Tree 04 (Bushy Lightbulb)",
     axiom   : 'F',
     rules   : [
       new Rule('F', "FF+[+F-F-F]-[-F+F+F]")
@@ -86,6 +90,7 @@ var templates = {
   },
 
   ex_grass_01 : {
+    name    : "Grass 01 (Wheat-Like)",
     axiom   : 'F',
     rules   : [
       new Rule('F', "FF-[XY]+[XY]"),
@@ -100,6 +105,7 @@ var templates = {
   },
 
   ex_frac_01 : {
+    name    : "Frac 01 (Terdragon Curve)",
     axiom   : "F+F+F",
     rules   : [
       new Rule('F', "F-F+F")
@@ -112,6 +118,7 @@ var templates = {
   },
 
   ex_frac_02 : {
+    name    : "Frac 02 (Sierpinski Pentagon)",
     axiom   : "F++F++F++F++F",
     rules   : [
       new Rule('F', "F++F++F|F-F++F")
@@ -126,6 +133,7 @@ var templates = {
 
   /* a.k.a. 'koch snowflake 01' */
   ex_frac_03 : {
+    name    : "Frac 03 (Koch Snowflake)",
     axiom   : "F--F--F",
     rules   : [
       new Rule('F', "F+F--F+F")
@@ -138,8 +146,8 @@ var templates = {
     disblUI : "theta,len"
   },
 
-  /* a.k.a. 'sierpinkski carpet 01' */
   ex_frac_04 : {
+    name    : "Frac 04 (Sierpinski Carpet)",
     axiom   : "F",
     rules   : [
       new Rule('F', 'F+F-F-F-G+F+F+F-F'),
@@ -155,6 +163,7 @@ var templates = {
 
   /* a.k.a. 'koch checker 01' */
   ex_frac_05 : {
+    name    : "Frac 05 (Koch 'Checkerboard')",
     axiom   : "F-F-F-F",
     rules   : [
       new Rule('F', "FF-F-F-F-FF")

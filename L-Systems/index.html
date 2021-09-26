@@ -6,18 +6,18 @@
     <style>
       body {font-family: verdana;}
       table {margin-left: auto; margin-right: auto; border-collapse: collapse; color: white;}
-      td {vertical-align: middle; padding-top: 4px; padding-bottom: 4px;}
-      #h1_head {user-select: none; background: #3c3c3c; color: #FFFFFF; padding-left: 4px; margin-block-start: 0px; margin-block-end: 0px; max-width: 1340px;}
-      #pane_viz {width: 1024px;} 
-      #pane_ui  {width: 320px;}  
-      #cont_tab {width: 1344px; display: table; table-layout: fixed;}
+      td {vertical-align: middle; padding-top: 4px; padding-bottom: 4px; border: 1px solid white;}
+      #h1_head {user-select: none; background: #3c3c3c; color: #FFFFFF; padding-left: 4px; margin-block-start: 0px; margin-block-end: 0px; max-width: 1356px;}
+      #pane_viz {width: 1024px;}
+      #pane_ui  {width: 336px;}  
+      #cont_tab {width: 1360px; display: table; table-layout: fixed;}
       #cont_row {display: table-row; height: 768px;}
       .cont_col {display: table-cell; background: #3c3c3c; vertical-align: top; overflow: hidden; height: 768px;}
       .ui_labl  {color: white; margin-block-start: 4px; margin-block-end: 4px;}
       .ui_subl  {color: white;}
-      .lab_head {user-select: none; font-size: 24px; min-width: 270px;text-align: center; padding: 0px; padding-top: 6px; padding-bottom: 6px; border-top: 2px solid #FFFFFF80; border-bottom: 2px solid #FFFFFF80; background: rgb(0,12,60);}         
-      .lab_desc {user-select: none; font-size: 18px; min-width: 84px; padding-left: 2px; padding-right: 0px;}
-      .lab_cVal {user-select: none; font-size: 18px; min-width: 84px; text-align: center;}
+      .lab_h1   {user-select: none; font-size: 22px; min-width: 270px;text-align: center; padding: 0px; padding-top: 6px; padding-bottom: 6px; border-top: 2px solid #FFFFFF80; border-bottom: 2px solid #FFFFFF80; background: rgb(0,12,60);}
+      .lab_desc {user-select: none; font-size: 18px; min-width: 80px; padding-left: 4px; padding-right: 8px;}
+      .lab_cVal {user-select: none; font-size: 18px; min-width: 60px; text-align: center;}
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <script src="LSys_objects.js"></script>
@@ -29,13 +29,16 @@
   <body>
     <h1 id="h1_head">L-Systems Demo/Testbed</h1>
     <div id="cont_tab"><div id="cont_row">
-      <div class="cont_col" id="pane_viz"><div id="viz"></div></div>
-      <div class="cont_col" id="pane_ui"><div id="ui"></div>
+      <div class="cont_col" id="pane_viz"></div>
+      <div class="cont_col" id="pane_ui">
         <table>
-          <tr><td class="lab_head" colspan="3">Load/Modify Example LS</td></tr>
-          <tr><td class="lab_desc">Example</td><td onkeydown="event.preventDefault()" id="down_exs" colspan="2" ></td></tr>
+          <tr><td class="lab_h1" colspan="3">Load Example/Template LS</td></tr>
+          <tr><td class="lab_cVal" onkeydown="event.preventDefault()" id="down_exs" colspan="3" ></td></tr>
+          <tr><td class="lab_h1" colspan="3">Manipulate Current LS</td></tr>
           <tr><td class="lab_desc">Length</td><td onkeydown="event.preventDefault()" id="sldr_len"  ></td><td class="lab_cVal" id="labl_len">hi</td></tr>
-          <tr><td class="lab_desc">Theta</td><td onkeydown="event.preventDefault()" id="sldr_theta"></td><td class="lab_cVal" id="labl_theta"></td></tr>
+          <tr><td class="lab_desc">Theta</td><td onkeydown="event.preventDefault()" id="sldr_theta"></td><td class="lab_cVal" id="labl_theta"></td></tr>       
+          <tr><td class="lab_desc" colspan="2">Color Branches (Veg. Only)</td><td><input type="checkbox" onkeydown="event.preventDefault()" class="lab_cVal" id="cBox_branches" /></td>
+          <tr><td class="lab_desc" colspan="2">Simulate Wind (Veg. Only)</td><td><input type="checkbox" onkeydown="event.preventDefault()" class="lab_cVal" id="cBox_wind" /></td>
         </table>
       </div>
     </div></div>

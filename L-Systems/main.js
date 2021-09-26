@@ -19,10 +19,11 @@ var PaneDims = {VIZ_WIDE:1024, UI_WIDE:320, TALL:768};
 var pzUtil, lsys;
 
 function setup() {
-  createCanvas(PaneDims.VIZ_WIDE, PaneDims.TALL).parent("viz");
+  createCanvas(PaneDims.VIZ_WIDE, PaneDims.TALL).parent("pane_viz");
   pzUtil = new PZUtil([PaneDims.VIZ_WIDE, PaneDims.TALL]);
-  lsys   = new LSystem().loadConfig('ex_frac_04').instaGenerate();
+  lsys   = new LSystem().loadConfig('ex_tree_01').fullyGenerate();
   init_ui();
+  frameRate(30);
 } // Ends P5JS Function setup
 
 function draw() {
@@ -35,31 +36,43 @@ function draw() {
 
 function mousePressed(){pzUtil.handleMousePressed();if(mouseInCanvas()){return false;}}
 function mouseWheel(evt){pzUtil.handleMouseWheel(evt);}
-function keyPressed(){lsys.handleKeyPressed(key);pzUtil.handleKeyPressed(key);}
+function keyPressed(){pzUtil.handleKeyPressed(key);}
 
 
 /*----------------------------------------------------------------------
 |>>> DOM UI Init/Update Functions  (restored to main.js for convenience) 
 +---------------------------------------------------------------------*/
-var sldr_len, sldr_theta, labl_len, labl_theta, drop_exs; //<- 'Existing Template' Related UI
+var sldr_len, sldr_theta, labl_len, labl_theta, drop_exs, cbox_colBranch, cbox_simWind;
 
 function init_ui(){
-  sldr_len   = createSlider(10, 400, 0, 5).style('width', "152px").parent("sldr_len").input(()=>lsys.setInitLen(sldr_len.value()));
-  sldr_theta = createSlider(5, 90, 15, 2.5).style('width', "152px").parent("sldr_theta").input(()=>lsys.setInitTheta(sldr_theta.value()));
+  sldr_len   = createSlider(1, 10, 0, 0.1).style('width', "160px").parent("sldr_len").input(()=>lsys.setLenFac(sldr_len.value()));
+  sldr_theta = createSlider(5, 90, 15, 2.5).style('width', "160px").parent("sldr_theta").input(()=>lsys.setTheta(sldr_theta.value()));
+
+  cbox_colBranch = select("#cBox_branches");
+  cbox_colBranch.elt.checked = false;
+  cbox_colBranch.changed(()=>{lsys.colBrch = cbox_colBranch.checked()});
+
+  cbox_simWind = select("#cBox_wind");
+  cbox_simWind.elt.checked = false;
+  cbox_simWind.changed(()=>{lsys.simWind = cbox_simWind.checked()});
+
+
   updateSliderVals();
 
   labl_len   = select("#labl_len");
   labl_theta = select("#labl_theta");
 
   drop_exs = createSelect().parent("#down_exs").style("font-size","18px").style("margin-left","8px");
-  Object.keys(templates).filter((k)=>k[0]=='e').forEach((k)=>{drop_exs.option(k);})
+  Object.keys(templates).filter((k)=>k[0]=='e').forEach((k)=>{drop_exs.option(templates[k].name, k);})
   drop_exs.selected(lsys.cfigKey);
-  drop_exs.changed(()=>{lsys.loadConfig(drop_exs.value()).instaGenerate(); updateSliderVals();});
+  drop_exs.changed(()=>{lsys.loadConfig(drop_exs.value()).fullyGenerate(); updateSliderVals();});
+
+
 
 }
 
 function updateDOMUI(){
-  labl_len.html(lsys.baseLen);
+  labl_len.html(lsys.lenFac);
   labl_theta.html(nf(lsys.theta,1,1));
 }
 
@@ -70,13 +83,26 @@ function updateSliderVals(){
     sldr_theta.elt.disabled=false; 
     sldr_len.elt.disabled=false;
     sldr_theta.value(lsys.theta)
-    sldr_len.value(lsys.baseLen);
-    return;
+    sldr_len.value(lsys.lenFac);
+  }
+  else{
+    if(disableUI.includes("theta")){sldr_theta.elt.disabled=true;}
+    else{sldr_theta.elt.disabled=false; sldr_theta.value(lsys.theta);}
+    
+    if(disableUI.includes("len")){sldr_len.elt.disabled=true;}
+    else{sldr_len.elt.disabled=false; sldr_len.value(lsys.lenFac);}
   }
 
-  if(disableUI.includes("theta")){sldr_theta.elt.disabled=true;}
-  else{sldr_theta.elt.disabled=false; sldr_theta.value(lsys.theta);}
-  
-  if(disableUI.includes("len")){sldr_len.elt.disabled=true;}
-  else{sldr_len.elt.disabled=false; sldr_len.value(lsys.baseLen);}
+  if(lsys.isVeg == true){
+    cbox_colBranch.elt.disabled = false;
+    cbox_simWind.elt.disabled = false;
+    cbox_colBranch.elt.checked = false;
+    cbox_simWind.elt.checked = false;
+  }
+  else{
+    cbox_colBranch.elt.checked = false;
+    cbox_simWind.elt.checked = false;
+    cbox_colBranch.elt.disabled = true;
+    cbox_simWind.elt.disabled = true;
+  }
 }

@@ -1,46 +1,41 @@
-
-
-
-
+/*======================================================================
+|>>> Class Rule                               (L-System Production Rule)
++-----------------------------------------------------------------------
+| Description: Simple representation of a L-System Production Rule as an
+|              {Antecedent, Consequent} (i.e. {p,q}) two-tuple pair.
++=====================================================================*/
 class Rule{
   constructor(p,q){this.p = p;this.q = q;}
-}
+}  // Ends Class [Production] Rule
 
 
-/*=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
-State Desc. QAD:
- > axiom  =  self-evident 
- > rules  = self-evident
- > theta  = rotation delta for this system (as radians, default = 0)
- > curGen = current # generations this L-Sys was expanded
- > maxGen = maximum # generations this L-Sys can expand (default = 4)
- > offLS  = offset specified by L-Sys 
-+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=*/
+/*======================================================================
+|>>> Class LSystem                      (Lindenmayer System Realization)
++-----------------------------------------------------------------------
+| Description: Implements the state, behaviors, and visualization of a 
+|              2D Lindenmayer System (to whichever level of complexity
+|              is currently implemented).
+| Usage Notes: > This class works via loading in definitions of existing
+|                L-Systems; both on-initialization (see note immediately
+|                below), on selecting a pre-existing L-System (i.e. one
+|                defined offline and located within a .js file), and/or
+|                on the user defining one via the DOM UI.
+|              > After initializing this object: one of the pre-existing
+|                L-System definitions MUST be loaded in before the call
+|                of both 'initUI()' and P5JS function 'draw()'; as the
+|                DOM UI code outside this class and render code within
+|                are both dependent on a fully-defined state thereof.
++=====================================================================*/
 class LSystem{
-  // NOTE: Object state is 'properly'/officially' assigned via init function
   constructor(){
-    // A/O 9/24: used to put berries on trees :-)
-    this.fixedRandom = Array(100).fill(0).map((v)=>v=random(100));
-    // QAD Wind Simulation
-    this.doQADWind = false;
-    this.windSpeed = 240;
+    this.windSpeed = 128;
     this.cfigKey   = 'none'; // key of config
-
-
-    this.prevBracket; // used with QAD fruit growth
   } // Ends Constructor
 
+
   //####################################################################
-  //>>> GETTERS
+  //>>> LOADER/[RE]INIT FUNCTIONS
   //####################################################################
-
-  // defines if some state exists to update/render/etc.
-  isActive(){return (this.axiom && this.rules);}
-  getCurGen(){return this.curGen;}
-  getMaxGen(){return this.maxGen;}
-
-
-  // Function 'init', but loads in a pre-defined config (per old def.)
   loadConfig(configKey){
     this.cfigKey = configKey;
     let config   = templates[configKey];
@@ -48,29 +43,43 @@ class LSystem{
     this.corpus  = this.axiom;
     this.rules   = config.rules;
     this.theta   = config.theta;
+    this.wTheta  = 0;
     this.curGen  = 0;
     this.maxGen  = config.maxGen;
+    this.lenFac  = 1;
     this.baseLen = config.baseLen;
     this.baseRot = radians((360+config.baseRot)%360); // xtra syntax converts negative degs to positive equivalent
     this.offset  = templates.getOffset(config);
+
+    this.isVeg   = (configKey.includes("tree")||configKey.includes("grass")) ? true : false;
+    this.colBrch = false;
+    this.simWind = false;
     return this; // for function chaining
   }
 
+
+  //####################################################################
+  //>>> GETTER FUNCTIONS
+  //####################################################################
+  isActive(){return (this.axiom && this.rules);}
+  getCurGen(){return this.curGen;}
+  getMaxGen(){return this.maxGen;}
+
+
+  //####################################################################
+  //>>> SETTER FUNCTIONS
+  //####################################################################
   addRule(nR)   {this.rules.push(nR);}
   addRules(nRs) {nRs.forEach((nR)=>{this.addRule(nR);})}
   setTheta(nT)  {this.theta = nT;}
   setMaxGen(nMx){this.maxGen = mMx;}
-
-  setInitRot(val){this.baseRot=val;}
-  setInitLen(val){this.baseLen=val;}
-  setInitTheta(val){this.theta=val;} // MISNOMER, as used by slider 'onChanged' to [re]set theta
   setLenFac(val){this.lenFac=val;}
 
-  handleKeyPressed(key){
-    if(key == 'g'){this.generate();}
-  }
 
-  //>>> Function generate: Advances L-System Sentence forward by 1 generation
+  //####################################################################
+  //>>> UPDATE/ADVANCE FUNCTIONS
+  //####################################################################
+  // Advances corpus forward by 1 generation
   generate() {
     if(this.curGen < this.maxGen){
       let nextgen = ''; // buffer string to populate and replace sentence via generation
@@ -89,49 +98,51 @@ class LSystem{
     }
   } // Ends Function generate
 
-  // Used to insta-advance to max generations i.e. skip iter key presses
-  instaGenerate(){for(let i=0; i<this.maxGen; i++){this.generate();}return this;}
+  // Advances corpus forward until max generation
+  fullyGenerate(){for(let i=0; i<this.maxGen; i++){this.generate();}return this;}
 
 
-
+  //####################################################################
+  //>>> MISC BEHAVIOR FUNCTIONS
+  //####################################################################
   QAD_WindSim(){
-    let rawLerp = sin(lerp(0,PI,((frameCount%this.windpeed)/this.windpeed)));
-    lsys.setTheta(radians(lerp(10,30,rawLerp)))
-    rotate(radians(lerp(-10,10,rawLerp)));
+    let rawLerp = sin(lerp(0,PI,((frameCount%this.windSpeed)/this.windSpeed)));
+    this.wTheta = radians(lerp(-20,20,rawLerp));
+    rotate(radians(lerp(-2.5,2.5,rawLerp)));
   } // Ends Function QAD_WindSim
 
 
-
+  //####################################################################
+  //>>> RENDER FUNCTIONS
+  //####################################################################
   render(){
     fill(0);
     translate(this.offset.x, this.offset.y); 
     rotate(this.baseRot);
-    //if(this.doQADWind){this.QAD_WindSim();}
+    if(this.simWind){this.QAD_WindSim();}
     this.turtleRender();
   } // Ends Function render
 
 
   turtleRender(){
     let sen = this.corpus;
-    let len = this.baseLen;
-    let ang = radians(this.theta);
+    let len = this.baseLen*this.lenFac;
+    let ang = radians(this.theta+this.wTheta);
     let idx = this.curGen;
 
     stroke("#8c510a");
-
-    this.prevBracket = '?';
 
 
     for (let i = 0; i < sen.length; i++) {
       let c = sen.charAt(i);
       if (c === 'F') {
-        strokeWeight(1); stroke(60);
-        line(0,0,len,0);
-        translate(len,0);
+        switch(this.colBrch){
+          case false: strokeWeight(1); stroke(60); break;
+          case true: this.QADTreeColor(idx,len); break;
+        }
+        line(0,0,len,0); translate(len,0);
       }
-      if (c === 'G') {
-        translate(len,0);
-      }
+      else if (c === 'G') {translate(len,0);}
       else if (c === '+') {rotate(ang);}
       else if (c === '-') {rotate(-ang);}
       else if (c === '|') {rotate(PI);}
@@ -140,25 +151,9 @@ class LSystem{
     }
   } // Ends Function turtleRender
 
-
   // called this <vs> "strokeWeight(1); stroke(60);" in handling of 'F' production symbol
   QADTreeColor(idx,len){
-    strokeWeight((idx*1.5)+1);
-    stroke(lerpColor(color("#bf812d"),color("#543005"), idx/this.maxGen));
-  }
-
-  // called this below call of line(...) in handling of 'F' production symbol
-  QADTreeFruit(sen,len){
-    if(sen.charAt(i+1) === ']' && this.prevBracket === '['){
-      this.prevBracket = '?';
-      if(idx<=1 && this.fixedRandom[(i%100)]<50){
-        stroke(24,168,72); strokeWeight(0.5); fill(96,int(lerp(180,240,(i%100)/100)),108); 
-        ellipse(len,0,int(lerp(8,12,(i%100)/100)),int(lerp(8,12,(i%100)/100)));
-      };
-    }
-    else if(sen.charAt(i+1) === '[' && this.prevBracket === '?'){
-      this.prevBracket = '[';
-    }    
+    strokeWeight((idx*1.5)+1); stroke(lerpColor(color("#bf812d"),color("#543005"), idx/this.maxGen));
   }
 
 } // Ends Class LSystem
