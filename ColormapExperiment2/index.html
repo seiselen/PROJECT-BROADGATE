@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8"/>
     <title>Log Color-Lerping in P5JS Experiment</title>
-    <style>body {color: darkblue; font-family:verdana;}</style>
+    <style>
+      body {color: darkblue; font-family:verdana;} 
+      .radHorz{font-size: 32px; margin-right: 16px; margin-left: 16px;} 
+      .radHorzIn{border: 0px; height: 2em; width: 2em;}
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <script src="main.js"></script>
   </head>
@@ -11,5 +15,11 @@
     <h1>Log Color-Lerp in P5JS Experiment</h1>
   	<div id="viz"></div>
   	<div id="ui"></div>
+      <div id="lbl_slider"></div>
+      <div style="text-align: center; width: 800px;">
+      <label class="radHorz"><input type="radio" class="radHorzIn" name="colMode" onclick="onColModeChanged(this);" value="0" checked>Linear</label>
+      <label class="radHorz"><input type="radio" class="radHorzIn" name="colMode" onclick="onColModeChanged(this);" value="1">Logarithmic</label>        
+      </div>
+    </div>
   </body>
 </html>

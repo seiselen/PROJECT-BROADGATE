@@ -1,8 +1,7 @@
 //======================================================================
 //>>> Variables
 //======================================================================
-var slider; 
-var sldTxt;
+var slider, sldTxt, radMode;
 
 //> colorMapRaw_1 => diverg purpBlue<->yellow<->purpRed via colorbrewer
 var colorMapRaw_1 = [[94,79,162],[50,136,189],[102,194,165],[171,221,164],[230,245,152],[253,174,97],[244,109,67],[213,62,79],[158,1,66]];
@@ -14,14 +13,15 @@ var colorMapRaw_2 = [[254,217,118],[254,178,76],[253,141,60],[252,78,42],[227,26
 var colorMapRaw_3 = [[158,202,225],[107,174,214],[66,146,198],[33,113,181],[8,81,156],[8,48,107]];
 
 //> make your choice HERE (and leave everything below procedural {i.e. AS-IS})
-var colMap  = colorMapRaw_3;
+var colMap  = colorMapRaw_1;
 var colMode = 0; // where {[0]:linear, [1]:logarithmic}
 
 
 function setup(){
   createCanvas(800,160).parent("viz");
-  slider = createSlider(0, 100, 50).style('width', '768px').parent("#ui");
-  sldTxt = createSpan('100').parent("#ui");
+  slider = createSlider(0, 100, 50).style('width', '768px').parent("#lbl_slider");
+  sldTxt = createSpan('100').parent("#lbl_slider");
+  radMode = document.getElementsByName('colMode');
 }
 
 function draw(){
@@ -35,6 +35,7 @@ function draw(){
 }
 
 function updateUI(){sldTxt.html(slider.value());}
+function onColModeChanged(element){colMode = parseInt(element.value);}
 
 function drawColorBar(map,mode=0){
   let curCol; for(let i=0; i<100; i++){
