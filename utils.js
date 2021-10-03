@@ -170,6 +170,10 @@ function canvasMidpoint(){
 //###[ MISC. FUNCTIONS (I.E. [CURRENTLY] UNGROUPED ]####################
 //######################################################################
 
+
+/*======================================================================
+|>>> Function Mini-Group Involving Color Vals
++======================================================================*/
 function colorRGBAToHex(colVal){
   return hex(colVal.levels,2).join('');
 } // Ends Function colorRGBAToHex
@@ -178,3 +182,14 @@ function colorHexToRGBA(colVal){
   if(colVal[0]=='#'){colVal = colVal.substring(1);}
   return unhex(colVal.match(/.{1,2}/g));
 } // Ends Function colorHexToRGBA
+
+
+/*----------------------------------------------------------------------
+|>>> Function distSq
++-----------------------------------------------------------------------
+| Implementation Note: LOOK...Quasi-Overriding CAN be better realized!
++---------------------------------------------------------------------*/
+function distSq(p1,p2,q1,q2){
+  if(arguments.length==2){return distSq(p1.x, p1.y, p2.x, p2.y);}
+  else{let dx=q1-p1; let dy=q2-p2; return (dx*dx)+(dy*dy);}
+}
