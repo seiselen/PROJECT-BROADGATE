@@ -43,7 +43,7 @@
 +---------------------------------------------------------------------*/
 function drawFPS(){
   // Draw Semi-Transparent Background Rect
-  noStroke(); fill(0,128); rect(0,height-20,80,height-20);
+  noStroke(); fill(0,128); rect(0,height-20,80,20);
   // Draw Text displaying the current FPS (rounded down to nearest int)
   textSize(16); textAlign(LEFT,CENTER); strokeWeight(2); stroke(0); fill(255); text("FPS: "+round(frameRate()), 10, height-8);
 } // Ends Function drawFPS
