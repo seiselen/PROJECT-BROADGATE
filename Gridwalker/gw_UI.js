@@ -1,11 +1,21 @@
 
 var labl_curFPS, labl_mousePos, labl_mouseCell;
+var cBox_showOCSets, cBox_showGrid;
 var mseOpts, agtOpts, pntOpts;
+
 
 function initUI(){
   labl_curFPS = select("#labl_curFPS");
   labl_mousePos = select("#labl_mousePos");
   labl_mouseCell = select("#labl_mouseCell");
+
+  cBox_showOCSets = select("#cBox_showOCSets");
+  cBox_showOCSets.elt.checked = showOCSet;
+  cBox_showOCSets.changed(()=>{showOCSet = cBox_showOCSets.checked()});
+
+  cBox_showGrid = select("#cBox_showGrid");
+  cBox_showGrid.elt.checked = gridMap.showGrid;
+  cBox_showGrid.changed(()=>{gridMap.showGrid = cBox_showGrid.checked()});
 
   mseOpts = document.getElementsByName('mseMode');
   agtOpts = document.getElementsByName('agtMode');

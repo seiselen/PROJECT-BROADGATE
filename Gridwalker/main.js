@@ -11,6 +11,8 @@ var cellSizeH = cellSize/2;
 var cellsTall = worldTall/cellSize;
 var cellsWide = worldWide/cellSize;
 
+var showOCSet = false;
+
 //>>> Data Structure Declarations
 var gridMap;
 var pathfind;
@@ -25,10 +27,10 @@ var agentOption = "sel";
 function setup() {
   createCanvas(worldWide,worldTall).parent(select("#pane_viz"));
   document.oncontextmenu = function(){return false;} // handles right click issue
-  gridMap  = new GWMap(cellsTall,cellsWide,cellSize);
+  gridMap  = new GWMap(cellsTall,cellsWide,cellSize).loadMap(map_02);
   pathfind = new GWPathfinder(gridMap);
   agents.push(new GWAgent(4,2,gridMap));
-  agents.push(new GWAgent(20,28,gridMap));
+  //agents.push(new GWAgent(20,28,gridMap));
   initUI();
 }
 
@@ -42,7 +44,7 @@ function draw() {
  
   //>>> RENDER CALLS 
   gridMap.render();
-  pathfind.displayBothSets();  
+  if(showOCSet){pathfind.displayBothSets()};  
   agents.forEach((a)=>a.render());
 
   drawMouseCoordCursor();
@@ -99,6 +101,13 @@ function onMouseDown(){
     gridMap.setValueAt(gridMap.cellViaPos(mousePtToVec()),CellType[paintOption]);
   }
 } // Ends Function onMouseDown
+
+
+var toggleSpitMapDefAsP = true;
+function keyPressed(){
+  if(toggleSpitMapDefAsP && key == 's'){createP(gridMap.mapToString("<br>"));}
+  toggleSpitMapDefAsP = false;
+}
 
 
 

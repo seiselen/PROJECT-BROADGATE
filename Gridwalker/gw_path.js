@@ -90,7 +90,7 @@ class GWPathfinder{
       
       // Goal Found!
       if(current === goal){
-        console.log("GOAL FOUND");
+        this.summaryToConsole(true);
         break;
       }
       
@@ -103,7 +103,7 @@ class GWPathfinder{
       for (var i = 0; i < neighbors.length; i++) {
         var neighbor = neighbors[i];
         
-        if (!this.closedSet.includes(neighbor)) {
+        if (!this.closedSet.includes(neighbor) && this.refMap[neighbor.r][neighbor.c] != CellType.watr) {
           var tempG = current.g + this.heuristic(neighbor, current) + this.refMap[current.r][current.c];
 
           // Is this a better path than before?
@@ -130,7 +130,7 @@ class GWPathfinder{
     } // Ends Path Calculation While Loop
   
     // Print That Goal was not found (Maybe return empty path?)
-    if(current!=goal){console.log("GOAL NOT FOUND"); path=[]; this.lastPath=path; return path;}
+    if(current!=goal){this.summaryToConsole(false); path=[]; this.lastPath=path; return path;}
     
     // Generate the Path.
     var temp = current;
@@ -151,6 +151,13 @@ class GWPathfinder{
     this.lastPath = path;  
     return path;
   } // Ends Function findPath
+
+
+  summaryToConsole(goalFound){
+    console.log( (goalFound) ? "GOAL FOUND!" : "GOAL NOT FOUND!");
+    console.log( "Closed Set: [" + this.closedSet.length + "] | Open Set: [" + this.openSet.length + "]");  
+  }
+
 
   // DEBUG DISPLAY FUNCTIONS
   displayBothSets(){ellipseMode(CENTER);this.showOpenSet();this.showClosedSet(); this.drawPath();}

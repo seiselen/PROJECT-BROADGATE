@@ -1,9 +1,11 @@
 var CellType = {
-  road:  1,
-  dirt:  8,
-  sand:  32,
-  watr: 1024,
+  road:     1,
+  dirt:    32,
+  sand:    64,
+  watr:  1024,
+  ERROR: 9999,
 }
+// good vals: {r:1, d:32, s:64, w:1024, ?:9999
 
 class GWMap{
 
@@ -56,6 +58,49 @@ class GWMap{
   } // Ends Method checkInBounds
 
   cellViaPos(pos){return [Math.floor(pos.y/this.cellSize),Math.floor(pos.x/this.cellSize)];}
+
+
+
+
+  // NOTE: *NO* Erroneous Input Checking!
+  loadMap(mapArr=null){
+    if(mapArr){
+      for(let r=0; r<this.cellsTall; r++){
+        for(let c=0; c<this.cellsWide; c++){
+          switch(mapArr[r][c]){
+            case 'd': this.map[r][c] = CellType.dirt; break;
+            case 's': this.map[r][c] = CellType.sand; break;
+            case 'r': this.map[r][c] = CellType.road; break;
+            case 'w': this.map[r][c] = CellType.watr; break;
+            default : this.map[r][c] = CellType.ERROR; break;
+          }
+        }
+      }   
+    }
+    return this; // for function chaining 
+  } // Ends Function loadMap
+
+  mapToString(nLine="\n"){
+    let retStr = "map = [" + nLine;
+    for (var r=0; r<this.cellsTall; r++){
+      retStr += "[";
+      for (var c=0; c<this.cellsWide; c++){
+        retStr+="\'";
+        switch(this.map[r][c]){
+            case CellType.dirt : retStr+='d'; break;
+            case CellType.sand : retStr+='s'; break;
+            case CellType.road : retStr+='r'; break;
+            case CellType.watr : retStr+='w'; break;
+            default :            retStr+='?'; break;
+        }
+        retStr+="\'";
+        if(c<this.cellsWide-1){retStr+=',';}
+      }
+      retStr += "],"+nLine;
+    }
+    retStr += "];";
+    return retStr;
+  }
 
   render(){
     if(this.showGrid){strokeWeight(1);stroke(24,24,24);} else{noStroke();}

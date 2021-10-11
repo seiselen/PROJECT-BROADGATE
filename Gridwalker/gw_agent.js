@@ -17,10 +17,10 @@ class GWAgent{
   }
 
   initGFXVals(){
-    this.fill_reg = color(216)
-    this.strk_reg = color(36,127);
-    this.swgt_reg = 2;
-    this.strk_sel = color(0,255,0,127);
+    this.fill_reg = color(255)
+    this.strk_reg = color(60);
+    this.swgt_reg = 1;
+    this.strk_sel = color(0,0,255);
     this.swgt_sel = 4;
   }
 
