@@ -6,14 +6,14 @@ class GWAgent{
     this.map = m;
     this.bodyLength = cellSize/2;
     this.bodyLnHalf = this.bodyLength/2;
-    this.curPath = [];
-    this.curWaypt = 0;
-    this.maxSpeed = 2;
-    this.maxForce = 0.2;
-
+    this.curPath    = [];
+    this.curWaypt   = 0;
+    this.maxSpeed   = 2;
+    this.maxForce   = 0.2;
     this.isSelected = false;
 
     this.initGFXVals();
+    this.updateSP();
   }
 
   initGFXVals(){
@@ -40,6 +40,19 @@ class GWAgent{
     this.curWaypt = 0;
     this.curPath = path;
   }
+
+
+  update(){
+    this.updateSP();
+    this.gotoPath();
+  }
+
+
+  updateSP(){
+    let newCoord = this.map.updatePos(this);
+    if(newCoord != null){this.curCoord = newCoord;}    
+  }
+
  
   gotoPath(){
     if(this.curWaypt<this.curPath.length){

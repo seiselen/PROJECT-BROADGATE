@@ -1,6 +1,6 @@
 
 var labl_curFPS, labl_mousePos, labl_mouseCell;
-var cBox_showOCSets, cBox_showGrid;
+var cBox_showOCSets, cBox_showGrid, cBox_showSPMap;
 var mseOpts, agtOpts, pntOpts;
 
 
@@ -16,6 +16,10 @@ function initUI(){
   cBox_showGrid = select("#cBox_showGrid");
   cBox_showGrid.elt.checked = gridMap.showGrid;
   cBox_showGrid.changed(()=>{gridMap.showGrid = cBox_showGrid.checked()});
+
+  cBox_showSPMap = select("#cBox_showSPMap");
+  cBox_showSPMap.elt.checked = gridMap.showSPMap;
+  cBox_showSPMap.changed(()=>{gridMap.showSPMap = cBox_showSPMap.checked()});  
 
   mseOpts = document.getElementsByName('mseMode');
   agtOpts = document.getElementsByName('agtMode');

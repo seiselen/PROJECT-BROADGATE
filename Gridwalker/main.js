@@ -40,7 +40,7 @@ function draw() {
 
   //>>> UPDATE CALLS
   updateLabels();
-  agents.forEach((a)=>a.gotoPath());
+  agents.forEach((a)=>a.update());
  
   //>>> RENDER CALLS 
   gridMap.render();

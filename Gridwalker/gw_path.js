@@ -8,7 +8,7 @@ class GWPathfinder{
   constructor(refMap){
     this.cellsTall = refMap.cellsTall;
     this.cellsWide = refMap.cellsWide;
-    this.refMap    = refMap.map;
+    this.refMap    = refMap.tileMap;
     this.map       = [];
     this.openSet   = [];
     this.closedSet = [];
