@@ -11,12 +11,13 @@ var cellSizeH = cellSize/2;
 var cellsTall = worldTall/cellSize;
 var cellsWide = worldWide/cellSize;
 
-var showOCSet = false;
+var showOCSet = true;
 
 //>>> Data Structure Declarations
 var gridMap;
 var pathfind;
 var agents = [];
+var bldgs  = [];
 var selAgent = null;
 
 // Current Interaction Mode and Sub-Mode
@@ -27,12 +28,23 @@ var agentOption = "sel";
 function setup() {
   createCanvas(worldWide,worldTall).parent(select("#pane_viz"));
   document.oncontextmenu = function(){return false;} // handles right click issue
-  gridMap  = new GWMap(cellsTall,cellsWide,cellSize).loadMap(map_02);
+  gridMap  = new GWMap(cellsTall,cellsWide,cellSize);
   pathfind = new GWPathfinder(gridMap);
-  agents.push(new GWAgent(4,2,gridMap));
+
+  loadMapAgtConfig(map_04,agt_04);
+
+  //agents.push(new GWAgent(11,1,gridMap));
   //agents.push(new GWAgent(20,28,gridMap));
+  //bldgs.push(new Building(3,7,[3,4],gridMap));
+
   initUI();
 }
+
+function loadMapAgtConfig(map_cf,agt_cf){
+  gridMap.loadMap(map_cf);
+  agt_cf.forEach((rc)=>agents.push(new GWAgent(rc[0],rc[1],gridMap)));
+}
+
 
 function draw() {
   //>>> UI CALLS
@@ -46,6 +58,7 @@ function draw() {
   gridMap.render();
   if(showOCSet){pathfind.displayBothSets()};  
   agents.forEach((a)=>a.render());
+  bldgs.forEach((b)=>b.render());
 
   drawMouseCoordCursor();
   drawCanvasBorder();
@@ -65,34 +78,45 @@ function drawMouseCoordCursor(){
         case "sand": fill(255,216,144); break; 
         case "watr": fill(60,120,180); break; 
         default: fill(255,0,255);
-      } // Ends Switch | [paintOption]
-      break;
+      } rect(0,0,cellSize,cellSize); break;// Ends Switch | [paintOption]
       case "agent": noFill(); strokeWeight(2); switch(agentOption){
         case "sel": stroke(60,60,255,sinRand); line(cellSizeH,cellSize*.25,cellSizeH,-cellSize*.25); line(cellSizeH,cellSize*.75,cellSizeH,cellSize*1.25); line(-cellSize*.25,cellSizeH,cellSize*.25,cellSizeH); line(cellSize*.75,cellSizeH,cellSize*1.25,cellSizeH); break;
         case "add": stroke(60,255,60,sinRand); line(cellSizeH,0,cellSizeH,cellSize); line(0,cellSizeH,cellSize,cellSizeH); break;
         case "rem": stroke(255,60,60,sinRand); line(0,0,cellSize,cellSize); line(0,cellSize,cellSize,0); break;
-      } // Ends Switch | [agentOption]
+      } rect(0,0,cellSize,cellSize); break;// Ends Switch | [agentOption]
+      case "bldg": Building.renderBldgShape(vec2()); noFill(); stroke(60,255,60,sinRand); strokeWeight(4); rect(0,0,cellSize*3,cellSize*4);  
       break;
+      // Ends | [bldgOption]
     } // Ends Switch | [mouseMode]
-    rect(0,0,cellSize,cellSize);  
   pop();
 } // Ends Function drawCursor
 
 
 function mousePressed(){
-  if(mouseInCanvas()&&mouseMode=="agent"){
+  if(!mouseInCanvas()){return;}
+      let mapCell = gridMap.cellViaPos(mousePtToVec());
+
+
+  if(mouseMode=="agent"){
     if(mouseButton=='left'){switch(agentOption){
       case 'sel': onSelectAgent(); return;
       case 'add': /*onAddAgent();*/ return;
       case 'rem': /*onRemAgent();*/ return;
     }}
     if(selAgent&&mouseButton=='right'){
-      let mapCell = gridMap.cellViaPos(mousePtToVec());
       let agtCell = gridMap.cellViaPos(selAgent.pos);
       selAgent.givePath(pathfind.findPath(agtCell,mapCell));
       return;
     }
   }
+
+  // needs a TON more handling, but okay for basic agent obstacle re-route testing
+  if(mouseMode=="bldg" && mouseButton=='left'){
+    if(gridMap.canBuildBldg(mapCell[0],mapCell[1],3,4)){
+      bldgs.push(new Building(mapCell[0],mapCell[1],[3,4],gridMap));
+    }
+  }
+
 }
 
 

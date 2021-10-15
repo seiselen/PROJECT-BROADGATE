@@ -80,6 +80,27 @@ class GWMap{
     return newCoords;
   } // Ends Function updatePos
 
+  /*--------------------------------------------------------------------
+  |>>> Function postBuilding | pullBuilding
+  |---------------------------------------------------------------------
+  | Description: How buildings and other [STATIC] objects let the SP Map
+  |              know they exist. Different from the analogous function
+  |              called by [MOBILE] objects (i.e. 'updatePos') for three
+  |              reasons: (1) this only needs to be called ONCE by the
+  |              object, (2) buildings more than [1x1] cells must report
+  |              all cells containing them, and (3) nothing needs to be
+  |              returned to the caller (same for mobile units, but that
+  |              is another refactor for another day!) Buildings should
+  |              call this function's counterpart (i.e. 'pullBuilding')
+  |              when they're about to be removed from the game world;
+  |              as to clear their entr[y/ies] from the SP Map.
+  | Input Note:  This function assumes that whoever is calling it has an
+  |              array named 'cells' of which contains 2-tuple [row,col]
+  |              coordinate pairs for every cell containing the object;
+  |              and that these pairs contain VALID cell coordinates. 
+  +-------------------------------------------------------------------*/
+  postBuilding(obj){obj.cells.forEach((cell)=>this.sparMap[cell[0]][cell[1]]=obj);}
+  pullBuilding(obj){obj.cells.forEach((cell)=>this.sparMap[cell[0]][cell[1]]=null);}
 
   //####################################################################
   //>>> GETTER FUNCTIONS
@@ -118,6 +139,18 @@ class GWMap{
     if(this.isValidCell()){return this.sparMap[cell[0]][cell[1]];}
     return null;
   } // Ends Function getUnitsAtCell
+
+  //>>> QAD Desc: Given TL row/col and cells wide/tall, are all encompassing cells [VACANT]?
+  canBuildBldg(ri,ci,w,t){
+    let qCell = [-1,-1]; // query cell [row,col]
+    for(let r=0; r<t; r++){
+      for(let c=0; c<w; c++){
+        qCell[0]=ri+r; qCell[1]=ci+c;
+        if(this.isCellOccupied(qCell)){return false;}
+      }    
+    }
+    return true;
+  } // Ends Function canBuildBldg
 
 
   //####################################################################

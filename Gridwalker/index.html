@@ -26,9 +26,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script>  
     <!-- Project Code -->
-    <script src="mapDefs.js"></script>    
+    <script src="mapDefs.js"></script>
     <script src="gw_map.js"></script>
-    <script src="gw_path.js"></script>  
+    <script src="gw_path.js"></script>
+    <script src="gw_bldg.js"></script>
     <script src="gw_agent.js"></script>
     <script src="gw_UI.js"></script>
     <script src="main.js"></script>
@@ -49,8 +50,11 @@
         <tr><td class="lab_des2">Show Open/Closed Sets:</td><td class="lab_cBox"><input type="checkbox" onkeydown="event.preventDefault()" id="cBox_showOCSets"/></td></tr>   
       </table>
       <table>
-        <tr><td class="lab_h1" colspan="2">Mouse Interaction Mode</td></tr>
-        <tr><td class="lab_rad">Agent Mode &nbsp<input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="agent" checked></td><td class="lab_rad">Paint Mode &nbsp<input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="paint" ></td></tr>
+        <tr><td class="lab_h1" colspan="3">Mouse Interaction Mode</td></tr>
+        <tr>
+          <td class="lab_rad">Agent &nbsp<input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="agent" checked></td>
+          <td class="lab_rad">Bldg &nbsp<input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="bldg" ></td>
+          <td class="lab_rad">Tile &nbsp<input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="paint" ></td></tr>
       </table>
       <table>
         <tr><td class="lab_h1" colspan="3">Agent Mode Options</td></tr>

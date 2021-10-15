@@ -9,6 +9,7 @@ class GWPathfinder{
     this.cellsTall = refMap.cellsTall;
     this.cellsWide = refMap.cellsWide;
     this.refMap    = refMap.tileMap;
+    this.refSPMap  = refMap.sparMap;
     this.map       = [];
     this.openSet   = [];
     this.closedSet = [];
@@ -62,7 +63,7 @@ class GWPathfinder{
     }
   } // Ends Function removeFromArray
 
-  findPath(startCoord,goalCoord){
+  findPath(startCoord,goalCoord,greedFactor=1){
     
     var start = this.map[startCoord[0]][startCoord[1]];
     var goal  = this.map[goalCoord[0]][goalCoord[1]];
@@ -90,7 +91,6 @@ class GWPathfinder{
       
       // Goal Found!
       if(current === goal){
-        this.summaryToConsole(true);
         break;
       }
       
@@ -103,8 +103,13 @@ class GWPathfinder{
       for (var i = 0; i < neighbors.length; i++) {
         var neighbor = neighbors[i];
         
-        if (!this.closedSet.includes(neighbor) && this.refMap[neighbor.r][neighbor.c] != CellType.watr) {
-          var tempG = current.g + this.heuristic(neighbor, current) + this.refMap[current.r][current.c];
+        // Qualifying Conditions for admission into open set (i.e. if ANY fail: it will NOT be considered for a path)
+        if(
+          !this.closedSet.includes(neighbor) && 
+          this.refMap[neighbor.r][neighbor.c]   != CellType.watr && /* asserts water tiles are REJECTED */
+          this.refSPMap[neighbor.r][neighbor.c] == null /* asserts occupied cells are REJECTED i.e. 'Phase 0 Obstacle Handle' */
+        ){
+          var tempG = current.g + this.heuristic(neighbor, current) + (this.refMap[current.r][current.c]/greedFactor);
 
           // Is this a better path than before?
           var newPath = false;
@@ -145,9 +150,9 @@ class GWPathfinder{
 
     // Reverse the path so it's start->goal
     path = path.reverse();
-
-    console.log("Path Length = " + path.length);
-
+    
+    //this.summaryToConsole(true); console.log("Path Length = "+path.length); // for DEBUG purposes only!
+    
     this.lastPath = path;  
     return path;
   } // Ends Function findPath
