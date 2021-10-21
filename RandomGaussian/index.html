@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Random Gaussian Testbed</title>
+    <style>
+      body {color: darkblue; font-family:verdana;} 
+      h1{user-select: none; margin-block-start: 0px; margin-block-end: 0px;}
+      h3{user-select: none; margin-block-start: 0px; margin-block-end: 0px;}
+      ul{user-select: none; margin-block-start: 0px; margin-block-end: 0px; font-size: 14px;}
+      li{user-select: none; margin-block-start: 2px; margin-block-end: 4px;}
+    </style>
+    <!-- P5JS Lib Imports -->
+    <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+  	<h1>Random Gaussian Testbed</h1>
+  	<div id="viz"></div>
+  	<div id="ui" style="width: 1024px;">
+      <h3>Instructions (QAD):</h3>
+      <ul style="padding-left: 16px;">
+        <li><strong>hovering mouse</strong> over a distribution shows its current number of samples</li>
+        <li><strong>pressing mouse</strong> over a distribution swaps between 'midpoint' xor 'endpoint' based alignment (i.e. 'human lips' xor bellcurve shape, resp.)</li>
+        <li><strong>pressing 'a' or 'A' key</strong> toggles 'auto populate' mode, which generates 'numAutoPts' random gaussian samples for each distribution</li>
+        <li><strong>pressing 'c' or 'C' key</strong> resets histogram bin values (i.e. set size) to zero for each distribution, and is intended for use with auto-populate mode (i.e. to visualize the emergence of a normal distribution via random gaussian samples as the set size increases)</li>
+      </ul>
+    </div>
+  </body>
+</html>
