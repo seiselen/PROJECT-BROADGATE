@@ -233,6 +233,7 @@ class SPMap{
   |              within the switch, it passes through with no effects.
   +-------------------------------------------------------------------*/
   render(){
+    rectMode(CORNER);
     if(this.showCells){
       switch(Config.MAP_DISP_MODE){
         case MapDispMode.heatMap: this.renderHeatMap(); break;

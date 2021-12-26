@@ -5,14 +5,42 @@ p5.disableFriendlyErrors = true;
 //######################################################################
 var MapDispMode = {cellPop:'mdmP', heatMap:'mdmH'};
 var AgtDispMode = {semiOpaque:'pdmT', fullOpaque:'pdmO'};
+var ShapeDrawMode = {viaEllipse:'E', viaRect:'R', viaImage:'I'};
 
 var GenDispMode = {
   cellPop:'cPop', heatMap:'hMap', 
   toString: function(mode){switch(mode){case this.cellPop: return "Cell Population Mode"; case this.heatMap: return "Cell Heatmap Mode";}}
 };
 
+/*----------------------------------------------------------------------
+|>>> SPECIAL NOTE (12/19/21): 'Spatial Partition Frame Offset'
++-----------------------------------------------------------------------
+| > spFrmOff -> Spatial Partition Frame Offset. Disabled if set to any
+|   value at/below 1 (by this and/or that definition). Otherwise: will
+|   result in [1/spFrmOff] agents performing SP updates each frame <vs>
+|   every agent; and IIRC: this is called 'staggered [agent] updates' 
+|   in gamedev lingo. In any case: the purpose is to reduce the amount 
+|   of computation done each frame, as agents don't [necessarily] need
+|   to post their position to the SP map and get neighbor info on EACH
+|   frame; though if-n-assumuing the FPS is good-enough for the player
+|   not to notice the consequent delay. In any case, my algorithm is as
+|   follows: if((frameCount % spFrmOff) == (agentID % spFrmOff)){...}
+| > Implementing [Realizing] it as a global struct (D.B.A. a JS object) 
+|   containing both the 'spFrmOff' value and a function for agents to
+|   call which returns a bool indicating whether or not it's their turn
+|   to update; as this is the most modular and least distruptive to the
+|   public demo (yes I'm working with ergo modifying its code thereto,
+|   as I'm too dumb and lazy to split the branch like the 'eXpErTs' do)
+| > HOLY SHIT: IT WORKS! Homer Count up 25-50% (~1700 @ spFrmOff=[1],
+|   ~2400 @ spFrmOff=[2], ~2900 @ spFrmOff=[3], ~3300 @ spFrmOff=[4])
++---------------------------------------------------------------------*/
+var SPFrmOff = {
+  spFrmOff: 2, //-1,
+  canUpdate: function(agentID){return (this.spFrmOff<1) ? false : ((frameCount % this.spFrmOff) == (agentID % this.spFrmOff));}
+}
+
 var SpatPartMode = {
-  gridViaObj:'spmO', gridViaMap:'spmM', none:'spmN', 
+  gridViaObj:'spmO', gridViaMap:'spmM', none:'spmN',
   toString: function(mode){switch(mode){case this.gridViaObj: return "[Grid] via JS Properties"; case this.gridViaMap: return "[Grid] via JS Map Object"; case this.none: return "[None] O(n^2) 'All-Pairs'";}}
 };
 
@@ -20,9 +48,10 @@ var Config = {
   CANV_WIDE: 1024, CANV_TALL: 768, 
   CELLS_TALL: 12,  CELLS_WIDE: 16, CELL_SIZE: 64,  
   /*CELLS_TALL: 24,  CELLS_WIDE: 32, CELL_SIZE: 32,*/
-  FRAME_RATE:     60, 
+  FRAME_RATE:     60,
   PAUSED:         false,
   SHOW_AGENTS:    true,
+  AGT_SHAPE_MODE: ShapeDrawMode.viaRect, //viaEllipse,
   MAP_DISP_MODE:  MapDispMode.heatMap,
   AGT_DISP_MODE:  AgtDispMode.semiOpaque,
   SPAT_PART_MODE: SpatPartMode.gridViaMap,
@@ -46,13 +75,27 @@ var spawnRegion = {
 
 var agents = [];
 var myMap;
+var mySprite;
 
 
 //######################################################################
 //###[ P5JS setup/draw Functions ]######################################
 //######################################################################
+function preload(){
+  /* NOTE: You MUST set agent shape mode to 'viaImage' IN CODE before 
+    launch! QAD solution, yes, but this mode is only for an experiment,
+    i.e. it [should] otherwise be set to 'viaEllipse' or 'viaRect' for 
+    regular/public use which works without [known] issues (12/18/21) */
+  if(Config.AGT_SHAPE_MODE == ShapeDrawMode.viaImage){
+    mySprite = loadImage('assets/orbSprite.png');
+    //mySprite = loadImage('assets/homSprite.png');
+  };
+}
+
 function setup(){
   createCanvas(Config.CANV_WIDE, Config.CANV_TALL).parent("pane_viz");
+  ellipseMode(CENTER); // A/O 12/18: the only call needed as not using corners-based rendering
+  imageMode(CENTER); // A/O 12/18: the only call needed as not using corners-based rendering
   myMap = new SPMap(Config.CELLS_TALL, Config.CELLS_WIDE, Config.CELL_SIZE);
   createAgents(10,'m');
   initUI(); 
@@ -96,6 +139,7 @@ function createAgentAtCanvRandPt(bounds=null){
   let startPos = (bounds==null) ? canvasMidpoint() : vec2( int(random(bounds.minX,bounds.maxX)), int(random(bounds.minY,bounds.maxY))); 
   agents.push(new SPAgent(startPos,''+agents.length, myMap));
 }
+
 
 //######################################################################
 //###[ Display Stats Variables + Functions ]############################

@@ -81,6 +81,44 @@ function drawGrid(spacing=10,lineColor="#ffffff",lineThick=2){
 } // Ends Function drawGrid
 
 
+/*----------------------------------------------------------------------
+|>>> Function drawStripedRect
++-----------------------------------------------------------------------
+| Description: Draws series of diagonal lines over some rect-sized area,
+|              producing an effect similar to that of a 'hazard stripe'.
+| Input Parms: > xPos | yPos | wide | tall => self-explanatory!
+|              > sNum => number of stripes that the rect is partitioned
+|                        into, s.t. the number of lines drawn (sans the 
+|                        border rect) is [sNum-1] via duality. IOW: if 
+|                        the caller passes [8] as input to sNum: 7 lines
+|                        will partition the area into 8 regions split
+|                        into stripes of even [equal] diagonal length.
+|              > diag => direction of lines, s.t. 'u' -> upwards slope
+|                        and 'd' -> downwards slope.
+|              > sWgt => stroke weight [of lines], 'Nuff Said
+|              > sCol => stroke color of lines, 'Nuff Said
+| Input Note:  I'm NOT going to spend [any more] time realizing argument
+|              variability handling; i.e. caller has FULL responsibility
+|              to enter <undefined> for parm inputs they wish to 'skip'
+|              input for (of which only the last 3 have default values).
+|              IOW: There's only so much OCD to satisfy with a language
+|              that lacks explicit (and 'vanilla') function overloading!
++-----------------------------------------------------------------------
+| Implementation Notes >>>
++---------------------------------------------------------------------*/
+function drawStripedRect(xPos, yPos, wide, tall, sNum=8, sCol="#FFFFFFFF", sWgt=2, diag='u'){
+  let lNum = sNum/2; let dW = wide/lNum; let dT = tall/lNum;
+  strokeWeight(sWgt); noFill(); stroke(sCol);
+  push(); translate(xPos,yPos);
+    rect(0,0,wide,tall);
+    switch(diag){
+      case 'u': for(let i=1; i<lNum; i++){line(0,i*dW,i*dT,0);line(wide-(i*dW),tall,wide,tall-(i*dT));} if(sNum%2==0){line(0,tall,wide,0);} break;
+      case 'd': for(let i=1; i<lNum; i++){line(0,tall-(i*dT),i*dW,tall);line(wide-(i*dW),0,wide,i*dT);} if(sNum%2==0){line(0,0,wide,tall);} break;
+    }
+  pop();
+} // Ends Function drawStripedRect
+
+
 //######################################################################
 //###[ Mouse+Canvas Related Utils ]#####################################
 //######################################################################

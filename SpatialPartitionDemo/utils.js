@@ -53,7 +53,7 @@ function drawFPS(){
 |>>> Function drawCanvasBorder
 +---------------------------------------------------------------------*/
 function drawCanvasBorder(){
-  noFill(); stroke(60); strokeWeight(4); 
+  noFill(); stroke(60); strokeWeight(4); rectMode(CORNER);
   rect(0,0,width,height);
 } // Ends Function drawCanvasBorder
 

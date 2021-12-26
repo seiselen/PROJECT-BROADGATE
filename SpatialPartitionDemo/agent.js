@@ -4,7 +4,6 @@
 | Description:  <TODO>
 +-----------------------------------------------------------------------
 | Implementation Notes:
-|  > x
 +---------------------------------------------------------------------*/
 class SPAgent{
   static minSpeed = 1;
@@ -25,9 +24,9 @@ class SPAgent{
     this.inRangeCells = this.getCellsInRange();
 
     //>>> Variables for GFX/VFX
-    this.shapeDiam = 15;
+    this.shapeDiam = 16;
     this.shapeRad  = this.shapeDiam/2;
-    this. initColorPallete()
+    this.initColorPallete();
   } // Ends Constructor
 
 
@@ -53,6 +52,11 @@ class SPAgent{
     this.vel.limit(SPAgent.maxSpeed);
     this.pos.add(this.vel);
     this.edgeBounce();
+    this.updateSP();
+  }
+
+  updateSP(){
+    if(!SPFrmOff.canUpdate(this.ID)){return;}
 
     if(Config.isGridMode()){
       let newCoord = this.map.updatePos(this);
@@ -65,7 +69,6 @@ class SPAgent{
     else{
       this.getNeighborsInRangeNaive();
     }
-    
   }
 
   /*--------------------------------------------------------------------
@@ -170,21 +173,44 @@ class SPAgent{
 
   render(){
     if(Config.AGT_DISP_MODE==AgtDispMode.none){return;}
-    ellipseMode(CENTER);
     this.renderNeighborhood();  
-    this.renderShape();
+    this.renderAgent();
   } // Ends Function render
 
-  renderShape(){
+  renderAgent(){
+    switch(Config.AGT_SHAPE_MODE){
+      case ShapeDrawMode.viaEllipse: this.renderAsEllipse(); break;
+      case ShapeDrawMode.viaRect:    this.renderAsRect();    break;
+      case ShapeDrawMode.viaImage:   this.renderAsImage();   break;
+    } 
+  } // Ends Function renderAgent
+
+  // This is the 'default' behavior as featured previously, and remains what 'the public sees' in the demo
+  renderAsEllipse(){
     strokeWeight(2);
     switch(Config.AGT_DISP_MODE){
       case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_agt); stroke(this.strk_semiOpq_agt); break;
       case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_agt); stroke(this.strk_fullOpq_agt); break;
       default: fill(this.col_Error); stroke(this.col_Error);
     }
-    ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);  
-  } // Ends Function renderShape
+    ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
+  }
 
+  // These are the two behaviors added on 12/18/21 for experiments on improved performance and pre-ZAC ops
+  renderAsRect(){
+    rectMode(CENTER); noStroke(); 
+    switch(Config.AGT_DISP_MODE){
+      case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_agt); break;
+      case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_agt); break;
+      default: fill(this.col_Error); stroke(this.col_Error);
+    }
+    rect(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
+  }
+
+  renderAsImage(){ 
+    noStroke();
+    image(mySprite,this.pos.x,this.pos.y,this.shapeDiam*2,this.shapeDiam*2);
+  }
 
   renderNeighborhood(){
     if(this.mouseOverMe()){
