@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Pathfinding P5JS</title>
+    <style>
+      body {color: white; font-family:verdana;}
+      table {margin-left: auto; margin-right: auto; border-collapse: collapse; color: white;}
+      td {vertical-align: middle; padding-top: 4px; padding-bottom: 4px; border: 1px solid white;}
+      h1 {user-select: none; margin-block-start: 0px; margin-block-end: 0px;}
+      #h1_head  {background: rgb(60,60,60); color: #FFFFFF; padding-left: 4px; max-width: 1288px;}
+      #pane_viz {width: 1024px;}
+      #pane_ui  {width: 268px;}
+      #cont_tab {width: 1292px; height: 768px; display: table; table-layout: fixed;}
+      #cont_row {display: table-row;}
+      .cont_col {display: table-cell; background: rgb(60,60,60); vertical-align: top; overflow: hidden; height: 768px;}
+      .lab_head {user-select: none; font-size: 20px; min-width: 256px;text-align: center; padding-top: 4px; padding-bottom: 4px; padding-left: 0px; padding-right: 0px; background: rgb(0,36,120);}
+      .lab_desc {user-select: none; font-size: 16px; min-width: 84px; padding-left: 2px; padding-right: 2px;}
+      .lab_cVal {user-select: none; font-size: 16px; min-width: 102px; text-align: center; padding-left: 0px; padding-right: 0px; background: #181818FF;}
+      .lab_rad  {user-select: none; font-size: 18px; min-width: 40px; text-align: center; background: #181818FF;}
+      .lab_cBox {user-select: none; min-width: 40px; text-align: center; background: #181818FF;}   
+      .inp_rad  {display: block; font-size: 32px; height: 0.5em; width: 0.5em; margin: auto;}
+      .inp_but {font-size: 15px; font-weight: bold; padding-top: 4px; padding-bottom: 4px;}
+      .lab_desc button:nth-child(1):hover {color: rgb(0,120,0);}
+      .lab_desc button:nth-child(2):hover {color: rgb(180,0,0);}
+      .lab_desc button:nth-child(1):active {color: white; background-color: rgb(0,240,0);}
+      .lab_desc button:nth-child(2):active {color: white; background-color: rgb(240,0,0);}
+    </style>
+    <!-- P5JS Lib and 'Eiselen Utils' Imports -->
+    <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <!-- Project Code -->
+    <script src="drag_objs.js"></script>    
+    <script src="path_find.js"></script>
+    <script src="game_map.js"></script>
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <div id="h1_head"><h1>Pathfinding P5JS</h1></div>
+    <div id="cont_tab"><div id="cont_row">
+      <div class="cont_col" id="pane_viz"></div>
+      <div class="cont_col" id="pane_ui">
+        <table>
+          <tr><td class="lab_head" colspan="2">Current Info/Stats</td></tr>
+          <tr><td class="lab_desc">FPS</td><td class="lab_cVal" id="labl_curFPS"></td></tr>
+          <tr><td class="lab_desc">Mouse Position</td><td class="lab_cVal" id="labl_mousePos"></td></tr>
+          <tr><td class="lab_desc">Mouse Map Cell</td><td class="lab_cVal" id="labl_mouseCell"></td></tr>
+          <tr><td class="lab_desc">Start Cell Coord</td><td class="lab_cVal" id="labl_tokenS"></td></tr>
+          <tr><td class="lab_desc">Goal Cell Coord</td><td class="lab_cVal" id="labl_tokenG"></td></tr>
+          <tr><td class="lab_desc">Total Path Cost</td><td class="lab_cVal" id="labl_mousePos"></td></tr>
+          <tr><td class="lab_desc">Total Path Hops</td><td class="lab_cVal" id="labl_mouseCell"></td></tr>
+        </table>
+        <table>
+          <tr><td class="lab_head" colspan="2">Display Options</td></tr>
+          <tr><td class="lab_desc">Map Cells Grid</td><td class="lab_cBox"><input type="checkbox" onkeydown="event.preventDefault()" id="cBox_showGrid"/></td></tr> 
+          <tr><td class="lab_desc">Impassible Cells</td><td class="lab_cBox"><input type="checkbox" onkeydown="event.preventDefault()" id="cBox_showImpassible"/></td></tr>         
+          <tr><td class="lab_desc">Pathfind Open Set</td><td class="lab_cBox"><input type="checkbox" onkeydown="event.preventDefault()" id="cBox_showOCSets"/></td></tr>
+          <tr><td class="lab_desc">Pathfind Closed Set</td><td class="lab_cBox"><input type="checkbox" onkeydown="event.preventDefault()" id="cBox_showOCSets"/></td></tr>
+        </table>
+        <table>
+          <tr><td class="lab_head" colspan="2">Mouse Interaction Mode</td></tr>
+          <tr><td class="lab_desc">Path Setup/Find Mode</td><td class="lab_rad"><input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="cells"></td></tr>
+          <tr><td class="lab_desc">Tile Map Paint Mode</td><td class="lab_rad"><input type="radio" class="inp_rad" name="mseMode" onclick="onMouseIntrctModeChanged(this);" value="paint" checked></td></tr>
+        </table>
+        <table>
+          <tr><td class="lab_head" colspan="4">Tile Paint Options</td></tr>
+          <tr>
+            <td class="lab_desc" style="min-width: 60px; background: #181818FF; text-align: center;">Road</td>
+            <td class="lab_rad" style="background: rgb( 84, 84, 84);"><input type="radio" class="inp_rad" name="pntOpt" onclick="onTilePaintOptionChanged(this);" value="road"></td>
+            <td class="lab_desc" style="min-width: 60px; background: #181818FF; text-align: center;">Paved</td>
+            <td class="lab_rad" style="background: rgb(168,168,168);"><input type="radio" class="inp_rad" name="pntOpt" onclick="onTilePaintOptionChanged(this);" value="pave"></td>
+          </tr>
+          <tr>
+            <td class="lab_desc" style="min-width: 60px; background: #181818FF; text-align: center;">Dirt</td>
+            <td class="lab_rad" style="background: rgb(144, 84, 12);"><input type="radio" class="inp_rad" name="pntOpt" onclick="onTilePaintOptionChanged(this);" value="dirt" checked></td>
+            <td class="lab_desc" style="min-width: 60px; background: #181818FF; text-align: center;">Grass</td>
+            <td class="lab_rad" style="background: rgb(  0,144, 24);"><input type="radio" class="inp_rad" name="pntOpt" onclick="onTilePaintOptionChanged(this);" value="gras"></td>
+          </tr>
+          <tr>
+            <td class="lab_desc" style="min-width: 60px; background: #181818FF; text-align: center;">Sand</td>
+            <td class="lab_rad" style="background: rgb(255,216,144);"><input type="radio" class="inp_rad" name="pntOpt" onclick="onTilePaintOptionChanged(this);" value="sand"></td>
+            <td class="lab_desc" style="min-width: 60px; background: #181818FF; text-align: center;">Water</td>
+            <td class="lab_rad" style="background: rgb( 60,120,180);"><input type="radio" class="inp_rad" name="pntOpt" onclick="onTilePaintOptionChanged(this);" value="watr"></td>
+          </tr>
+        </table>
+        <table>
+          <tr><td class="lab_head" colspan="2">Pathfind Options</td></tr>
+          <tr><td class="lab_desc">Uniform Cost</td><td class="lab_rad"><input type="radio" class="inp_rad" name="pathOpt" onclick="onSearchAlgoModeChanged(this);" value="ucs"></td></tr>
+          <tr><td class="lab_desc">Greedy Best-First</td><td class="lab_rad"><input type="radio" class="inp_rad" name="pathOpt" onclick="onSearchAlgoModeChanged(this);" value="gbf"></td></tr>
+          <tr><td class="lab_desc">A* (A-Star)</td><td class="lab_rad"><input type="radio" class="inp_rad" name="pathOpt" onclick="onSearchAlgoModeChanged(this);" value="a*" checked></td></tr>
+          <tr><td class="lab_desc" style="text-align: center; padding-top: 8px" colspan="2"> <button class="inp_but" name="pathOpt">LAUNCH PATH</button> <button class="inp_but" name="pathOpt">CLEAR PATH</button> </td></tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
