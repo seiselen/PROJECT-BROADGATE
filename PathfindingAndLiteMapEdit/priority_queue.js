@@ -36,11 +36,13 @@ class PriorityQueue {
   //>>> QUERIES AND GETTERS
   //####################################################################
 
+  isEmpty(){return (this.nodes.length===0);} // KEEP THIS YOU OCD-INFESTED IDIOT. Turned out PathFinder.findPath(...) needs it IAC.
+
   shouldSwap(p,q){return (p<0 || p>=this.nodes.length) ? false : (q<0 || q>=this.nodes.length) ? false : !this.compare(this.nodes[p], this.nodes[q]);}
   
   hasChild(p,c){return (c=='l') ? (((p*2)+1)<this.nodes.length) : (c=='r') ? (((p*2)+2)<this.nodes.length) : -1;}
     
-  root(){return (this.nodes.length===0) ? null : this.nodes[0];}  
+  root(){return this.isEmpty() ? null : this.nodes[0];}  
   
   compare(p,q){return this.comparator(p,q) <= 0;}
   
@@ -63,7 +65,7 @@ class PriorityQueue {
   }
 
   dequeue(){
-    if (this.nodes.length===0){return null;}
+    if (this.isEmpty()){return null;}
     const root = this.root();
     this.nodes[0] = this.nodes[this.nodes.length-1];
     this.nodes.pop();

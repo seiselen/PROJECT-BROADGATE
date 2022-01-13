@@ -12,10 +12,11 @@ class DragObject{
     this.radius    = this.diameter/2;
     this.selected  = false; // i.e. 'is selected'
     this.mouseOff  = null;  // i.e. 'mouse offset'
-    this.fill_tokS = color(0,216,0);
+    this.fill_tokS = color(0,120,216);
     this.fill_tokG = color(216,0,0);
     this.fill_ERRR = color(255,0,255);    
-    this.strk_circ = color(60);
+    this.strk_reg  = color(60);
+    this.strk_sel  = color(255);    
     this.sWgt_circ = 2;    
   }
 
@@ -47,8 +48,11 @@ class DragObject{
   }
 
   render() {
-    stroke(this.strk_circ); strokeWeight(this.sWgt_circ);
+    (this.selected) ? stroke(this.strk_sel) : stroke(this.strk_reg); 
+    strokeWeight(this.sWgt_circ);
     switch(this.token){case "start": fill(this.fill_tokS); break; case "goal": fill(this.fill_tokG); break; default: fill(this.fill_ERRR);}
     ellipse(this.pos.x,this.pos.y,this.diameter,this.diameter);
   }
 } // Ends Class DragObject
+
+

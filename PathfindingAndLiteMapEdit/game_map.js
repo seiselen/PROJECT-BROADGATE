@@ -1,22 +1,28 @@
 var TileType = {
-  dirt:  0,
-  gras:  1,
-  road:  2,
-  pave:  3,
-  sand:  4,
-  watr:  5,
-  ERRR: -1,
-  cost : (ID)=>{switch(ID){
-    case TileType.road : return 1;
-    case TileType.pave : return 2;
-    case TileType.dirt : return 16;
-    case TileType.gras : return 32;
-    case TileType.sand : return 64;
-    case TileType.watr : return 1024;
+  DIRT:   0,
+  GRASS:  1,
+  ROAD:   2,
+  PAVE:   3,
+  SAND:   4,
+  WATER:  5,
+  ERROR: -1,
+  cost : (ID)=>{switch(ID){           // | *V2* | *V3* |
+    case TileType.ROAD  : return 1;    // |    1 |  0.5 |
+    case TileType.PAVE  : return 2;    // |    1 |  0.8 |
+    case TileType.DIRT  : return 16;   // |    2 |  1.0 |
+    case TileType.GRASS : return 32;   // |    3 |  2.0 |
+    case TileType.SAND  : return 64;   // |    4 |  4.0 |
+    case TileType.WATER : return 1024; // | 1024 | 64.0 |
     default: return 9999;
   }}
 }; // Ends Enum TileType
 
+var Direction = {
+  'O':0, 'ORG':0, 'NE':1, 'E':2, 'SE':3, 'S':4, 'SW':5, 'W':6, 'NW':7, 'N':8, 
+  'C':0, 'CTR':0, 'TR':1, 'R':2, 'BR':3, 'B':4, 'BL':5, 'L':6, 'TL':7, 'T':8,
+  'X':9, // <== None/Expired/Unknown or otherwise Default value
+  glyph : ['•','⬈','⮕','⬊','⬇','⬋','⬅','⬉','⬆','∅']
+}; // Ends Enum Direction
 
 class GameMap{
   constructor(cellsTall,cellsWide, cellSize){
@@ -41,13 +47,13 @@ class GameMap{
     this.sWgt_grid = 2; 
 
     //> Tile-Map Settings
-    this.fill_terr_road = color( 84,  84,  84);
-    this.fill_terr_pave = color(168, 168, 168);    
-    this.fill_terr_dirt = color(144,  84,  12);
-    this.fill_terr_gras = color(  0, 144,  24);       
-    this.fill_terr_sand = color(255, 216, 144);
-    this.fill_terr_watr = color( 60, 120, 180);
-    this.fill_terr_ERRR = color(255,   0, 255);    
+    this.fill_terr_ROAD  = color( 84,  84,  84);
+    this.fill_terr_PAVE  = color(168, 168, 168);
+    this.fill_terr_DIRT  = color(144,  84,  12);
+    this.fill_terr_GRASS = color(  0, 144,  24);
+    this.fill_terr_SAND  = color(255, 216,  96);
+    this.fill_terr_WATER = color( 60, 120, 180);
+    this.fill_terr_ERROR = color(255,   0, 255);
 
     //> Translucent 'foreground' indicating [IMPASSIBLE] cell
     this.fill_impassible = color(240,60,48,128);
@@ -55,57 +61,26 @@ class GameMap{
   } // Ends Function initColorPallete
 
   initTileMap(){
-    for(let r=0; r<this.cellsTall; r++){this.map_tile[r]=[]; for(let c=0; c<this.cellsWide; c++){this.map_tile[r][c]=TileType.dirt;}}    
+    for(let r=0; r<this.cellsTall; r++){this.map_tile[r]=[]; for(let c=0; c<this.cellsWide; c++){this.map_tile[r][c]=TileType.DIRT;}}    
   } // Ends Function initTileMap
+
+  toggleShowGrid(){
+    this.showGrid = !this.showGrid;
+  }
 
 
   //####################################################################
   //>>> SETTER FUNCTIONS
   //####################################################################
-  setValueAt(coord,val){
-    if(this.cellInBounds(coord)){this.map_tile[coord[0]][coord[1]] = val;}
-    else{console.log(">>> ERRR: setValueAt("+row+","+col+","+val+") has invalid parms!");}
+  setValueAt(arg1,arg2,arg3){
+    if(arguments.length==2){return this.setValueAt(arg1[0],arg1[1],arg2);}
+    if(this.cellInBounds(arg1,arg2)){this.map_tile[arg1][arg2] = arg3;}
+    else{console.log(">>> ERRR: setValueAt("+arg1+","+arg2+","+arg3+") has invalid parms!");}
   } // Ends Function setValueAt
 
-  floodFill(seedRow, seedCol, newVal){
-    if(!this.cellInBounds(seedRow,seedCol)){return;}
-
-    let curVal    = this.map_tile[seedRow][seedCol];
-    let temp      = null;
-    let openSet   = [];
-    let closedSet = new Map();
-
-    openSet.push([seedRow,seedCol]);
-    closedSet.set( ""+seedRow+","+seedCol, 1);
-  
-    let curSec = 0;
-    let maxSec = this.cellsWide*this.cellsTall;
-
-    while(curSec<maxSec && openSet.length > 0){
-      temp = openSet.shift();
-    
-      this.setValueAt(temp,newVal); // <-- IMPROVEMENT <vs> ZAC MVP one, should refactor it [!/?]
-    
-      for(let adjR = temp[0]-1; adjR <= temp[0]+1; adjR++){
-        for(let adjC = temp[1]-1; adjC <= temp[1]+1; adjC++){
-          console.log(adjR+","+adjC);
-          // don't know why 2nd conditional constrains WRT to Von Neuman neighborhood, but okelie dokelie...
-          if(this.cellInBounds(adjR,adjC) && (adjR==temp[0] || adjC==temp[1])){
-            // Final conditional makes sure all prospective filled tiles need to match original seed tile type
-            if(!closedSet.get(""+adjR+","+adjC) && this.map_tile[adjR][adjC] == curVal){
-              closedSet.set(""+adjR+","+adjC, 1);
-              openSet.push([adjR,adjC]);    
-            }          
-          }   
-        }
-      }
-      curSec++;
-    }  
-    console.log("SEC = " + curSec + " MAX = " + maxSec);
-    // might be overkill, but #yolo
-    openSet.length = 0;
-    closedSet.clear();
-  } // Ends Function floodFill
+  setAllValuesTo(val=TileType.DIRT){
+    for(let r=0; r<this.cellsTall; r++){for(let c=0; c<this.cellsWide; c++){this.map_tile[r][c]=TileType.DIRT;}}  
+  } // Ends Function setAllValuesTo
 
   //####################################################################
   //>>> GETTER FUNCTIONS
@@ -118,6 +93,7 @@ class GameMap{
     return this.coordToPos(this.posToCoord(pos));
   } // Ends Function posToMidpt
 
+  //>>> WARNING - WILL CAUSE CONFUSION => GRAB 'coordToTLPt' and/or refactor this SANS the "+cellHalf" parts!
   // more appropriate name would be 'coordToMidPt' but legacy so KISS
   coordToPos(v1,v2){
     switch(arguments.length){
@@ -137,6 +113,24 @@ class GameMap{
     }
   } // Ends Function cellInBounds
 
+  //####################################################################
+  //>>> GETTER FUNCTIONS (CURRENTLY) SPECIFICALLY USED BY PATHFINDER
+  //####################################################################
+
+  distBetweenCoords(pCoord,qCoord){
+    return this.coordToPos(pCoord).dist(this.coordToPos(qCoord));
+  } // Ends Function distBetweenCoords
+
+  getValueAt(r,c){
+    if(arguments.length==1){return this.getValueAt(r[0],r[1]);}
+    if(this.cellInBounds(r,c)){return this.map_tile[r][c];}
+    else{console.log(">>> Error: coord ["+r+","+c+"] is out-of-bounds!");}
+  } // Ends Function getValueAt
+
+  getCostAt(coord){
+    if(this.cellInBounds(coord)){return TileType.cost(this.map_tile[coord[0]][coord[1]]);}
+    else{console.log(">>> Error: coord ["+coord.toString()+"] is out-of-bounds!");}
+  } // Ends Function getCostAt 
 
   //####################################################################
   //>>> FUNCTION PAIR 'loadMap' and 'mapToString' [KEEP GROUPED FOR NOW]
@@ -146,13 +140,13 @@ class GameMap{
       for(let r=0; r<this.cellsTall; r++){
         for(let c=0; c<this.cellsWide; c++){
           switch(mapArr[r][c]){
-            case 'r': this.map_tile[r][c] = TileType.road; break;
-            case 'p': this.map_tile[r][c] = TileType.pave; break;
-            case 'd': this.map_tile[r][c] = TileType.dirt; break;            
-            case 'g': this.map_tile[r][c] = TileType.gras; break;
-            case 's': this.map_tile[r][c] = TileType.sand; break;            
-            case 'w': this.map_tile[r][c] = TileType.watr; break;
-            default : this.map_tile[r][c] = TileType.ERRR; break;
+            case 'r': this.map_tile[r][c] = TileType.ROAD;  break;
+            case 'p': this.map_tile[r][c] = TileType.PAVE;  break;
+            case 'd': this.map_tile[r][c] = TileType.DIRT;  break;            
+            case 'g': this.map_tile[r][c] = TileType.GRASS; break;
+            case 's': this.map_tile[r][c] = TileType.SAND;  break;            
+            case 'w': this.map_tile[r][c] = TileType.WATER; break;
+            default : this.map_tile[r][c] = TileType.ERROR; break;
           }
         }
       }   
@@ -167,13 +161,13 @@ class GameMap{
       for (var c=0; c<this.cellsWide; c++){
         retStr+="\'";
         switch(this.map_tile[r][c]){
-            case CellType.road : retStr+='r'; break;
-            case CellType.pave : retStr+='p'; break;
-            case CellType.dirt : retStr+='d'; break;
-            case CellType.gras : retStr+='g'; break;
-            case CellType.sand : retStr+='s'; break;
-            case CellType.watr : retStr+='w'; break;
-            default :            retStr+='?'; break;
+            case TileType.ROAD  : retStr+='r'; break;
+            case TileType.PAVE  : retStr+='p'; break;
+            case TileType.DIRT  : retStr+='d'; break;
+            case TileType.GRASS : retStr+='g'; break;
+            case TileType.SAND  : retStr+='s'; break;
+            case TileType.WATER : retStr+='w'; break;
+            default :             retStr+='?'; break;
         }
         retStr+="\'";
         if(c<this.cellsWide-1){retStr+=',';}
@@ -188,24 +182,20 @@ class GameMap{
   //####################################################################
   //>>> RENDER FUNCTIONS
   //####################################################################
-  render(){
-    this.renderMap();
-    if(this.showGrid){this.renderGrid();}
-    if(this.showCoord){this.renderCoords();}    
-  } // Ends Function render
+  render(){this.renderMap();this.renderGrid();}
 
   renderMap(){
     noStroke();
     for(let r=0; r<this.cellsTall; r++){
       for(let c=0; c<this.cellsWide; c++){
         switch(this.map_tile[r][c]){
-            case TileType.road: fill(this.fill_terr_road); break;
-            case TileType.pave: fill(this.fill_terr_pave); break;
-            case TileType.dirt: fill(this.fill_terr_dirt); break;            
-            case TileType.gras: fill(this.fill_terr_gras); break;
-            case TileType.sand: fill(this.fill_terr_sand); break;            
-            case TileType.watr: fill(this.fill_terr_watr); break;
-            default :           fill(this.fill_ERRR);
+            case TileType.ROAD:  fill(this.fill_terr_ROAD);  break;
+            case TileType.PAVE:  fill(this.fill_terr_PAVE);  break;
+            case TileType.DIRT:  fill(this.fill_terr_DIRT);  break;            
+            case TileType.GRASS: fill(this.fill_terr_GRASS); break;
+            case TileType.SAND:  fill(this.fill_terr_SAND);  break;            
+            case TileType.WATER: fill(this.fill_terr_WATER); break;
+            default :            fill(this.fill_ERROR);
         }
         rect(c*this.cellSize,r*this.cellSize,this.cellSize,this.cellSize);
       }
@@ -213,6 +203,7 @@ class GameMap{
   } // Ends Function renderMap
 
   renderGrid(){
+    if(!this.showGrid){return;}
     strokeWeight(this.sWgt_grid); stroke(this.strk_grid);
     for(let i=0; i<=this.cellsTall; i++){line(0,this.cellSize*i,width,this.cellSize*i);}
     for(let j=0; j<=this.cellsWide; j++){line(this.cellSize*j,0,this.cellSize*j,height);}
