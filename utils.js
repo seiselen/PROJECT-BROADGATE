@@ -189,6 +189,16 @@ function vec2(x=0,y=0)    {return createVector(x,y);}
 function vec3(x=0,y=0,z=0){return createVector(x,y,z);}
 
 /*----------------------------------------------------------------------
+|>>> Function distSq
++-----------------------------------------------------------------------
+| Implementation Note: LOOK...Quasi-Overriding CAN be better realized!
++---------------------------------------------------------------------*/
+function distSq(p1,p2,q1,q2){
+  if(arguments.length==2){return distSq(p1.x, p1.y, p2.x, p2.y);}
+  else{let dx=q1-p1; let dy=q2-p2; return (dx*dx)+(dy*dy);}
+} // Ends Function distSq
+
+/*----------------------------------------------------------------------
 |>>> Function randPtOnCanvas
 +---------------------------------------------------------------------*/
 function randPtOnCanvas(){
@@ -201,6 +211,47 @@ function randPtOnCanvas(){
 function canvasMidpoint(){
   return createVector(width/2,height/2);
 } // Ends Function canvasMidpoint
+
+
+//######################################################################
+//###[ Array-Related Utils ]############################################
+//######################################################################
+
+
+/*----------------------------------------------------------------------
+|>>> Function arr2Equals
++-----------------------------------------------------------------------
+|> Overview: Evaluates first two elements of the input arrays, returning
+|            true if their values match (via JavaScript 'loose' equality 
+|            <vs> 'strict' i.e. '==' <vs> '==='). As a neat side-effect
+|            of not asserting both arrays contain exactly two elements:
+|            either could contain more; such that this will STILL return
+|            true as long as their first two elements' values match. For
+|            example, at the time this was typed: my pathfinding utility
+|            for 2D tilemap grid worlds utilizes this function whenever
+|            comparing an Array[2] of [row, column] coords to a map cell
+|            with an Array[5] of [row, column, cost, heuristic, parent]
+|            encompassing a 'search node' i.e. the pathfinding state of
+|            a map cell; which this method handles nicely! However: NOTE
+|            that it does NOT handle invalid input at the present time 
+|            (i.e. Array[1], null, etc.); so 'caller beware' thereto.
++---------------------------------------------------------------------*/
+function arr2Equals(v1,v2){
+  return(v1[0] == v2[0] && v1[1] == v2[1]);
+} // Ends Function arr2Equals
+
+/*----------------------------------------------------------------------
+|>>> Function arrayValsEqual
++-----------------------------------------------------------------------
+|> Overview: Determines if the input arrays are equal, defined by values
+|            of their elements being equal. Thus: returns false if their
+|            lengths differ xor on first mismatch occurence; else true.
++---------------------------------------------------------------------*/
+function arrayValsEqual(arr1, arr2){
+  if(arr1.length != arr2.length){return false;}
+  for (let i=0; i<arr1.length; i++){if (arr1[i] != arr2[i]){return false;}}
+  return true; 
+} // Ends Function arrayValsEqual
 
 
 //######################################################################
@@ -221,12 +272,12 @@ function colorHexToRGBA(colVal){
 } // Ends Function colorHexToRGBA
 
 
+
 /*----------------------------------------------------------------------
-|>>> Function distSq
+|>>> Function bucket
 +-----------------------------------------------------------------------
-| Implementation Note: LOOK...Quasi-Overriding CAN be better realized!
+|> Overview: Maps float of range (0.0…1.0] to int of range [1,…,nParts].
 +---------------------------------------------------------------------*/
-function distSq(p1,p2,q1,q2){
-  if(arguments.length==2){return distSq(p1.x, p1.y, p2.x, p2.y);}
-  else{let dx=q1-p1; let dy=q2-p2; return (dx*dx)+(dy*dy);}
-}
+function bucket(val,nParts){
+  return ceil(val*nParts);
+} // Ends Function bucket

@@ -91,7 +91,7 @@ class MSQGridMap{
   private int      msqCellsTall;
   private int      cellSize;
   private int      cellHalf;
-  private boolean  showGrid;
+  private boolean  showGrid = true;
 
   private int      curPaintTile  = TileType.DIRT;
   private int      mapRenderMode = MapMode.MSQ;
@@ -102,8 +102,8 @@ class MSQGridMap{
   public MSQGridMap(int cTall, int cWide, int cSize, PImage[] imgs){
     mapCellsWide = cWide;
     mapCellsTall = cTall;
-    msqCellsWide = cWide-1;
-    msqCellsTall = cTall-1;
+    msqCellsWide = cWide+1;
+    msqCellsTall = cTall+1;
     cellSize     = cSize;
     cellHalf     = cSize/2;
     mapCells     = new int[mapCellsTall][mapCellsWide];
@@ -128,17 +128,16 @@ class MSQGridMap{
     showGrid = !showGrid;
   } // Ends Function toggleShowGrid
 
-
   private void assignMsqCells(){
     int adjVal = 0;
     for(int r=0; r<msqCellsTall; r++){
       for(int c=0; c<msqCellsWide; c++){
-        adjVal=0;
-        if(mapCells[r+1][c]   == TileType.WATER){adjVal+=1;} // Southwest
-        if(mapCells[r+1][c+1] == TileType.WATER){adjVal+=2;} // Southeast
-        if(mapCells[r][c+1]   == TileType.WATER){adjVal+=4;} // Northeast
-        if(mapCells[r][c]     == TileType.WATER){adjVal+=8;} // Northwest
-        mSqCells[r][c]= adjVal;
+        adjVal=0;   
+        adjVal += (cellInBounds(r, c-1)   && mapCells[r][c-1]   == TileType.WATER) ? 1 : 0; // Southwest
+        adjVal += (cellInBounds(r, c)     && mapCells[r][c]     == TileType.WATER) ? 2 : 0; // Southeast             
+        adjVal += (cellInBounds(r-1, c)   && mapCells[r-1][c]   == TileType.WATER) ? 4 : 0; // Northeast         
+        adjVal += (cellInBounds(r-1, c-1) && mapCells[r-1][c-1] == TileType.WATER) ? 8 : 0; // Northwest    
+        mSqCells[r][c] = adjVal;
       }
     }
   } // Ends Function assignMsqCells
@@ -159,49 +158,39 @@ class MSQGridMap{
 
   public void render(){
     switch(mapRenderMode){
-      case MapMode.MAP: renderMapCells(); renderMapGrid(); break; 
-      case MapMode.MSQ: renderMSQCells(); renderMSQGrid(); break;
+      case MapMode.MAP: renderMapCells(); break; 
+      case MapMode.MSQ: renderMSQCells(); break;
     }
+    renderGrid();
   } // Ends Function render
 
 
   public void renderMSQCells(){
     noFill(); noStroke();
-    for(int r=0;r<msqCellsTall;r++){
-      for(int c=0;c<msqCellsWide;c++){
-        image(tileSprites[mSqCells[r][c]], (c*cellSize)+cellHalf , (r*cellSize)+cellHalf , cellSize , cellSize);
-      }
-    }
+    push();translate(-cellHalf,-cellHalf);
+    for(int r=0;r<msqCellsTall;r++){for(int c=0;c<msqCellsWide;c++){
+      image(tileSprites[mSqCells[r][c]],c*cellSize,r*cellSize,cellSize,cellSize);
+    }}
+    pop();
   } // Ends Function renderMSQCells
 
 
   public void renderMapCells(){
     noStroke();
-    for(int r=0;r<mapCellsTall;r++){
-      for(int c=0;c<mapCellsWide;c++){  
-        if(mapCells[r][c]==TileType.DIRT){fill(180,120,0);}
-        if(mapCells[r][c]==TileType.WATER){fill(0,144,255);}      
-        rect(c*cellSize,r*cellSize,cellSize,cellSize);
-      }
-    }
+    for(int r=0;r<mapCellsTall;r++){for(int c=0;c<mapCellsWide;c++){  
+      if(mapCells[r][c]==TileType.DIRT){fill(180,120,0);}
+      if(mapCells[r][c]==TileType.WATER){fill(0,144,255);}      
+      rect(c*cellSize,r*cellSize,cellSize,cellSize);
+    }}
   } // Ends Function renderMapCells
 
 
-  public void renderMapGrid(){
+  public void renderGrid(){
     if(!this.showGrid){return;}
-    strokeWeight(1); stroke(60,127);
+    strokeWeight(1); stroke(60,127); noFill();
     for(int i=0; i<=mapCellsTall; i++){line(0,cellSize*i,width,cellSize*i);}
     for(int j=0; j<=mapCellsWide; j++){line(cellSize*j,0,cellSize*j,height);}
   } // Ends Function renderMapGrid  
-
-
-  public void renderMSQGrid(){
-    if(!this.showGrid){return;}
-    strokeWeight(1); stroke(60,127);
-    for(int i=0; i<=msqCellsTall; i++){line(0,cellSize*i,width,cellSize*i);}
-    for(int j=0; j<=msqCellsWide; j++){line(cellSize*j,0,cellSize*j,height);}
-  } // Ends Function renderMSQGrid
-
 
 } // Ends Class MSQGridMap
 

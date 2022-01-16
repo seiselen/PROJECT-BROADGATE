@@ -95,22 +95,3 @@ function mouseDragged(){
 function mouseWheel(event){
   mapEdit.setPaintSize(Math.sign(-event.delta));
 }
-
-//######################################################################
-//>>> GENERAL UTIL      (TODO: add to utils.js, especially 'arr2Equals')
-//######################################################################
-
-//>>> For Array[2] Only (i.e. [arr]=>[v0,v1])
-function arr2Equals(v1,v2){
-  return (v1[0]==v2[0] && v1[1]==v2[1]);
-}
-
-//>>> For Any Size (though returns 'false' if their lengths differ!)
-function arrayValsEqual(arr1, arr2){
-  if(arr1.length != arr2.length){return false;}
-  for (let i=0; i<arr1.length; i++){if (arr1[i] != arr2[i]){return false;}}
-  return true; 
-}
-
-//>>> For any float (0.0…1.0], maps it to an int [1,…,nParts] 
-function bucket(val,nParts){return ceil(val*nParts);}
