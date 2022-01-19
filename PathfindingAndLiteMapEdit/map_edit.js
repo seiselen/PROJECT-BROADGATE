@@ -1,4 +1,25 @@
-
+/*======================================================================
+|>>> Class MapEditor
++-----------------------------------------------------------------------
+| Overview: TODO
++-----------------------------------------------------------------------
+|> TEMP/QAD Implementation Notes and TODOs:
+|   o The 'Get-Then-Set' design pattern, as utilized by many 2D Cellular
+|     Automata realizations, involves first gathering a list of cells to
+|     set, then setting therefrom; <vs> 'Set-As-You-Get', which involves
+|     setting values as valid ones thereto are found. This method should
+|     resolve much of the artifacts / deficiency encountered within the 
+|     original Processing versions of several major generative functions
+|     of this class which [still] use 'Set-As-You-Get'. Such artifacts
+|     typically encompass lone tiles of some type even though the method
+|     [should] resolve this; because it cannot recognize any changes to
+|     the map preceeding the 'southeast' direction by which the row/col
+|     double for-loop traverses through the 2D grid world/map. Ergo...
+|   o TODO: I still need to patch the primary generation phase code for
+|     the aforementioned functions which still utilize 'Set-As-You-Get';
+|     but will likely leave this as a TODO for the 'next season' of ZAC 
+|     development (ETAish late spring early summer 2022?)
++=====================================================================*/
 class MapEditor{
   static maxPaintSize = 5;
   static tileSeedPct  = 5; // Percent chance that random tile gets seeded with some type (e.g. for lake, pond, field, etc. generation)
@@ -8,12 +29,10 @@ class MapEditor{
     this.paintSize = 1; // square # tiles to paint map tiles (i.e. 'paint water tiles 3x3'); a.k.a. 'drawCellSize' in PathfindingProcessing
     this.paintType = TileType.DIRT;
     this.paintFill = false;
-
     this.flowField  = [];
-    this.noiseScale = 0.25; 
-
-    this.debugPrint = true;
-
+    this.blocksMade = [];    
+    this.noiseScale = 0.25;
+    this.debugPrint = false;
   }
 
   initFlowField(){
@@ -43,6 +62,11 @@ class MapEditor{
     return tot;
   } // Ends Function getAdjTotal
 
+
+  // Defined because the desire to assert valid hash keys is greater than my OCD nagging if its worth its own function
+  closedSetKey(sNode){
+    return ""+sNode[0]+","+sNode[1];
+  } // Ends Function closedSetKey
 
 
   //> Warning: Invalid Input NOT handled (though painted tiles will likely appear 'ERROR' purple)
@@ -264,7 +288,6 @@ class MapEditor{
 
 
 
-
   /*--------------------------------------------------------------------
   |>>> Function makeSimpleShore
   +---------------------------------------------------------------------
@@ -272,7 +295,10 @@ class MapEditor{
   |           encompassing the permimeter of any/all such cells to type
   |           [SAND]. That is, for each map cell, if it is not a [WATER]
   |           tile, but at at least one of its Moore Neighbors happens
-  |           to be such a tile: then set it to a [SAND] tile.     
+  |           to be such a tile: then set it to a [SAND] tile. Will not
+  |           replace with <setTypeViaAdjs> call, as getting it general
+  |           enough for water, grass, and sand-gras dune gen was enough
+  |           of a headache; but could do so at some point in future.
   +-------------------------------------------------------------------*/
   makeSimpleShore(){
     for(let r=0; r<this.map.cellsTall; r++){
@@ -282,33 +308,8 @@ class MapEditor{
             for(let adjC=c-1; adjC<=c+1; adjC++){
               if((r!=adjR || c!=adjC) && this.map.cellInBounds(adjR,adjC) && this.map.getValueAt(adjR,adjC)==TileType.WATER){
                 this.map.setValueAt(r,c,TileType.SAND); 
-              }
-            }
-          }
-        }        
-      }
-    }      
+    } } } } } }   
   } // Ends Function makeSimpleShore
-
-
-  /*--------------------------------------------------------------------
-  |>>> Function makeSimpleSandDuneGrass
-  +---------------------------------------------------------------------
-  | Overview: Originally the 2nd Phase of 'makeSimpleShore', sets any
-  |           [DIRT] tile with 4 or more Moore Neighbors of type [SAND]
-  |           to type [GRASS]; thus (kinda?) simulating the grassy areas
-  |           adjacent to coast lines (as seen on Long Island and most
-  |           archetypal tropical [island] coastlines). 
-  +-------------------------------------------------------------------*/
-  makeSimpleSandDuneGrass(adjMin=4){
-    for(let r=0; r<this.map.cellsTall; r++){
-      for(let c=0; c<this.map.cellsWide; c++){ 
-        if(this.map.getValueAt(r,c)==TileType.DIRT && this.getAdjTotal(r,c,TileType.SAND)>adjMin){
-          this.map.setValueAt(r,c,TileType.GRASS);
-        }
-      }
-    } 
-  } // Ends Function makeSimpleSandDuneGrass
 
 
   /*--------------------------------------------------------------------
@@ -367,15 +368,10 @@ class MapEditor{
     }
     if(this.debugPrint){console.log("makePondsAndLakes: [numDeleted/numAdded] = ["+numDeleted+"/"+numAdded+"]");}
     
-    // One last mode of generation: dirt tiles with 6+ water neighbors become water
-    for(let r=0; r<this.map.cellsTall; r++){
-      for(let c=0; c<this.map.cellsWide; c++){ 
-        if(this.map.getValueAt(r,c)==TileType.DIRT && this.getAdjTotal(r,c,TileType.WATER)>=6){
-          this.map.setValueAt(r,c,TileType.WATER);
-          curWatTiles++;
-        }
-      }
-    }
+    if(this.debugPrint){console.log("makePondsAndLakes: [curWaterTiles/numWaterTiles] = ["+curWatTiles+"/"+numWatTiles+"] i.e. "+nf((curWatTiles/numWatTiles)*100,2,2)+"%");}
+    // One last mode of generation: [DIRT] tiles with 6+ [WATER] neighbors become [DIRT]
+    curWatTiles+= this.setTypeViaAdjs(TileType.DIRT,TileType.WATER,TileType.WATER);
+
     if(this.debugPrint){console.log("makePondsAndLakes: [curWaterTiles/numWaterTiles] = ["+curWatTiles+"/"+numWatTiles+"] i.e. "+nf((curWatTiles/numWatTiles)*100,2,2)+"%");}
   } // Ends Function makePondsAndLakes
 
@@ -402,161 +398,282 @@ class MapEditor{
     }
     if(this.debugPrint){console.log("makeGrass: grass cell placement [curFails/maxFails] = ["+curFails+"/"+maxFails+"]");}
 
-    //>>> FOLLOWING 2 LOOPS ARE PROTOTYPE OF 'THROW LONE GRASS WITH NEIGHBORS' IDEA
+    // Turn any [GRASS] with [8] [DIRT] neighbors to [DIRT], then any [DIRT] with [6+] [GRASS] neighbors to [GRASS], then hope the ratio is ~100%
+    let loneGrassRemoved = this.setTypeViaAdjs(TileType.GRASS,TileType.DIRT,TileType.DIRT,8);
+    let numGrassReplaced = (loneGrassRemoved==0) ? 0 : this.setTypeViaAdjs(TileType.DIRT,TileType.GRASS,TileType.GRASS,6,loneGrassRemoved);
 
-    let numLoneGrassRemoved = 0;
-    for(let r=0;r<this.map.cellsTall;r++){
-      for(let c=0;c<this.map.cellsWide;c++){ 
-        if(this.map.getValueAt(r,c)==TileType.GRASS && this.getAdjTotal(r,c,TileType.GRASS)==0){
-          this.map.setValueAt(r,c,TileType.DIRT);
-          numLoneGrassRemoved++;
-        }
-      }
-    }
-
-    for(let r=0;r<this.map.cellsTall;r++){
-      for(let c=0;c<this.map.cellsWide;c++){ 
-        if(numLoneGrassRemoved>0 && this.map.getValueAt(r,c)==TileType.DIRT && this.getAdjTotal(r,c,TileType.GRASS)>=6){
-          this.map.setValueAt(r,c,TileType.GRASS);
-          numLoneGrassRemoved--;
-        }
-      }
-    }
-    if(this.debugPrint){console.log("makeGrass: lone grass cell replacement: [numLoneGrassRemoved] = ["+numLoneGrassRemoved+"]");}
-
-    /*
-    for(let r=0;r<this.map.cellsTall;r++){
-      for(let c=0;c<this.map.cellsWide;c++){ 
-        if(this.map.getValueAt(r,c)==TileType.DIRT && this.getAdjTotal(r,c,TileType.GRASS)>4){this.map.setValueAt(r,c,TileType.GRASS);}
-      }
-    } 
-    */
+    if(this.debugPrint){
+      let replaceRatio = (loneGrassRemoved==0) ? 0 : nf((numGrassReplaced/loneGrassRemoved)*100,2,2);      
+      console.log("makeGrass: lone grass cell replacement: [replaced/removed] = ["+numGrassReplaced+"/"+loneGrassRemoved+"] ("+replaceRatio+"%)");
+      console.log("makeGrass: [curGrassTiles/numGrassTiles] = ["+curGrassTiles+"/"+numGrassTiles+"] i.e. "+nf((curGrassTiles/numGrassTiles)*100,2,2)+"%");
+    }    
   } // Ends Function makeGrass
 
 
-/*
-  void makeBlockWithSurroundingRoads(){
-    
-    int failures = 0;
-    int maxFails = 20;
-    boolean validSite = false;
-    int blocksMade = 0;
+  /*--------------------------------------------------------------------
+  |>>> Function setTypeViaAdjs
+  +---------------------------------------------------------------------
+  | Overview: Assigns all cells of TileType [inType] the value [toType] 
+  |           if at least [adjMin] of their adjacent Moore Neighborhood 
+  |           cells are of value [adjType]. Utilizes the 'Get-Then-Set' 
+  |           design pattern / policy as discussed in the header comment
+  |           box documentation of this class. ALSO: I'm NOT supporting
+  |           default parms because handling thereof is too much of a 
+  |           pain and I want to finish this part of ZAC, so will KISS.
+  |           Well, seems the one parm that can remain is the original
+  |           one I had in mind: adjMin; so at least MVP is retained!
+  | Returns:  Total number of cells which were set to [type]; such that
+  |           callers like <makeGrass> can use it for their own stats.
+  | Parms:    {inType, toType, adjType} => self-explanatory per above
+  |           adjMin => self-explanatory per above with TWO EXCEPTIONS
+  |           corresponding to special/no input; as follows:
+  |            o nothing => assigned default value of [6] per the header
+  |            o [-1]    => NO adjacencies must be [adjType] for cell to
+  |                         be assigned [toType] ... yes this is a hack,
+  |                         but I want to complete this damned function
+  |                         before my OCD wastes [even more] time on it!
+  +-------------------------------------------------------------------*/
+  setTypeViaAdjs(inType, toType, adjType, adjMin=6, stopAt=-1){
+    let jobList = [];
 
-    int[] sample;
-    int[] extent = new int[]{-1,-1};
-
-    int tempVal; // Used for comparison with tile types    
-    while(failures<maxFails && blocksMade<numBlocks){
-      sample = getRandCoord();
-
-      extent[0] = sample[0]+int(random(2,5))+2;
-      extent[1] = sample[1]+int(random(2,5))+2;
-            
-      validSite=true;
-      
-      // Check #1 - are extents in bounds?
-      if( !map.checkInBounds(sample) || !map.checkInBounds(extent)){validSite=false;}
-
-      // Check #2 - are all prospective points sitting on either dirt, grass, or sand (i.e. NOT water or other blocks/roads!)
-      else{
-        for(int r=sample[0]; r<extent[0]; r++){
-          for(int c=sample[1]; c<extent[1]; c++){
-            tempVal = map.getValueAt(r,c);
-            if(tempVal==TileType.WATER || tempVal==TileType.ROAD || tempVal==TileType.PAVE || tempVal==TileType.SAND){validSite=false;}
-          }
-        }
+    for(let r=0; r<this.map.cellsTall; r++){
+      for(let c=0; c<this.map.cellsWide; c++){
+        if (this.getAdjTotal(r,c,adjType)<adjMin){continue;}
+        if (this.map.getValueAt(r,c)!=inType){continue;}
+        jobList.push([r,c]);
       }
-      
-      // Either out of bounds or overlaps on top of invalid tile type: report fail, reiterate
-      if(validSite==false){failures++;}
-      
-      // Valid site to draw tiles on: assign the road and pavement tiles
-      else{   
-        for(int r=sample[0]; r<extent[0]; r++){
-          for(int c=sample[1]; c<extent[1]; c++){
-            if(r==sample[0] || r==extent[0]-1 || c==sample[1] || c==extent[1]-1){map.setValueAt(r,c,TileType.ROAD);}
-            else{map.setValueAt(r,c,TileType.PAVE);}
-          }
-        }
-
-        blocks.add(new BlockDims(sample, extent, new int[]{int(lerp(sample[0],extent[0],0.5)), int(lerp(sample[1],extent[1],0.5))}));
-        blocksMade++;
-      } // Ends Condition that the block can be drawn
-    } // Ends While Loop
-    if(debugPrint){println("makeBlockWithSurroundingRoads: block generation [failures/maxFails] = ["+failures+"/"+maxFails+"]");}
-  } // Ends Function makeBlockWithSurroundingRoads
-  
-
-  void connectBlocksViaBFS(){
-    int nBlocks = blocks.size();
-    if(nBlocks<2){return;}  
-        
-    for(int i=0; i<nBlocks; i++){
-      drawRoadAndReportNNViaBFS(blocks.get(i));  
     }
-  } // Ends Function connectBlocksViaBFS
+    if(stopAt>0){jobList.length=stopAt;}
+    jobList.forEach(cell=>this.map.setValueAt(cell[0],cell[1],toType));
+    return jobList.length;
+  } // Ends Function setTypeViaAdjs
+
+
+  /*--------------------------------------------------------------------
+  |>>> Function makeSimpleSandDuneGrass
+  +---------------------------------------------------------------------
+  | Overview: Originally the 2nd Phase of 'makeSimpleShore', sets any
+  |           [DIRT] tile with 4 or more Moore Neighbors of type [SAND]
+  |           to type [GRASS]; thus (kinda?) simulating the grassy areas
+  |           adjacent to coast lines (as seen on Long Island and most
+  |           archetypal tropical [island] coastlines). 
+  +-------------------------------------------------------------------*/
+  makeSimpleSandDuneGrass(adjMin=4){
+    this.setTypeViaAdjs(TileType.DIRT,TileType.GRASS,TileType.SAND,4);
+  } // Ends Function makeSimpleSandDuneGrass
+
+
+  /*--------------------------------------------------------------------
+  |>>> Function createBlocks
+  +---------------------------------------------------------------------
+  | Overview: Creates 'blocks' (i.e. of which buildings are built upon)
+  |           composed of a rectangular area of [PAVE] tiles surrounded 
+  |           by a perimeter of [ROAD] tiles. All cells of such an area
+  |           must NOT be of type {[WATER],[ROAD],[PAVE]}, else it will
+  |           be rejected and another random span considered thereafter.
+  | Parms:    numBlocks     - how many blocks to generate (NO GUARANTEE 
+  |                           that this many will actually be generated,
+  |                           due to both the aforementioned constraints
+  |                           as well as the current map state) 
+  |           minDim/maxDim - min/max cell range constraining both width
+  |                           and height of a generated block; s.t. if
+  |                           minDim=[4], maxDim=[8], and the values [5]
+  |                           and [6] are selected for the block's width
+  |                           and height, and the site thereof is valid:
+  |                           there will appear [3x4] cell area composed
+  |                           of [PAVE] tiles, surrounded by a [1x] cell
+  |                           perimeter of [ROAD] tiles.
+  +---------------------------------------------------------------------
+  |> Implementation Notes/Issues/TODOs:
+  |  o I'm currently recomputing 'random-within-range' heights/widths of
+  |    candidate blocks following each site validation fail. This isn't
+  |    [generally] neccessary, but it's also not doing any [noticeable]
+  |    damage - so KISS and don't fix what ain't broke. I'm nonetheless
+  |    noting this in case I ever do work on a more specified/customized 
+  |    block creation method at some point in the future.
+  |  o R&D a method for resolving 'boulevards' if [roadOverlapOK==true];
+  |    i.e. whenever two or more blocks are close enough such that their
+  |    perimeter [ROAD] tiles border each other (as to produce a 2x-wide
+  |    road thereof) <VS> overlapping each other (as to effect two sides
+  |    of the same street sharing the same [ROAD] tiles thereof). I will
+  |    refrain from pursuing this right now as to KISS and be a good boy 
+  |    towards completing the refactor of this code to P5JS ASAP: but it
+  |    is something I want to perhaps sketch out on paper sometime soon.
+  |    Suffice it to say (rather, to repeat): this is a TODO item.   
+  +-------------------------------------------------------------------*/
+  createBlocks(numBlocks=5,minDim=5,maxDim=8,roadOverlapOK=true){   
+    let curFails  = 0;
+    let maxFails  = 64;   // no issues so far, change if/as needed
+    let curBlocks = 0;
+    let isValid   = true;
+    let extent;           // i.e. bottom right cell of block construct
+    let origin;           // i.e. top left cell of block construct
+
+    while(curFails<maxFails && curBlocks<numBlocks){
+      origin  = this.getRandomCoord();
+      extent  = [origin[0]+round(random(minDim,maxDim)), origin[1]+round(random(minDim,maxDim))]; 
+      isValid = true;
+
+      // Qualify <XOR> Disqualify validity of proposed site for placement of block
+      if(!this.map.cellInBounds(origin) || !this.map.cellInBounds(extent)){isValid=false;}
+      else{
+        for(let r=origin[0]; r<extent[0]; r++){
+          for(let c=origin[1]; c<extent[1]; c++){
+            switch(this.map.getValueAt(r,c)){
+              case TileType.WATER: isValid = false; break;
+              case TileType.PAVE:  isValid = false; break;
+              case TileType.ROAD:  if(!roadOverlapOK || (r!=origin[0] && r!=extent[0]-1 && c!=origin[1] && c!=extent[1]-1)){isValid=false;} break;
+      } } } }
+
+      if(!isValid){curFails++; continue;}
+   
+      for(let r=origin[0]; r<extent[0]; r++){
+        for(let c=origin[1]; c<extent[1]; c++){
+          if(r==origin[0] || r==extent[0]-1 || c==origin[1] || c==extent[1]-1){this.map.setValueAt(r,c,TileType.ROAD);}
+          else{this.map.setValueAt(r,c,TileType.PAVE);}
+      } }
+
+      this.blocksMade.push([origin, extent, [int(lerp(origin[0],extent[0],0.5)), int(lerp(origin[1],extent[1],0.5))]]);
+      curBlocks++;
+    }
+
+    if(this.debugPrint){console.log("makeBlockWithSurroundingRoads: block generation [curFails/maxFails] = ["+curFails+"/"+maxFails+"]");}
+  } // Ends Function createBlocks
+
+
+  /*--------------------------------------------------------------------
+  |>>> Function createBlockToSpec
+  +---------------------------------------------------------------------
+  | Overview: Creates block to exact position and size specs, sans only 
+  |           any cells thereof which are out-of-bounds of map [cells].
+  | Parms:    Self-Explanatory, except noting that they are exclusive to
+  |           the perimeter of [ROAD] cells surrounding the [R R R R R]
+  |           [PAVE] cells which compose the block. IOW for [R P P P R]
+  |           example: input values of {2,2,4,3} will yield [R P P P R]
+  |           a [4] tall [3] wide rect of [PAVE] type cells [R P P P R]
+  |           with top-left cell coord is [2,2], surrounded [R P P P R]
+  |           by a perimeter of [ROAD] cells, as seen here: [R R R R R]
+  +-------------------------------------------------------------------*/
+  createBlockToSpec(row,col,cellsTall,cellsWide){
+    // Get Top-Left and Bot-Right coords for [ROAD] perimeter i.e. 'REAL extents'
+    let roadTL = [row-1,col-1];
+    let roadBR = [roadTL[0]+cellsTall+1,roadTL[1]+cellsWide+1];
+    // Are extents in-bounds? If so: only constraint passes and block gets made (no matter what exists on its cells)
+    if(!this.map.cellInBounds(roadTL) || !this.map.cellInBounds(roadBR)){return;}
+
+    for (let r=roadTL[0]; r<=roadBR[0]; r++){
+      for (let c=roadTL[1]; c<=roadBR[1]; c++){       
+        this.map.setValueAt(r,c, ((r==roadTL[0]||r==roadBR[0]||c==roadTL[1]||c==roadBR[1]) ? TileType.ROAD : TileType.PAVE));
+      }
+    }
+
+    this.blocksMade.push([roadTL, roadBR, [int(lerp(roadTL[0],roadBR[0],0.5)), int(lerp(roadTL[1],roadBR[1],0.5))]]);
+  } // Ends Function createBlockToSpec
+
+
+  /*--------------------------------------------------------------------
+  |>>> Functions connectBlocksToEachOther / connectBlockToBlock
+  +---------------------------------------------------------------------
+  | Description: Creates connections between all combinations of blocks
+  |              as straight-line [ROAD] paths via Breath-First Search.
+  |              Linear spans are realized via only considering a cell's
+  |              Von Neuman neighbors; and my OCD notes that we utilize
+  |              combination <vs> permutation because we are considering
+  |              a path from blocks [p,q] as equivalent to [q,p].
+  | Defeciency:  BFS yields 'tangled wires' of connection paths for even
+  |              small groups of blocks in maps of mostly [DIRT] cells. 
+  |              Although this [pleasantly often] produces a nice effect
+  |              resembling bypasses and side-road detours which feature
+  |              both 'T' and '+' intersections: less-nice artifacts get
+  |              generated alongside. I could keep it as-is: especially
+  |              as the purpose of the 'MapEditor' PCG functions are to
+  |              provide a basis from which a human can then 'carve-out'
+  |              the fine[r] details; and not [YET] to serve as a fully
+  |              autonomous PCG map generator (of any significant degree
+  |              of 'trustworthiness', anyway). In any case, there's a
+  |              relatively straightforward solution to this defeciency
+  |              which should work, discussed below in 'Implementation 
+  |              Notes/TODOs'...
+  +---------------------------------------------------------------------
+  |> Implementation Notes/TODOS:
+  |   o The cause of the 'Tangled Wire Road Paths' defeciency discussed 
+  |     above appears mostly if not fully due to the limitations of BFS;
+  |     namely: that it inserts discovered cells in FIFO order into a 
+  |     simple Queue, versus inserting WRT lowest cost-from-source into
+  |     a Priority Queue. Thus, when generating paths: it CANNOT observe
+  |     existing road paths, thus cannot resolve a connection between 
+  |     blocks 'p' and 'q' by [implicitly] concluding at some point in
+  |     the pathfinding process: "I just found the existing connection 
+  |     between blocks 'r' and 'q', and it will get to 'p' quicker than
+  |     any alternative I can [continue to] discover, so I'll use it!"
+  |     Pathfinding algorithms which DO use a Priority Queue, ergo CAN
+  |     add cells to the open set WRT cost and likewise pop therefrom
+  |     include UCS and A*, which the (under-construction) Pathfinder
+  |     class util realizes. Thus TODO: utilize its pathfinding function
+  |     versus the internal one currentlly within <connectBlockToBlock>.
+  +-------------------------------------------------------------------*/
+  connectBlocksToEachOther(){
+    if(this.blocksMade.length<2){return;}
+    for(let i=0; i<this.blocksMade.length; i++){for(let j=i+1; j<this.blocksMade.length; j++){this.connectBlockToBlock(i,j);}}
+  } // Ends Function connectBlocksToEachOther
   
 
-  void drawRoadAndReportNNViaBFS(BlockDims in){
-    Queue<MMSearchNode> openSet = new LinkedList<MMSearchNode>();
-    int[][] closedSet = new int[cellsTall][cellsWide];
+  connectBlockToBlock(pIdx,qIdx){
+    let source = this.blocksMade[pIdx][2];
+    let destin = this.blocksMade[qIdx][2];
+
+    let openSet   = [];
+    let closedSet = new Map(); 
+    let curSec    = 0;
+    let maxSec    = this.map.cellsWide*this.map.cellsTall;
+    let goalFound = false; 
+    let totalHops = 0;
+    let curSN  = [source,null]; // SearchNode Array[2]=>{Coord Array[2], SearchNode parent}
+    let curRC  = null;
+    let tmpKey = [];
     
-    boolean goalFound=false;
-    int cSetSize=0;   
-  
-    int startRow = int(in.CC[0]);
-    int startCol = int(in.CC[1]);
-      
-    MMSearchNode curCoord = null;
+    openSet.push(curSN);
+    closedSet.set(this.closedSetKey(curSN[0]),curSN);
 
-    openSet.add(new MMSearchNode(startRow, startCol, null));
-    closedSet[startRow][startCol] = 1;
-  
-    int sec=0; int maxSec=cellsWide*cellsTall;
+    while(!goalFound && curSec<maxSec && openSet.length>0){
+      curSN = openSet.shift();
+      curRC = curSN[0];
 
-    while(!goalFound && sec<maxSec && openSet.size()>0){
-      curCoord = openSet.poll();
-      
-      for(BlockDims b : blocks){if(curCoord.row != startRow && curCoord.col != startCol && curCoord.row == b.CC[0] && curCoord.col == b.CC[1]){goalFound=true; break;}}
+      this.blocksMade.forEach((block)=>{if(!arr2Equals(curRC,source) && arr2Equals(curRC,destin)){goalFound=true}});
       if(goalFound){break;}
     
-      for(int adjR = curCoord.row-1; adjR <= curCoord.row+1; adjR++){
-        for(int adjC = curCoord.col-1; adjC <= curCoord.col+1; adjC++){
-          if( !map.checkInBounds(adjR,adjC) || 
-              (adjR==curCoord.row && adjC==curCoord.col)      || (adjR!=curCoord.row && adjC!=curCoord.col)      ||
-              (map.getValueAt(adjR,adjC) == TileType.WATER) || (map.getValueAt(adjR,adjC) == TileType.SAND)  ||
-              (closedSet[adjR][adjC] != 0) ){
-            continue;
-          }
-
-          closedSet[adjR][adjC] = 1;
-          openSet.add(new MMSearchNode(adjR, adjC, curCoord));
-          cSetSize++;
+      for(let adjR=curRC[0]-1; adjR<=curRC[0]+1; adjR++){
+        for(let adjC=curRC[1]-1; adjC<=curRC[1]+1; adjC++){
+          tmpKey = this.closedSetKey([adjR,adjC]);
+          if(!this.map.cellInBounds(adjR,adjC)||(adjR==curRC[0]&&adjC==curRC[1])||(adjR!=curRC[0]&&adjC!=curRC[1])||(closedSet.get(tmpKey))||(this.map.getValueAt(adjR,adjC)==TileType.WATER)){continue;}
+          openSet.push([[adjR,adjC],curSN]);
+          closedSet.set(tmpKey,curSN);
         } // Ends Inner For Loop
       } // Ends Outer For Loop
-      sec++;
+      curSec++;
     } // Ends Frontier Exploration While Loop
   
-    int totPathSteps = 0;
-    while(curCoord != null){
-      totPathSteps++;
-      if(map.getValueAt(curCoord.row,curCoord.col)!=TileType.PAVE){map.setValueAt(curCoord.row,curCoord.col,TileType.ROAD);}
-      curCoord=curCoord.parent;
+
+    if(goalFound){
+      while(curSN != null){
+        totalHops++;
+        curRC = curSN[0];
+        if(this.map.getValueAt(curRC)!=TileType.PAVE){this.map.setValueAt(curRC,TileType.ROAD);}
+        curSN=curSN[1];
+      }
     }
-   
-    if(debugPrint){
-      println("BFS Run Completed. Stats:");
-      println("Total Map cells     = "+maxSec);
-      println("Total In Closed Set = "+cSetSize);
-      println("Frontier Loop Iters = "+sec);
-      println("Total Path Hops     = "+totPathSteps);
-      println("Goal was found      = "+goalFound);
+
+    if(this.debugPrint){
+      console.log("BFS Run Completed. Stats...");
+      console.log("Total Map Cells: ["+maxSec+"]");
+      console.log("Sentinel Count:  ["+curSec+"]");
+      console.log("Goal Cell Found: ["+goalFound+"]");
+      console.log("Total Path Hops: ["+totalHops+"]");
+      console.log("Open Set Size:   ["+openSet.length+"]");
+      console.log("Closed Set Size: ["+closedSet.size+"]");
     }
-  }
-*/
 
-
-
+  } // Ends Function connectBlockToBlock
 
 
   //####################################################################

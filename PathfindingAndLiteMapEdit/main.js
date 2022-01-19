@@ -26,10 +26,9 @@ function setup(){
   myMap    = new GameMap(Config.cellsTall,Config.cellsWide,Config.cellSize);
   pathFind = new PathFinder(myMap);
   mapEdit  = new MapEditor(myMap);
-
-
   pathTokens.init();
   initUI();
+
 
 
 }
