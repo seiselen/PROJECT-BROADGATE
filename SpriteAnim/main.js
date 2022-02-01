@@ -1,26 +1,41 @@
-
-
-var sprImgArr;
+var fireSequence;
+var reloadSequence;
 var animClip1;
 
 function preload(){
-  sprImgArr = importDECFrameList(["SNIP E 1", "SNIP F 1", "SNIP G 1", "SNIP H 1", "SNIP I 1", "SNIP J 1", "SNIP K 1"]);
-  
+  reloadSequence = importDECFrameList([   
+    "SNIP E 2",
+    "SNIP F 2",
+    "SNIP G 2",
+    "SNIP H 2",
+    "SNIP I 2",
+    "SNIP J 2",
+    "SNIP K 2",
+    "SNIP J 2",
+    "SNIP I 2",
+    "SNIP H 2",
+    "SNIP G 2",
+    "SNIP F 2",    
+    "SNIP E 2",
+  ]);
+
+  fireSequence = importDECFrameList([
+    "SNIP B 2",
+    "SNIP C 2",
+    "SNIP D 2",    
+  ]);
+
 }
 
 function setup(){
-  createCanvas(1200,800).parent("viz");
-
-
-  animClip1 = new SpriteAnimClip(sprImgArr);
-
+  createCanvas(900,600).parent("viz");
+  animClip1 = new SpriteAnimClip(reloadSequence).setImgScale(2);
+  frameRate(35); // IMPORTANT! 1 Tic = 1/35 second, so this synchs accordingly
 }
 
-
 function draw(){
-  
-
-
+  //>>> UPDATE CALLS  
+  animClip1.advance();
   //>>> RENDER CALLS
   background(255);
   drawCanvasBorder();
@@ -29,19 +44,7 @@ function draw(){
   animClip1.render();
 }
 
-function mousePressed(){
-
-}
-
-function mouseReleased(){
-
-}
-
-function mouseDragged(){
-
-}
-
-function keyPressed(){
-
-}
-
+function mousePressed(){}
+function mouseReleased(){}
+function mouseDragged(){}
+function keyPressed(){}

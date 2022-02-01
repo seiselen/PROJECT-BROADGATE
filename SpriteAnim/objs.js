@@ -64,13 +64,14 @@ class SpriteAnimClip{
   constructor(sprites){
     this.frames   = sprites;
     this.nFrames  = this.frames.length;
-    this.curFrame = -1;
+    this.curFrame = 0;
+    this.imgScale = 1;
     this.bBox     = {posX:-1,posY:-1,wide:-1,tall:-1};
     this.doLoop; 
     this.setLoop();
     this.setBBox();
-    this.strk_border = color(0,255,0);
-    this.sWgt_border = 1;
+    this.strk_border = color(0,240,0);
+    this.sWgt_border = 4;
   }
 
   setLoop(val=true){
@@ -97,16 +98,20 @@ class SpriteAnimClip{
     }
   } // Ends Function setBBox
 
-
+  setImgScale(scale){
+    this.imgScale = constrain(scale,0.01,4);
+    return this; // for function chaining
+  } // Ends Function setImgScale
 
   advance(){
     this.curFrame = (this.curFrame+1)%this.nFrames;
   } // Ends Function advance
 
   render(){
-    imageMode(CENTER); rectMode(CENTER); push();translate(this.bBox.posX,this.bBox.posY);
-    if (!this.curFrame<0){image(this.frames[this.curFrame],0,0);}
-    rect(0,0,this.bBox.wide,this.bBox.tall);
+    imageMode(CENTER); rectMode(CENTER); 
+    push(); translate(this.bBox.posX,this.bBox.posY); scale(this.imgScale,this.imgScale);
+    stroke(this.strk_border); strokeWeight(this.sWgt_border); noFill(); rect(0,0,this.bBox.wide,this.bBox.tall);
+    noStroke(); if (this.nFrames>0){image(this.frames[this.curFrame],0,0);}
     pop();
   } // Ends Function render
 
