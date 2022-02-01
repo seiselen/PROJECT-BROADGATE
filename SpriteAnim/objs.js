@@ -107,7 +107,7 @@ class SpriteAnimClip{
     imageMode(CENTER); rectMode(CENTER); push();translate(this.bBox.posX,this.bBox.posY);
     if (!this.curFrame<0){image(this.frames[this.curFrame],0,0);}
     rect(0,0,this.bBox.wide,this.bBox.tall);
-    rectMode(CORNERS); pop();
+    pop();
   } // Ends Function render
 
 } // Ends Class SpriteAnimClip

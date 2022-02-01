@@ -43,7 +43,7 @@
 +---------------------------------------------------------------------*/
 function drawFPS(){
   // Draw Semi-Transparent Background Rect
-  noStroke(); fill(0,128); rect(0,height-32,80,32);
+  noStroke(); fill(0,128); rectMode(CORNER); rect(0,height-32,80,32);
   // Draw Text displaying the current FPS (rounded down to nearest int)
   textSize(18); textAlign(LEFT,CENTER); strokeWeight(2); stroke(0); fill(255); text("FPS: "+round(frameRate()), 8, height-14);
 } // Ends Function drawFPS
@@ -53,7 +53,7 @@ function drawFPS(){
 +---------------------------------------------------------------------*/
 function drawCanvasBorder(){
   noFill(); stroke(60); strokeWeight(4); 
-  rectMode(CENTER); rect(0,0,width,height);
+  rectMode(CORNER); rect(0,0,width,height);
 } // Ends Function drawCanvasBorder
 
 
