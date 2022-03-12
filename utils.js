@@ -119,6 +119,26 @@ function drawStripedRect(xPos, yPos, wide, tall, sNum=8, sCol="#FFFFFFFF", sWgt=
 } // Ends Function drawStripedRect
 
 
+/*----------------------------------------------------------------------
+|>>> Function drawArrowhead
++-----------------------------------------------------------------------
+| Description: Draws an arrowhead (i.e. triangle) shape centered at the
+|              specified position, of the specified length and width 1/2
+|              thereof, and rotated at the specified orientation vector
+| Input Parms: > x/y: (x,y) coordinate of location i.e. origin of arrow
+|              > len:  length (in canvas/pixel units) of the arrow
+|              > ori:  p5.Vector of orientation i.e. direction of arrow
+|              > colr: p5.Color of arrow to pass into p5 <fill(...)>
++---------------------------------------------------------------------*/
+function drawArrowhead(x,y,len,ori,colr){
+  let len2 = len/2;
+  noStroke();fill(colr);
+  push();translate(x,y);rotate(ori.heading());translate(len/6,0);
+    beginShape();vertex(len2,0);vertex(-len2,-len2);vertex(-len2,len2);endShape(CLOSE);
+  pop();
+} // Ends Function drawArrowhead
+
+
 //######################################################################
 //###[ Mouse+Canvas Related Utils ]#####################################
 //######################################################################
@@ -281,3 +301,19 @@ function colorHexToRGBA(colVal){
 function bucket(val,nParts){
   return ceil(val*nParts);
 } // Ends Function bucket
+
+
+
+/*----------------------------------------------------------------------
+|>>> Function distManh (Manhattan Distance)
++-----------------------------------------------------------------------
+|> Overview: Returns Manhattan Distance between two sets of coordinates.
++---------------------------------------------------------------------*/
+function distManh(x1, y1, x2, y2){
+  return abs(x1 - x2) + abs(y1 - y2)
+} // Ends Function distManh
+
+// Wrapper Method using the full word 'Manhattan' as a JIC
+function distManhattan(x1, y1, x2, y2){
+  return distManh(x1, y1, x2, y2);
+} // Ends Function distManhattan
