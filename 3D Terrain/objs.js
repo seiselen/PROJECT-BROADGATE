@@ -249,37 +249,26 @@ class GridTile_NaivePoly extends GridTile{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*======================================================================
+|>>> Class GameObject
++-----------------------------------------------------------------------
+| Description: QAD class loosely based on Unity3D's "Transform" object.
+|              Not really used for this project vis-a-vis PCG Terrain,
+|              but should (and will) keep for any future 3D object work
+|              via P5JS 3D-WebGL which needs it.
++=====================================================================*/
 class GameObject{
   constructor(){
     this.position = vec3();
     this.rotation = vec3();
     this.scale    = vec3(1,1,1);
     this.action   = null;
-  }
+  } // Ends Constructor
 
   bindAction(action){
     this.action = action;
     return this; // for function chaining
-  }
+  } // Ends Function bindAction
 
   render(){
     push();
@@ -290,6 +279,5 @@ class GameObject{
     scale(this.scale.x, this.scale.y, this.scale.z);
     this.action();
     pop();
-  }
-
+  } // Ends Function render
 } // Ends Class GameObject
