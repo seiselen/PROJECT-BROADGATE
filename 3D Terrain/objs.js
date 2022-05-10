@@ -1,3 +1,123 @@
+
+
+/*======================================================================
+|>>> Class PolySurfaceTerrain
++-----------------------------------------------------------------------
+| Description: <TBD>
++=====================================================================*/
+class PolySurfaceTerrain{
+  constructor(cT,cW){
+    this.cellsTall  = cT;    
+    this.cellsWide  = cW;
+
+    //> Component GridTile dims (MUST call <setGTVals> for 'diameterGT' synch)
+    this.numVertsGT = -1;
+    this.dimVertsGT = -1;
+    this.diameterGT = -1;
+
+    this.parmValDB  = [];
+    this.terrainMap = [];
+    this.powDP      = null;
+
+    this.setGTVals(9,16);
+    this.initPowDP();
+    this.initParmValDB();
+    this.initTerrainMap();
+  } // Ends Constructor
+
+
+  setGTVals(nV,dV){
+    this.numVertsGT = nV;
+    this.dimVertsGT = dV;
+    this.diameterGT = (this.numVertsGT-1)*this.dimVertsGT;    
+  }
+
+
+  // Another very cool use of Dynamic Programming, did not expect this!
+  // different from one implemented for 'GridTile_NaivePoly' instances
+  // due to additional handling for 'fact', but especially because ALL 
+  // 'GridTile_TerrPoly' instances composing this 'PolySurfaceTerrain'
+  // instance will SHARE this for further dynamic programming benefit.
+  initPowDP(){
+    this.powDP = {
+      sansFactor : [{/*(b^2)*/},{/*(b^3)*/},],
+      withFactor : [{/*(2b^3)*/},{/*(3b^2)*/},],
+      /* Algorithm:
+        > query 'this.withFactor' indexed on [powr], then keyed on [base]
+        > if not there:
+          > query 'this.sansFactor' indexed on [powr], then keyed on [base]
+            > if not there: compute-and-store it
+          > compute-and-store product of it with [fact]
+        > retreive and return, 'Nuff Said
+      */
+      get : function(fact,base,powr){
+        let idx = powr-2;
+        if(this.withFactor[idx][base]==undefined){
+          if(this.sansFactor[idx][base]==undefined){this.sansFactor[idx][base]=pow(base,powr);}
+          this.withFactor[idx][base] = fact * this.sansFactor[idx][base];
+        }
+        return this.withFactor[idx][base];
+      }
+    };
+  } // Ends Function initPowDP
+
+
+  initParmValDB(){
+    for (let r=0; r<=this.cellsTall; r++) {
+      this.parmValDB[r]=[];
+      for (let c=0; c<=this.cellsWide; c++) {
+        this.parmValDB[r][c] = this.computeParmVal(r,c);
+    }}
+  } // Ends Function initParmValDB
+
+
+  // via formula shown/discussed at ~[02:30] in video
+  // could use any good noise/shuffle formula (even perlin - though would defeat the point lol)
+  computeParmVal(i,j){
+    let u = this.computeFactPart(i/PI)*50;
+    let v = this.computeFactPart(j/PI)*50;
+    return 2*this.computeFactPart(u*v*(u+v))-1;
+  } // Ends Function computeParmVal
+
+
+  computeFactPart(v){
+    return v-int(v);
+  } // Ends Function computeFactPart
+
+
+  initTerrainMap(){
+    for (let r=0; r<this.cellsTall; r++) {
+      this.terrainMap[r]=[];
+      for (let c=0; c<this.cellsWide; c++) {
+        this.terrainMap[r][c] = this.createGridTile(r,c);
+    }}    
+  } // Ends Function initTerrainMap
+
+
+  createGridTile(i,j){
+    let a = this.parmValDB[i][j];
+    let b = this.parmValDB[i][j+1];
+    let c = this.parmValDB[i+1][j];
+    let d = this.parmValDB[i+1][j+1];
+    return new GridTile_TerrPoly(i,j,this.numVertsGT,this.numVertsGT,this.dimVertsGT,[a,b,c,d],this.powDP);
+  } // Ends Function createGridTile
+
+
+  render(){
+    for (let r=0; r<this.cellsTall; r++) {
+      for (let c=0; c<this.cellsWide; c++) {
+        push();
+        translate(this.diameterGT*c,0,this.diameterGT*r);
+        this.terrainMap[r][c].renderGridPlanes();
+        pop();
+    }}      
+  } // Ends Function render
+
+
+} // Ends Class PolySurfaceTerrain
+
+
+
 /*======================================================================
 |>>> [Abstract] Class GridTile
 +-----------------------------------------------------------------------
@@ -8,14 +128,15 @@
 +=====================================================================*/
 class GridTile{
   constructor(vX,vZ,vD){
-    this.vertsX    = vX; // # of verts on X (aka SIDE aka RIGHT) axis
-    this.vertsZ    = vZ; // # of verts on Z (aka FORE aka FORWARD) axis
-    this.vertDim   = vD; // pixels between verts (i.e. WRT {X,Z} planar projection)
-    this.gridVerts = [];
-
+    //> State
+    this.vertsX    = vX;   // # of verts on X (aka SIDE aka RIGHT) axis
+    this.vertsZ    = vZ;   // # of verts on Z (aka FORE aka FORWARD) axis
+    this.vertDim   = vD;   // pixels between verts (i.e. WRT {X,Z} planar projection)
+    this.gridVerts = [];   // p5Vector[vertsX][vertsY] encompassing terrain state
+    //> UI/UX State
     this.vertVizDiam = 2;
     this.drawBlackVerts = true;
-
+    //> Loaders and Inits
     this.generateGridVerts();
   } // Ends Constructor
 
@@ -86,6 +207,64 @@ class GridTile{
 
 
 /*======================================================================
+|>>> Class GridTile_TerrPoly
++-----------------------------------------------------------------------
+| Description: <TBD>
++=====================================================================*/
+class GridTile_TerrPoly extends GridTile{
+  constructor(cI,cJ,vX,vZ,vD,pV,pDP){
+    super(vX,vZ,vD);
+    this.coordI   = cI;
+    this.coordJ   = cJ;
+    this.parmVals = pV;   // expects Array[4] of vals in order {a,b,c,d}
+    this.powDP    = pDP;  // shared among ALL instances of same terrain
+    this.height   = {min:-100,max:100};
+    this.setVertElevations();
+  } // Ends Constructor
+
+
+  setVertElevations(){
+    let curVert  = null;
+    let curEval  = undefined;
+    let maxVal   = -1;
+    let minVal   = 1;
+
+    for (let x=0; x<this.vertsX; x++) {
+      for (let z=0; z<this.vertsZ; z++) {
+        curVert = this.gridVerts[x][z];
+        curEval = this.getElevPoly(x,z);
+        maxVal  = max(maxVal,curEval);
+        minVal  = min(minVal,curEval);
+        curVert.set(curVert.x, curEval, curVert.z);
+    }}
+
+    for (let x=0; x<this.vertsX; x++) {
+      for (let z=0; z<this.vertsZ; z++) {
+        curVert = this.gridVerts[x][z];
+        curEval = map(curVert.y, minVal, maxVal, this.height.min, this.height.max);
+        curVert.set(curVert.x, curEval, curVert.z);
+    }}
+  } // Ends Function setVertElevations
+
+
+  getElevPoly(x,z){
+    let [a,b,c,d] = this.parmVals;
+    let sxi = this.smoothstep(x-this.coordI);
+    let szj = this.smoothstep(z-this.coordJ);
+    return a +((b-a)*sxi)+((c-a)*szj)+((a-b-c+d)*sxi*szj);
+  } // Ends Function getElevPoly
+
+
+  smoothstep(v){
+    return this.powDP.get(3,v,2) - this.powDP.get(2,v,3);
+  } // Ends Function smoothstep
+
+
+} // Ends Class GridTile_TerrPoly
+
+
+
+/*======================================================================
 |>>> Class GridTile_NaivePoly
 +-----------------------------------------------------------------------
 | Description: Implements a 3D 'Vertex Grid' via evaluating a standard /
@@ -98,9 +277,9 @@ class GridTile_NaivePoly extends GridTile{
   constructor(vX,vZ,vD,pD){
     super(vX,vZ,vD);
     this.polyDeg  = pD;
-    this.powDP    = undefined;
     this.parmVals = undefined;
     this.height   = {min:-100,max:100};
+    this.powDP    = null; // evaluates exponents only once via dynamic programming
     this.initPowDP();
     this.initGridTile();
   } // Ends Constructor
