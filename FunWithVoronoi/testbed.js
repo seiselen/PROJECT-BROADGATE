@@ -8,7 +8,7 @@ class VoronoiDiagram{
 
     // VFX Settings
     this.strk_allEdges = color(0,120,36); 
-    this.sWgt_allEdges = 2;
+    this.sWgt_allEdges = 1;
 
     this.initVD();
   }

@@ -1,4 +1,26 @@
 /*----------------------------------------------------------------------
+|>>> Util Object InstructionsPopUp
++---------------------------------------------------------------------*/
+var InstructionsPopUp = {
+  blurb : [
+    "⯈ <strong>VD: [V]oronoi [D]iagram</strong>, duh... ;-)",
+    "⯈ <strong>Bounding Rect</strong>: Rectangle border 'containing' VD. Should appear as having transparent blue background.",
+    "",
+    "⯈ <strong>[Mouse Down]</strong> If mouse is over an existing vertex: 'implicitly' selects it.",
+    "⯈ <strong>[Mouse Drag]</strong> If vertex is currently selected: moves it WRT mouse position and Bounding Rect.",    
+    "⯈ <strong>[Mouse Release]</strong> If vertex currently selected: immediately de-selects it i.e. 'drops it in place'.",
+    "⯈ <strong>[Mouse Click]</strong> If within Bounding Rect and NOT too close to existing vertices: creates new vertex.",
+    "⯈ <strong>[Mouse Release]</strong> If vertex is moved OUTSIDE Bounding Rect: removes it (note: CANNOT be undone!)",
+    "⯈ <strong>[Keypress 'm']</strong> Does one round of 'Min. Bound. Rect. Smoothing' (makes VD cells more uniform).",
+    "⯈ <strong>[Keypress 'r']</strong> Resets vertices to new random positions, then regenerates a mew VD thereupon.",    
+    "⯈ <strong>[Keypress 'g']</strong> Toggles a basic grid."
+  ],
+
+  blurbString(lineSep='\n'){return InstructionsPopUp.blurb.map(str=>`<p>${str}</p>`).join(lineSep);},
+  injectText(){document.getElementById("instructDOM").innerHTML = InstructionsPopUp.blurbString(' ');},
+}
+
+/*----------------------------------------------------------------------
 |>>> Class CanvDispUtil
 +---------------------------------------------------------------------*/
 class CanvUtil{
@@ -83,8 +105,8 @@ class VertUtil{
     this.selVert  = null;
     this.selVtID  = -1; // to avoid O(n) search for index of selVert when removing
 
-    this.fill_pts = color(60);
-    this.diam_pts = 10;
+    this.fill_pts = color(240,128,0);
+    this.diam_pts = 6;
   }
 
   // Creates set of random points wherein each must be min dist from neighbors. Brute Force, I know. But KISS and ABC
@@ -169,7 +191,7 @@ class VertUtil{
   }
 
   renderVerts(){
-    fill(this.fill_pts); noStroke(); 
+    fill(this.fill_pts); stroke(0,128); strokeWeight(1); 
     this.vertices.forEach((v) => ellipse(v.x,v.y,this.diam_pts,this.diam_pts));
     if(this.selVert){fill(255,120,0);stroke(0);strokeWeight(1);ellipse(this.selVert.x,this.selVert.y,this.diam_pts,this.diam_pts)}
   }
@@ -189,7 +211,7 @@ class BBox{
     this.dim = createVector(x2-x1,y2-y1);
     this.mpt = createVector(this.pos.x+(this.dim.x/2),this.pos.y+(this.dim.y/2));
     // vfx state
-    this.strkCol = color(0,60,240,64);
+    this.strkCol = color(0,60,240,32);
     this.fillCol = color(0,60,240,32);
     this.strkWgt = 8;
     this.CHLenHf = min(this.dim.x,this.dim.y)/8;
