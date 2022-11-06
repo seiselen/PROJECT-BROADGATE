@@ -16,7 +16,7 @@ class PhxSpring {
     this.rLen  = rLen;
     this.stiff = sFac;
     this.damp = dVal;
-    this.color = color(0,216,32);
+    this.color = color(255);
 
     // Cached (i.e. per-frame) Variables
     this.sprForce;

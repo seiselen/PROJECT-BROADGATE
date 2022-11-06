@@ -1,6 +1,12 @@
-/*--------------------------------------------------------------------
+/*----------------------------------------------------------------------
 |>>> Class PhxVertex (Physics Vertex)
-+-------------------------------------------------------------------*/
++-----------------------------------------------------------------------
+|# Object State Descriptions:
+|   > designAdjs → adjacent PhxVertex objects WRT the artificial design
+|                  of greater softbody shape; should be passed On-Init.
+|   > actualAdjs → adjacent PhxVertex objects WRT spatial partitioning;
+|                  TBD but I'll likely pass it a util SP component.                  
++---------------------------------------------------------------------*/
 class PhxVertex{
   constructor(pos){
     this.pos = pos;
@@ -11,48 +17,61 @@ class PhxVertex{
     this.diam = 24;
     this.radi = this.diam/2;
     this.ID   = -9999;
-    this.maxForce = 5;
+    this.maxForce = 12;
 
     // Variables for [Mouse] Selection/Moving
     this.isSelected = false;
     this.mOffset;
 
     // Colors
-    this.regCol = color(0,60,180);
-    this.selCol = color(0,180,255);
+    this.regCol = color(160,80,0);
+    this.selCol = color(240,120,0);
+
+    // Other Components/Collections
+    this.designAdjs = [];
+    this.actualAdjs = [];
+    this.expAdjDist = undefined;
 
     // Misc. Cached Variables
     this.pVec = createVector(); // general purpose p5.Vector
   }
 
-  // need to return instance as this is called via 'chain init' (vis-a-vis D3)
+
+  /**
+   * 
+   * @param {*} id 
+   * @returns {PhxVertex} `this` for function chaining
+   */
   setID(id){
     this.ID = id;
     return this;
   }
 
+
+  /**
+   * @desc Sets 'Official' Neighbors (i.e. not via spatial partitoning)
+   * @param {*} adjs
+   * @returns {PhxVertex} `this` for function chaining per constructor
+   */
+  setOfficialNeighbors(adjs){
+    this.designAdjs = adjs;
+    return this;
+  }
+
+
+  setExpAdjDist(dist){
+    this.expAdjDist = dist;
+    return this; 
+  }
+
+
+
+
+
   ptInBoundCirc(pt){
     return (p5.Vector.dist(pt,this.pos) <= this.radi);
   }
-  
-  onMousePressed(mousePt){
-    if(this.ptInBoundCirc(mousePt)){
-      this.isSelected = true;
-      // capture offset between mouse and pos at moment of selection
-      this.mOffset = p5.Vector.sub(this.pos,mousePt);
-    }
-  }
-
-  onMouseDragged(mousePt){
-    if(this.isSelected){
-      // supports moving vertex WRT mouse pos at onMousePressed
-      this.pos.set(p5.Vector.add(this.mOffset,mousePt));
-    }
-  }
-
-  onMouseRelease(){
-    this.isSelected = false;
-  }
+ 
 
   applyForce(force,mod=1){
     this.acc.add(force.copy().mult(mod).div(this.mass));
@@ -71,6 +90,45 @@ class PhxVertex{
     this.applyForce(this.pVec);
   }
 
+
+  steerToHarmonyWithAdjs(){
+    if(this.designAdjs.length==0||this.expAdjDist==undefined){return;}
+
+    let desireds = this.designAdjs.map(adj=> p5.Vector.sub(adj.pos,this.pos));
+    let dist,steer;
+
+    let perAdjRatio = 1.0/this.designAdjs.length;
+
+    desireds.forEach(desVec=>{
+      dist = desVec.mag();
+      if(dist<this.expAdjDist*0.5){
+        if(this.ID==6){console.log(dist);}
+        desVec.setMag(dist*perAdjRatio);
+        desVec.mult(-1);
+        steer = p5.Vector.sub(desVec,this.vel);
+        this.applyForce(steer);        
+      }
+
+      else if(dist>this.expAdjDist*1.5){
+        desVec.setMag(dist*perAdjRatio);
+        desVec.mult(1);
+        steer = p5.Vector.sub(desVec,this.vel);
+        this.applyForce(steer);        
+      }
+
+    })
+  }
+
+  seek(){
+    if(!this.isSelected||!this.mOffset){return;}
+    var des = p5.Vector.sub(this.mOffset,this.pos);
+    des.setMag(des.mag());
+    var steer = p5.Vector.sub(des,this.vel);
+    this.applyForce(steer);
+  } // Ends Behavior seek
+
+
+
   canvBorderBounce() {
     if (this.pos.x-this.radi >= width)  {this.pos.x = width-this.radi; this.vel.x *= -1;} 
     else if (this.pos.x+this.radi <= 0) {this.pos.x = this.radi; this.vel.x *= -1;}
@@ -80,19 +138,35 @@ class PhxVertex{
 
   // Good 'Ol Euler Integration
   update(){
-    // if selected point - ignore physics (a-la Unity3D 'isKinematic')
-    if(this.isSelected){
-      this.canvBorderBounce();
-    }
-    else{
+      //this.steerToHarmonyWithAdjs();
+      this.seek();
+
       this.acc.limit(this.maxForce);
       this.vel.add(this.acc); 
       this.vel.mult(this.damp); 
       this.pos.add(this.vel); 
       this.acc.mult(0);
       this.canvBorderBounce();
+  }
+
+ 
+  onMousePressed(mousePt){
+    if(this.ptInBoundCirc(mousePt)){
+      this.isSelected = true;
+      this.mOffset = mousePt;
     }
   }
+
+  onMouseDragged(mousePt){
+    if(this.isSelected){
+      this.mOffset.set(mousePt);
+    }
+  }
+
+  onMouseRelease(){
+    this.isSelected = false;
+  }
+
 
   render() {
     stroke(180);strokeWeight(2);

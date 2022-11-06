@@ -2,27 +2,25 @@
 <html>
   <head>
     <meta charset="UTF-8"/>
-    <title>Softbody With Gravity Demo</title>
-
-    <!-- [Temp] Basic Style -->
-    <style>
-      body {color: darkblue; font-family:verdana;}
-    </style>
-
+    <!--# Backup 'STFU Favicon!' Version: <link rel="icon" href="data:,"> #-->
+    <link rel="icon" type="image/png" href="https://seiselen.github.io/icoV1.png"/>
+    <title>Softbody Demo/Experiments</title>
+    <link rel="stylesheet" href="style.css">
+    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
     <!-- P5JS Lib Imports -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
-
+    <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
     <!-- Project Code -->
     <script src="phxSprng.js"></script>
     <script src="phxVertx.js"></script>
+    <script src="sb_grid.js"></script>    
     <script src="main.js"></script>
-
   </head>
-  
   <body>
-  	<h1>Softbody With Gravity Demo</h1>
+    <h1  id="h1_head">⯈ PROJECT BROADGATE ⬥ SOFTBODY DEMO/TESTBED</h1>
   	<div id="viz"></div>
-  	<div id="ui"></div>
+  	<div id="ui">
+      <p id="fpsPane">hi</p>
+    </div>
   </body>
 </html>
