@@ -3,6 +3,10 @@ body {
   font-family: "Roboto Mono", "Courier New", monospace;
 }
 
+body p {
+  user-select: none;
+}
+
 #h1_head {
   background:        #29067C;
   color:             #FFFFFF;
