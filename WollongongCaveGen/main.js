@@ -1,10 +1,11 @@
 
 var imageDim = {init(dim){this.dim=dim;this.dimH=this.dim/2;}};
 var canvDims = {init(wide,tall){this.wide=wide;this.tall=tall;this.wideH=this.wide/2;this.tallH=this.tall/2;}};
-var colorMap = {BLACK:"#000000FF",WHITE:"#FFFFFFFF"}
+
+var ColorMap = {WHITE:"#FFFFFF",BLACK:"#000000",PURPLE:"#FF00FF"}
 
 canvDims.init(1280,800);
-imageDim.init(512);
+imageDim.init(400);
 
 var PNoise = { 
   scale  : 0.02,
@@ -15,17 +16,16 @@ var PNoise = {
 
 var imgWollongBias;
 var imgPerlinNoise;
-
+var imgWollonBlend;
 
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
+  Object.keys(ColorMap).map(k=>ColorMap[k]=color(ColorMap[k]));
 
   imageMode(CENTER);
   WBias.init(0.05);
 
-  imgWollongBias = new ShaderImage(lerp(0,canvDims.wide,.25),canvDims.tallH).generate(rule_circle_perlin);
-  imgPerlinNoise = new ShaderImage(lerp(0,canvDims.wide,.75),canvDims.tallH).generate(rule_perlin_field);
-
+  generateAllMaps();
 }
 
 
@@ -34,24 +34,39 @@ function draw(){
 
   imgWollongBias.render();
   imgPerlinNoise.render();
+  imgWollonBlend.render();
 
-  drawCanvasCrosshair('#00FF0080',2);
+  //drawCanvasCrosshair('#00FF0080',2);
 
   dispFPSViaDOM();
 }
 
-/*----------------------------------------------------------------------
-|>>> MOUSE INTERACTION FUNCTIONS
-----------------------------------------------------------------------*/
-function mousePressed(){
-  console.log(imgWollongBias.mousePosToPixelCoord());
+
+function generateAllMaps(){
+  imgWollongBias = new ShaderImage(240-20,canvDims.tallH).generate(rule_circle_biased);
+  imgPerlinNoise = new ShaderImage(1040+20,canvDims.tallH).generate(rule_perlin_field);
+  imgWollonBlend = new ShaderImage(640,canvDims.tallH).generate(rule_wollon_blend);
 }
 
-function mouseReleased(){}
-function mouseDragged(){}
+
+/*----------------------------------------------------------------------
+|>>> MOUSE/KEYBOARD INTERACTION FUNCTIONS
++---------------------------------------------------------------------*/
+
+
+function mousePressed(){
+  if(imgWollongBias.mouseOverMe()){
+    console.log("yep");
+  }
+}
+
+function keyPressed(){
+  if(key==='r'||key==='R'){generateAllMaps();}
+}
+
 /*----------------------------------------------------------------------
 |>>> MISC CANVAS AND/XOR UTIL FUNCTIONS
-----------------------------------------------------------------------*/
++---------------------------------------------------------------------*/
 var fpsPane = null;
 function dispFPSViaDOM(dFrame=3){
   if(!fpsPane){fpsPane=document.getElementById("fpsPane");}

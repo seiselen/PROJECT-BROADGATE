@@ -1,33 +1,31 @@
 
 class ShaderImage{
+
   constructor(posX,posY){
-    this.setPosition(posX,posY);
     this.setSize(imageDim.dim);
-    this.initColorMap();
+    this.setPosition(posX,posY);
     this.initImage();
+  }
+  
+  setSize(dim){
+    this.dim  = dim;
+    this.dimH = this.dim/2;
   }
   
   setPosition(x,y){
     this.pos  = vec2(x,y);
     this.posH = p5.Vector.mult(this.pos,0.5);
+    this.extL = this.pos.x-this.dimH;
+    this.extR = this.pos.x+this.dimH;
+    this.extT = this.pos.y-this.dimH;
+    this.extB = this.pos.y+this.dimH;
     return this;
-  }
-
-  setSize(dim){
-    this.dim  = dim;
-    this.dimH = this.dim/2;
-  }
-
-  initColorMap(){
-    this.colormap = {
-      PURPLE: color(255,0,255),
-    }
   }
 
   initImage(){
     this.img = createImage(this.dim,this.dim);
     this.img.loadPixels();  
-    for (let r=0;r<this.dim;r++){for(let c=0;c<this.dim;c++){this.img.set(c,r,this.colormap.PURPLE);}}
+    for (let r=0;r<this.dim;r++){for(let c=0;c<this.dim;c++){this.img.set(c,r,ColorMap.PURPLE);}}
     this.img.updatePixels();
   }
 
@@ -37,6 +35,15 @@ class ShaderImage{
     this.img.updatePixels();
     return this;
   }
+
+  mouseOverMe(){
+    return (mouseX>this.extL)&&(mouseX<this.extR)&&(mouseY>this.extT)&&(mouseY<this.extB);
+  }
+
+  getPixel(r,c){
+    return this.img.get(c,r)[0];
+  }
+
 
   pixelCoordToImagePos(r,c){
     return [(this.pos.x-this.dimH)+c,(this.pos.y-this.dimH)+r];
@@ -91,7 +98,7 @@ function rule_circle_linear(row,col,img){
   return rule_circle(row,col,img,(pct)=>{return lerp(255,0,pct);})
 }
 
-function rule_circle_perlin(row,col,img){
+function rule_circle_biased(row,col,img){
   return rule_circle(row,col,img,(pct)=>{return(lerp(255,0,WBias.getBiasVal(pct)));});
 }
 
@@ -105,4 +112,13 @@ function rule_circle(r,c,i,h){
 function rule_perlin_field(row,col,img){
   let noiseVal = PNoise.getVal(row,col);
   return color(lerp(255,0,noiseVal));
+}
+
+// (perlin_field(r,c) < circle_biased(r,c)) ? BLACK : WHITE
+// i.e. filled if perlin value less than biased <XOR> voidous otherwise
+// and yeah I'll be globally addressing them, oh well... KISS after all!
+function rule_wollon_blend(r,c){
+  return imgPerlinNoise.getPixel(r,c)<imgWollongBias.getPixel(r,c)
+    ? ColorMap.WHITE 
+    : ColorMap.BLACK;
 }
