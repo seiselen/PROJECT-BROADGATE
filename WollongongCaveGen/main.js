@@ -11,6 +11,8 @@ var PNoise = {
   scale  : 0.02,
   xOff   : 516,
   yOff   : 631,
+  setOffsets : (nX,nY)=>{PNoise.xOff=nX;PNoise.yOff=nY;},
+  scrambleOffsets: ()=>{PNoise.setOffsets(Math.floor(Date.now()*random()),Math.floor(Date.now()*random()))},
   getVal : (r,c)=>{[r,c]=[r+PNoise.yOff,c+PNoise.xOff]; return noise(c*PNoise.scale,r*PNoise.scale);}
 }
 
@@ -43,6 +45,8 @@ function draw(){
 
 
 function generateAllMaps(){
+  PNoise.scrambleOffsets();
+  
   imgWollongBias = new ShaderImage(240-20,canvDims.tallH).generate(rule_circle_biased);
   imgPerlinNoise = new ShaderImage(1040+20,canvDims.tallH).generate(rule_perlin_field);
   imgWollonBlend = new ShaderImage(640,canvDims.tallH).generate(rule_wollon_blend);

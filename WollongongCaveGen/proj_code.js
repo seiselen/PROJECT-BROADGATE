@@ -46,21 +46,22 @@ class ShaderImage{
 
 
   pixelCoordToImagePos(r,c){
-    return [(this.pos.x-this.dimH)+c,(this.pos.y-this.dimH)+r];
+    return vec2((this.pos.x-this.dimH)+c,(this.pos.y-this.dimH)+r);
   }
 
-  pixelDistFromMidPt(r,c){
+  euclidPixelMidptDist(r,c){return p5.Vector.dist(this.pos,this.pixelCoordToImagePos(r,c));}
+
+  manhatPixelMidptDist(r,c){
     let [x,y] = this.pixelCoordToImagePos(r,c);
-    return dist(x,y,this.pos.x,this.pos.y);
+    return distManh(x,y,this.pos.x,this.pos.y);
   }
 
-  pixelPctFromMidPt(r,c){
+
+  pixelMidPtDistNorm(dist){
     return this.pixelDistFromMidPt(r,c)/this.dimH;
   }
 
-  mousePosToPixelCoord(){
-    return [mouseY-this.pos.y+this.dimH,mouseX-this.pos.x+this.dimH];
-  }
+
   
   render(){
     image(this.img,this.pos.x,this.pos.y);
@@ -103,6 +104,13 @@ function rule_circle_biased(row,col,img){
 }
 
 function rule_circle(r,c,i,h){
+  let ptsNormDist = i.pixelPctFromMidPt(r,c);
+  if(ptsNormDist>1){return color(0);}
+  return color(h(ptsNormDist));
+}
+
+
+function rule_square(r,c,i,h){
   let ptsNormDist = i.pixelPctFromMidPt(r,c);
   if(ptsNormDist>1){return color(0);}
   return color(h(ptsNormDist));

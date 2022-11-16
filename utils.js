@@ -317,3 +317,13 @@ function distManh(x1, y1, x2, y2){
 function distManhattan(x1, y1, x2, y2){
   return distManh(x1, y1, x2, y2);
 } // Ends Function distManhattan
+
+
+/*----------------------------------------------------------------------
+|>>> Function vectorDist (Distance Between Two p5.Vectors)
++-----------------------------------------------------------------------
+|> Overview: Shorthand for 'p5.vector.dist(p,q)' while including support
+|            for Manhattan Distance given two vectors
++---------------------------------------------------------------------*/
+function vectorEuclideanDist(p,q){return p5.Vector.dist(p,q);}
+function vectorManhattanDist(p,q){return distManh(p.x,p.y,q.x,q.y);}
