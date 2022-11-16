@@ -50,14 +50,23 @@ class ShaderImage{
         return color(lerp(255,0,PNoise.getVal(r,c)));
       },
 
+      // AKA [L2] NORM
       circle : (r,c,h)=>{
         let nDist = this.getNormPixelMidptDist(this.euclidPixelMidptDist(r,c));
         if(nDist>1){return ColorMap.BLACK;}
         return (h===undefined) ? ColorMap.WHITE : color(h(nDist));
       },
 
-      square : (r,c,h)=>{
+      // AKA [L1] NORM
+      diamond : (r,c,h)=>{
         let nDist = this.getNormPixelMidptDist(this.manhatPixelMidptDist(r,c));
+        if(nDist>1){return ColorMap.BLACK;}
+        return (h===undefined) ? ColorMap.WHITE : color(h(nDist));
+      },
+
+      // AKA [L∞] NORM
+      square : (r,c,h)=>{
+        let nDist = this.getNormPixelMidptDist(this.maxvalPixelMidptDist(r,c));
         if(nDist>1){return ColorMap.BLACK;}
         return (h===undefined) ? ColorMap.WHITE : color(h(nDist));
       },
@@ -106,6 +115,8 @@ class ShaderImage{
 
   euclidPixelMidptDist(r,c){return vectorEuclideanDist(this.pos,this.pixelCoordToImagePos(r,c));}
   manhatPixelMidptDist(r,c){return vectorManhattanDist(this.pos,this.pixelCoordToImagePos(r,c));}
+  maxvalPixelMidptDist(r,c){return vectorMaxDimValDist(this.pos,this.pixelCoordToImagePos(r,c));}
+
 
   getNormPixelMidptDist(dist){return dist/this.dimH;}
 

@@ -324,7 +324,7 @@ function distManhattan(x1, y1, x2, y2){
 |> Overview: Returns the L-∞ (L-Infinity) Norm Distance, 'Nuff Said
 +---------------------------------------------------------------------*/
 function distMaxDimVal(x1, y1, x2, y2){
-  return max(abs(x1-x2),abs(y1,y2));
+  return max(abs(x1-x2),abs(y1-y2));
 } // Ends Function distManhattan
 
 
