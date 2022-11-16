@@ -20,15 +20,20 @@ var images = []
 
 function generateAllMaps(){
   PNoise.scrambleOffsets();
-  images.push(new ShaderImage(240-20,210).setRule("circle","biased"));
-  images.push(new ShaderImage(240-20,630).setRule("square","biased"));
+
+  images.push(new ShaderImage(220,210).setRule("circle","biased"));
+  images.push(new ShaderImage(1060,210).setRule("wollongong",["circle","biased"]));
+
+  images.push(new ShaderImage(220,630).setRule("square","biased"));
+  images.push(new ShaderImage(1060,630).setRule("wollongong",["square","biased"]));
+
   images.push(new ShaderImage(640,420).setRule("perlin"));
+
 
 
   //> Make sure that all desired images have been instantiated BEFORE this line (duh...)
   images.forEach(i=>i.generate())
 
-  //imgWollonBlend = new ShaderImage(1040+20,canvDims.tallH).generate(rule_wollon_blend);
 }
 
 

@@ -25,7 +25,7 @@ class ShaderImage{
 
   setRule(r,h){
     this.curRule = this.rule[r];
-    this.curHeur = this.heur[h];
+    this.curHeur = (typeof(h)==='string'||h===undefined) ? this.heur[h] : [this.rule[h[0]],this.heur[h[1]]];
     return this; // for constructor/method chaining
   }
 
@@ -72,7 +72,7 @@ class ShaderImage{
       },
 
       wollongong : (r,c,h)=>{
-        return this.rule.perlin(r,c)<this.rule.circle(r,c,this.heur.biased)
+        return this.rule.perlin(r,c)._array[0]<h[0](r,c,h[1])._array[0]
           ? ColorMap.WHITE 
           : ColorMap.BLACK;
       }
@@ -88,7 +88,6 @@ class ShaderImage{
 
   generate(){
     this.img.loadPixels(); 
-    console.clear();
     for (let r=0;r<this.dim;r++){
       for(let c=0;c<this.dim;c++){
         this.img.set(c,r,this.curRule(r,c,this.curHeur));
