@@ -318,12 +318,28 @@ function distManhattan(x1, y1, x2, y2){
   return distManh(x1, y1, x2, y2);
 } // Ends Function distManhattan
 
+/*----------------------------------------------------------------------
+|>>> Function distMaxDimVal (Max Coord-To-Coord Val)
++-----------------------------------------------------------------------
+|> Overview: Returns the L-∞ (L-Infinity) Norm Distance, 'Nuff Said
++---------------------------------------------------------------------*/
+function distMaxDimVal(x1, y1, x2, y2){
+  return max(abs(x1-x2),abs(y1,y2));
+} // Ends Function distManhattan
+
 
 /*----------------------------------------------------------------------
-|>>> Function vectorDist (Distance Between Two p5.Vectors)
+|>>> Function Group: 'Vector Dist'      (Distance Between 2D p5.Vectors)
 +-----------------------------------------------------------------------
-|> Overview: Shorthand for 'p5.vector.dist(p,q)' while including support
-|            for Manhattan Distance given two vectors
+| Overview: Implements various distance metrics between 2D p5.Vectors.
++-----------------------------------------------------------------------
+|# Implementation Note:
+|  > The following are mappings between some of the functions and their
+|    corresponding geometric shapes and 'L[ ] Norm' analogs/AKAs/etc.:
+|    ⬥ vectorEuclideanDist → Circle  → L2 Norm
+|    ⬥ vectorManhattanDist → Diamond → L1 Norm
+|    ⬥ vectorMaxDimValDist → Square  → L∞ Norm
 +---------------------------------------------------------------------*/
 function vectorEuclideanDist(p,q){return p5.Vector.dist(p,q);}
 function vectorManhattanDist(p,q){return distManh(p.x,p.y,q.x,q.y);}
+function vectorMaxDimValDist(p,q){return distMaxDimVal(p.x,p.y,q.x,q.y);}

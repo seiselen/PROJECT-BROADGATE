@@ -4,7 +4,7 @@ var canvDims = {init(wide,tall){this.wide=wide;this.tall=tall;this.wideH=this.wi
 
 var ColorMap = {WHITE:"#FFFFFF",BLACK:"#000000",PURPLE:"#FF00FF"}
 
-canvDims.init(1280,800);
+canvDims.init(1280,840);
 imageDim.init(400);
 
 var PNoise = { 
@@ -16,9 +16,21 @@ var PNoise = {
   getVal : (r,c)=>{[r,c]=[r+PNoise.yOff,c+PNoise.xOff]; return noise(c*PNoise.scale,r*PNoise.scale);}
 }
 
-var imgWollongBias;
-var imgPerlinNoise;
-var imgWollonBlend;
+var images = []
+
+function generateAllMaps(){
+  PNoise.scrambleOffsets();
+  images.push(new ShaderImage(240-20,210).setRule("circle","biased"));
+  images.push(new ShaderImage(240-20,630).setRule("square","biased"));
+  images.push(new ShaderImage(640,420).setRule("perlin"));
+
+
+  //> Make sure that all desired images have been instantiated BEFORE this line (duh...)
+  images.forEach(i=>i.generate())
+
+  //imgWollonBlend = new ShaderImage(1040+20,canvDims.tallH).generate(rule_wollon_blend);
+}
+
 
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
@@ -33,35 +45,17 @@ function setup(){
 
 function draw(){
   background(60,120,180);
-
-  imgWollongBias.render();
-  imgPerlinNoise.render();
-  imgWollonBlend.render();
-
+  images.forEach(i=>i.render());
   //drawCanvasCrosshair('#00FF0080',2);
-
   dispFPSViaDOM();
-}
-
-
-function generateAllMaps(){
-  PNoise.scrambleOffsets();
-  
-  imgWollongBias = new ShaderImage(240-20,canvDims.tallH).generate(rule_circle_biased);
-  imgPerlinNoise = new ShaderImage(1040+20,canvDims.tallH).generate(rule_perlin_field);
-  imgWollonBlend = new ShaderImage(640,canvDims.tallH).generate(rule_wollon_blend);
 }
 
 
 /*----------------------------------------------------------------------
 |>>> MOUSE/KEYBOARD INTERACTION FUNCTIONS
 +---------------------------------------------------------------------*/
-
-
 function mousePressed(){
-  if(imgWollongBias.mouseOverMe()){
-    console.log("yep");
-  }
+  //if(imgWollongBias.mouseOverMe()){console.log("yep");}
 }
 
 function keyPressed(){
