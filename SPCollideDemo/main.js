@@ -27,21 +27,13 @@ var Config = {
   /*CELLS_TALL: 12,  CELLS_WIDE: 16, CELL_SIZE: 64,*/
   CELLS_TALL: 24,  CELLS_WIDE: 32, CELL_SIZE: 32,
   PAUSED:         false,
-  SHOW_AGENTS:    true,
   AGT_SHAPE_MODE: ShapeDrawMode.viaEllipse,
   MAP_DISP_MODE:  MapDispMode.heatMap,
   AGT_DISP_MODE:  AgtDispMode.semiOpaque,
   SPAT_PART_MODE: SpatPartMode.gridViaMap,
   togglePauseVal: function(){this.PAUSED = !this.PAUSED;},
-  toggleShowAgts: function(){this.SHOW_AGENTS = !this.SHOW_AGENTS;},
-  setGenDispMode: function(mode){switch(mode){
-    case GenDispMode.cellPop: this.MAP_DISP_MODE = MapDispMode.cellPop; this.AGT_DISP_MODE = AgtDispMode.fullOpaque; return;
-    case GenDispMode.heatMap: this.MAP_DISP_MODE = MapDispMode.heatMap; this.AGT_DISP_MODE = AgtDispMode.semiOpaque; return;
-  }},
   isGridMode:     function(){return this.SPAT_PART_MODE==SpatPartMode.gridViaObj || this.SPAT_PART_MODE==SpatPartMode.gridViaMap;},
-  dimsValidTest:  function(){console.log("Canvas/World Dimensions: "+((this.CELLS_WIDE*this.CELL_SIZE==this.CANV_WIDE && this.CELLS_TALL*this.CELL_SIZE==this.CANV_TALL) ? "MATCH!" : "MISMATCH!"));},
 };
-//Config.dimsValidTest(); //<-- QAD Test that space defined by canvas == space defined by gridworld
 
 var spawnRegion = {minX:Config.CELL_SIZE, maxX:Config.CANV_WIDE-Config.CELL_SIZE, minY:Config.CELL_SIZE, maxY:Config.CANV_TALL-Config.CELL_SIZE};
 
@@ -61,14 +53,11 @@ function setup(){
 
 function draw(){
   //>>> UPDATE CALLS
- 
   if(!Config.PAUSED){agents.forEach((a)=>a.update());}
-  
   //>>> RENDER CALLS
   background("#f0f0ff");
-  drawCanvasBorder();
-  //myMap.render();
-  if(Config.SHOW_AGENTS){agents.forEach((a)=>a.render());}
+  myMap.render();
+  agents.forEach((a)=>a.render());
   updateDOMLabels();
 }
 

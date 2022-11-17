@@ -1,9 +1,5 @@
 /*----------------------------------------------------------------------
-|>>> Class SPAgent (Spatial Partition [supported] Agent)
-+-----------------------------------------------------------------------
-| Description:  <TODO>
-+-----------------------------------------------------------------------
-| Implementation Notes:
+|>>> Class SPAgent            ([S]patial [P]artitioning Capable [Agent])
 +---------------------------------------------------------------------*/
 class SPAgent{
   static minSpeed = 1;
@@ -16,7 +12,6 @@ class SPAgent{
     this.pos = pos;
     this.vel = p5.Vector.random2D().setMag(random(SPAgent.minSpeed,SPAgent.maxSpeed));
     this.acc = vec2();
-
 
     //>>> Variables for SP/Neighbors
     this.curCoord = map.cellViaPos(this.pos);
@@ -42,20 +37,12 @@ class SPAgent{
     this.fill_fullOpq_nbr = color(255,180,0);
     this.strk_fullOpq_nbr = color(255,0);
     this.strk_fullOpq_rad = color(32,255,32);
-    //>>> Colors for Semi-Opaque Mode
-    this.fill_semiOpq_agt = color(255,120,0,128);
-    this.strk_semiOpq_agt = color(60);
-    this.fill_semiOpq_nbr = color(255,0);
-    this.strk_semiOpq_nbr = color(32,255,32);
-    this.strk_semiOpq_rad = color(255,120,0);
     //>>> Good Ol 'Error Magenta'
     this.col_Error        = color(255,0,255);    
   } // Ends Function initColorPallete\
 
 
   update(){
-
-
     let sepForce = this.separate();
     let lzdForce = this.lazyDrift();
 
@@ -207,81 +194,27 @@ class SPAgent{
     return (dist(mouseX,mouseY,this.pos.x,this.pos.y)<=this.shapeDiam) ? true : false;
   } // Ends Function mouseOverMe
 
-  //####################################################################
-  //>>> RENDER FUNCTIONS
-  //####################################################################
-
+  /*====================================================================
+  |>>> RENDER FUNCTIONS
+  +===================================================================*/
   render(){
-    if(Config.AGT_DISP_MODE==AgtDispMode.none){return;}
-    this.renderNeighborhood();  
-    this.renderAgent();
-  } // Ends Function render
+    this.renderNeighborhood(); this.renderAgent();
+  }
 
   renderAgent(){
-    switch(Config.AGT_SHAPE_MODE){
-      case ShapeDrawMode.viaEllipse: this.renderAsEllipse(); break;
-      case ShapeDrawMode.viaRect:    this.renderAsRect();    break;
-      case ShapeDrawMode.viaImage:   this.renderAsImage();   break;
-    } 
+    strokeWeight(2);
+    fill(this.fill_fullOpq_agt);
+    stroke(this.strk_fullOpq_agt);
+    ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
   } // Ends Function renderAgent
 
-  // This is the 'default' behavior as featured previously, and remains what 'the public sees' in the demo
-  renderAsEllipse(){
-    strokeWeight(2);
-    switch(Config.AGT_DISP_MODE){
-      case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_agt); stroke(this.strk_semiOpq_agt); break;
-      case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_agt); stroke(this.strk_fullOpq_agt); break;
-      default: fill(this.col_Error); stroke(this.col_Error);
-    }
-    ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
-  }
-
-  // These are the two behaviors added on 12/18/21 for experiments on improved performance and pre-ZAC ops
-  renderAsRect(){
-    rectMode(CENTER); noStroke(); 
-    switch(Config.AGT_DISP_MODE){
-      case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_agt); break;
-      case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_agt); break;
-      default: fill(this.col_Error); stroke(this.col_Error);
-    }
-    rect(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
-  }
-
-  renderAsImage(){ 
-    noStroke();
-    image(mySprite,this.pos.x,this.pos.y,this.shapeDiam*2,this.shapeDiam*2);
-  }
-
   renderNeighborhood(){
-    if(this.mouseOverMe()){
-      strokeWeight(2); noFill();
-      switch(Config.AGT_DISP_MODE){
-        case AgtDispMode.semiOpaque: stroke(this.strk_semiOpq_rad); break;
-        case AgtDispMode.fullOpaque: stroke(this.strk_fullOpq_rad); break;
-        default: stroke(this.col_Error);
-      }
-      ellipse(this.pos.x,this.pos.y,this.rangeDiam,this.rangeDiam);
-
-      strokeWeight(4);
-      switch(Config.AGT_DISP_MODE){
-        case AgtDispMode.semiOpaque: fill(this.fill_semiOpq_nbr); stroke(this.strk_semiOpq_nbr); break;
-        case AgtDispMode.fullOpaque: fill(this.fill_fullOpq_nbr); stroke(this.strk_fullOpq_nbr); break;
-        default: fill(this.col_Error); stroke(this.col_Error);
-      }
-      this.neighborList.forEach((n)=>{ellipse(n.pos.x,n.pos.y,this.shapeDiam+4,this.shapeDiam+4)});
-    }
+    if(!this.mouseOverMe()){return;}
+    strokeWeight(2); noFill();stroke(this.strk_fullOpq_rad);
+    ellipse(this.pos.x,this.pos.y,this.rangeDiam,this.rangeDiam);
+    strokeWeight(4);
+    fill(this.fill_fullOpq_nbr); stroke(this.strk_fullOpq_nbr);
+    this.neighborList.forEach((n)=>{ellipse(n.pos.x,n.pos.y,this.shapeDiam+4,this.shapeDiam+4)});
   } // Ends Function renderNeighborhood
-
-
-  /*--------------------------------------------------------------------
-  |>>> Function renderNHoodCells     
-  +---------------------------------------------------------------------
-  | Implementation Notes:
-  |  > This function is only intended to be used for DEBUG purposes!
-  +-------------------------------------------------------------------*/  
-  renderNHoodCells(){
-    stroke(32,255,32,128); strokeWeight(2); noFill(); 
-    let cPos; this.inRangeCells.forEach((c)=>{cPos = this.map.getCellTLPos(c); rect(cPos.x,cPos.y,this.map.cellSize,this.map.cellSize);});
-  } // Ends Function renderNHoodCells
 
 } // Ends Class SPAgent

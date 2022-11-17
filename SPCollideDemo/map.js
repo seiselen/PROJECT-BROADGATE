@@ -30,18 +30,9 @@ class SPMap{
 
 
   initColorPallete(){
-    //>>> Colors for Heatmap Mode
-    this.hm_colormapL = color(156,204,228); // ;color(222,235,247);
-    this.hm_colormapR = color(12,48,108); // ;color(33,113,181);
-    this.hm_strk_grid = color(60,128);
-    //>>> Colors for Cell Population Mode
-    this.cp_col_bGrnd = color(24);  // background
-    this.cp_strk_grid = color(180); // grid lines
-    this.cp_fill_text = color(180); // text labels
-    this.cp_size_text = 14;         // font size
-    //>>> Other GFX/VFX Setttings
-    this.hm_sWgt_grid = 1;          // [grid] line stroke weight
-    this.cp_sWgt_grid = 2;          // [grid] line stroke weight    
+    this.fill_bg   = color(32);
+    this.strk_grid = color(255,128);
+    this.sWgt_grid = 1; 
   } // Ends Function initColorPallete
 
 
@@ -49,11 +40,7 @@ class SPMap{
   |>>> Function initSPGrid
   +---------------------------------------------------------------------
   | Description: Clears elements of current map, then [re]initializes it
-  |              based on the value of 'Config.SPAT_PART_MODE'. 
-  | When Called: Within the constructor on initialization, and whenever
-  |              the value of 'Config.SPAT_PART_MODE' changes (via a UI
-  |              handler for the event where the applicable DOM-UI radio
-  |              button group's value has changed.
+  |              based on the value of 'Config.SPAT_PART_MODE'.
   +-------------------------------------------------------------------*/
   initSPGrid(){
     this.map.length = 0;
@@ -175,20 +162,9 @@ class SPMap{
   } // Ends Function getUnitsAtCell
 
 
-  /*--------------------------------------------------------------------
-  |>>> Functions toggle<thing>()
-  +---------------------------------------------------------------------
-  | Description: Toggle respective display flags WRT its current value;
-  |              as intended for quick-and-easy use (e.g. via UI/UX).
-  +-------------------------------------------------------------------*/
-  toggleGrid(){this.showGrid = !this.showGrid;}
-  toggleCells(){this.showCells = !this.showCells;}
 
-  /*--------------------------------------------------------------------
-  |>>> Functions  [Misc. Map Util Getters]
-  +---------------------------------------------------------------------
-  | Description: Same as / analogous to counterparts in TD-P5JS, etc.) 
-  +-------------------------------------------------------------------*/
+  toggleGrid(){this.showGrid = !this.showGrid;}
+
   cellViaPos(pos){return [Math.floor(pos.y/this.cellSize),Math.floor(pos.x/this.cellSize)];}
   getCellMidPt(rc){return (this.isValidCell(rc)) ? vec2((rc[1]*this.cellSize)+this.cellSizeH, (rc[0]*this.cellSize)+this.cellSizeH) : vec2(-1,-1);}
   getCellTLPos(rc){return createVector((rc[1]*this.cellSize),(rc[0]*this.cellSize));}
@@ -225,69 +201,17 @@ class SPMap{
   } // Ends Function setCellPop
 
   /*--------------------------------------------------------------------
-  |>>> Functions  render, renderHeatMap, renderCellPop
-  +---------------------------------------------------------------------
-  | Description: Self-Explanatory. Note that 'render' is a 'gateway' WRT
-  |              the value of 'Config.MAP_DISP_MODE', such that if it is
-  |              either 'MapDispMode.none' else otherwise not specified 
-  |              within the switch, it passes through with no effects.
+  |>>> Functions  render, renderGrid
   +-------------------------------------------------------------------*/
   render(){
-    rectMode(CORNER);
-    if(this.showCells){
-      switch(Config.MAP_DISP_MODE){
-        case MapDispMode.heatMap: this.renderHeatMap(); break;
-        case MapDispMode.cellPop: this.renderCellPop(); break;
-        default: return; // for naive SP mode
-      }
-    }
+    background(this.fill_bg)
     if(this.showGrid){this.renderGrid();}
   } // Ends Function render
 
-
-  renderHeatMap(){
-    noStroke();
-    for(var r=0; r<this.cellsTall; r++){
-      for(var c=0; c<this.cellsWide; c++){
-        this.setCellPop(this.map[r][c]);
-        fill(lerpColor(this.hm_colormapL,this.hm_colormapR,this.curCellPop/5.0));
-        rect(c*this.cellSize,r*this.cellSize,this.cellSize,this.cellSize);
-      }
-    }
-  } // Ends Function renderHeatMap
-
-
-  /*--------------------------------------------------------------------
-  |>>> Function renderCellPop
-  +---------------------------------------------------------------------
-  | Description: Renders Cell Population Grid which displays the current
-  |              number of agents reporting into each map cell. Utilizes
-  |              and partitioned into two component methods, which first
-  |              render the grid, then the per-cellpopulation counts.
-  +-------------------------------------------------------------------*/
-  renderCellPop(){
-    background(this.cp_col_bGrnd); fill(this.cp_fill_text); noStroke(); textAlign(CENTER,CENTER); textSize(this.cp_size_text);
-    for(var r=0; r<this.cellsTall; r++){
-      for(var c=0; c<this.cellsWide; c++){
-        this.setCellPop(this.map[r][c]);
-        text(this.curCellPop, (c*this.cellSize)+this.cellSizeH, (r*this.cellSize)+this.cellSizeH);
-      }
-    } 
-  } // Ends Function renderCellPop
-
-  /*--------------------------------------------------------------------
-  |>>> Function renderGrid
-  +---------------------------------------------------------------------
-  | Description: Draws map cell grid via line primitives. Intended to be
-  |              called only by 'renderCellPop' as a component thereof,
-  |              though might also utilize for the HeatMap viz... <TBD>
-  +-------------------------------------------------------------------*/
   renderGrid(){
-    switch(Config.MAP_DISP_MODE){
-      case MapDispMode.heatMap: stroke(this.hm_strk_grid); strokeWeight(this.hm_sWgt_grid); break;
-      case MapDispMode.cellPop: stroke(this.cp_strk_grid); strokeWeight(this.cp_sWgt_grid); break;
-    }
+    noFill(); stroke(this.strk_grid); strokeWeight(this.sWgt_grid);
     for(let i=0; i<=this.cellsTall; i++){line(0,this.cellSize*i,width,this.cellSize*i);}
     for(let i=0; i<=this.cellsWide; i++){line(this.cellSize*i,0,this.cellSize*i,height);}
   } // Ends Function renderGrid
+
 } // Ends Class SPMap
