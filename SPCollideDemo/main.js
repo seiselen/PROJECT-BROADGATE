@@ -1,38 +1,15 @@
 p5.disableFriendlyErrors = true;
 
-//######################################################################
-//###[ Global Variables / Data-Structures ]#############################
-//######################################################################
-var MapDispMode = {cellPop:'mdmP', heatMap:'mdmH'};
-var AgtDispMode = {semiOpaque:'pdmT', fullOpaque:'pdmO'};
-var ShapeDrawMode = {viaEllipse:'E', viaRect:'R'};
 
-var GenDispMode = {
-  cellPop:'cPop', heatMap:'hMap', 
-  toString: function(mode){switch(mode){case this.cellPop: return "Cell Population Mode"; case this.heatMap: return "Cell Heatmap Mode";}}
-};
 
-var SPFrmOff = {
-  spFrmOff: 1, //-1,
-  canUpdate: function(agentID){return (this.spFrmOff<1) ? false : ((frameCount % this.spFrmOff) == (agentID % this.spFrmOff));}
-}
 
-var SpatPartMode = {
-  gridViaObj:'spmO', gridViaMap:'spmM', none:'spmN',
-  toString: function(mode){switch(mode){case this.gridViaObj: return "[Grid] via JS Properties"; case this.gridViaMap: return "[Grid] via JS Map Object"; case this.none: return "[None] O(n^2) 'All-Pairs'";}}
-};
 
 var Config = {
-  CANV_WIDE: 1024, CANV_TALL: 768, 
-  /*CELLS_TALL: 12,  CELLS_WIDE: 16, CELL_SIZE: 64,*/
-  CELLS_TALL: 24,  CELLS_WIDE: 32, CELL_SIZE: 32,
+  CANV_WIDE: 1024, CANV_TALL: 768,
+  CELLS_TALL: 48,  CELLS_WIDE: 64, CELL_SIZE: 16,
+  updateOffset: 1,
   PAUSED:         false,
-  AGT_SHAPE_MODE: ShapeDrawMode.viaEllipse,
-  MAP_DISP_MODE:  MapDispMode.heatMap,
-  AGT_DISP_MODE:  AgtDispMode.semiOpaque,
-  SPAT_PART_MODE: SpatPartMode.gridViaMap,
-  togglePauseVal: function(){this.PAUSED = !this.PAUSED;},
-  isGridMode:     function(){return this.SPAT_PART_MODE==SpatPartMode.gridViaObj || this.SPAT_PART_MODE==SpatPartMode.gridViaMap;},
+  togglePauseVal: function(){this.PAUSED = !this.PAUSED;}
 };
 
 var spawnRegion = {minX:Config.CELL_SIZE, maxX:Config.CANV_WIDE-Config.CELL_SIZE, minY:Config.CELL_SIZE, maxY:Config.CANV_TALL-Config.CELL_SIZE};
@@ -78,7 +55,7 @@ function createAgentAtCanvRandPt(bounds=null){let startPos = (bounds==null) ? ca
 //###[ Display Stats Variables + Functions ]############################
 //######################################################################
 var dropdown_addAgents, button_addAgents; 
-var chBox_showGrid, chBox_showAgents;
+var chBox_showGrid;
 var label_FPS, label_nAgents, label_mousePos, label_mouseCell, label_frmOff;
 function initUI(){
   label_FPS       = select("#labl_fps");
@@ -88,17 +65,15 @@ function initUI(){
   label_frmOff    = select("#labl_frmOff");
   dropdown_addAgents = createSelect().parent("#ddown_addAgents").style("font-size","18px");
   dropdown_addAgents.option('1');    
-  dropdown_addAgents.option('5');
-  dropdown_addAgents.option('10');
-  dropdown_addAgents.option('50');
-  dropdown_addAgents.option('100');
-  dropdown_addAgents.option('250');
+  dropdown_addAgents.option('2');
+  dropdown_addAgents.option('4');
+  dropdown_addAgents.option('16');
+  dropdown_addAgents.option('64');
+  dropdown_addAgents.option('128');
+  dropdown_addAgents.option('256');  
   dropdown_addAgents.selected('10');  
   button_addAgents = createButton('ADD').parent("#but_addAgents").style("font-size","18px");
   button_addAgents.mousePressed(()=>(createAgents(int(dropdown_addAgents.value()))));
-  chBox_showAgents = select("#cBox_showAgts");
-  chBox_showAgents.elt.checked = Config.SHOW_AGENTS;
-  chBox_showAgents.changed(()=>Config.toggleShowAgts());
   chBox_showGrid = select("#cBox_showGrid");
   chBox_showGrid.elt.checked = myMap.showGrid;
   chBox_showGrid.changed(()=>myMap.toggleGrid());
@@ -106,7 +81,7 @@ function initUI(){
 
 function updateDOMLabels(){
   label_FPS.html(round(frameRate()));
-  label_frmOff.html("n/"+SPFrmOff.spFrmOff);
+  label_frmOff.html("n/"+Config.updateOffset);
   label_nAgents.html(agents.length);
   switch(mouseInCanvas()){
     case true: label_mousePos.html("("+round(mouseX)+","+round(mouseY)+")"); label_mouseCell.html("["+myMap.cellViaPos(mousePtToVec())+"]"); break;

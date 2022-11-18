@@ -5,6 +5,15 @@ class SPAgent{
   static minSpeed = 1;
   static maxSpeed = 2;
   static maxForce = 0.15;
+  static bodyDiam = 16;
+  static maxScore = 100;
+
+  static useScore = true;
+  static scoreAgt = 3;
+  static scoreObs = 2;
+  static scoreWal = 1;
+  static coolPcnt = 0.02;
+  static coolDelF = 6;
 
   constructor(pos,ID,map){
     this.ID  = ID;
@@ -15,14 +24,17 @@ class SPAgent{
 
     //>>> Variables for SP/Neighbors
     this.curCoord = map.cellViaPos(this.pos);
-    this.rangeRad  = 75; // visibility range radius
+    this.rangeRad  = 38; // visibility range radius
     this.rangeDiam = this.rangeRad*2;
     this.rangeRadSqd  = this.rangeRad*this.rangeRad;
     this.neighborList = [];
     this.inRangeCells = this.getCellsInRange();
 
+    //>>> Variables for Collision Score
+    this.collideScore = 0;
+
     //>>> Variables for GFX/VFX
-    this.shapeDiam   = 32;
+    this.shapeDiam   = SPAgent.bodyDiam;
     this.shapeDiamSq = this.shapeDiam*this.shapeDiam;
     this.shapeRad    = this.shapeDiam/2;
     this.shapeRadSq  = this.shapeRad*this.shapeRad;
@@ -31,15 +43,15 @@ class SPAgent{
 
 
   initColorPallete(){
-    //>>> Colors for Full-Opaque Mode
-    this.fill_fullOpq_agt = color(32,255,32); 
-    this.strk_fullOpq_agt = color(60);
-    this.fill_fullOpq_nbr = color(255,180,0);
-    this.strk_fullOpq_nbr = color(255,0);
-    this.strk_fullOpq_rad = color(32,255,32);
-    //>>> Good Ol 'Error Magenta'
-    this.col_Error        = color(255,0,255);    
-  } // Ends Function initColorPallete\
+    //>>> Generic Colormap
+    this.fill_agt = color(32,255,32); 
+    this.strk_agt = color(0,180);
+    this.swgt_agt = 1;
+    //>>> Collide Colormap
+    this.colormap  = ["#1A9850","#66BD63","#A6D96A","#D9EF8B","#FFFFBF","#FEE08B","#FDAE61","#F46D43","#D73027"];
+    this.colormap  = this.colormap.map(hexVal=>{return color(hexVal)}); 
+    this.colMapLen = this.colormap.length-1;
+  } // Ends Function initColorPallete
 
 
   update(){
@@ -60,6 +72,7 @@ class SPAgent{
 
     this.edgeBounce();
     this.updateSP();
+    this.updateCooldown();
   }
 
   applyForce(force){
@@ -83,7 +96,9 @@ class SPAgent{
     let des = p5.Vector.sub(tar,this.pos);
     let steer;
     let dSq = distSq(tar,this.pos);
-    if(dSq<this.shapeDiamSq){ // diam -> 2x rad -> tar bounding circle touches my bound circle             
+    // diam -> 2x rad -> tar bounding circle touches my bound circle
+    if(dSq<this.shapeDiamSq){
+      this.onDidCollide('a');
       des.setMag(-SPAgent.maxSpeed);
       steer = p5.Vector.sub(des,this.vel);
       //steer.limit(SPAgent.maxForce);
@@ -93,21 +108,15 @@ class SPAgent{
   }
 
 
-
   updateSP(){
-    if(!SPFrmOff.canUpdate(this.ID)){return;}
+    if((frameCount%Config.updateOffset)!==(this.ID%Config.updateOffset)){return;}
 
-    if(Config.isGridMode()){
-      let newCoord = this.map.updatePos(this);
-      if(newCoord != null){
-        this.curCoord = newCoord; 
-        this.inRangeCells = this.getCellsInRange();
-      }
-      this.getNeighborsInRangeViaSP();
+    let newCoord = this.map.updatePos(this);
+    if(newCoord != null){
+      this.curCoord = newCoord; 
+      this.inRangeCells = this.getCellsInRange();
     }
-    else{
-      this.getNeighborsInRangeNaive();
-    }
+    this.getNeighborsInRangeViaSP();
   }
 
   /*--------------------------------------------------------------------
@@ -125,8 +134,12 @@ class SPAgent{
   |    position (i.e. the reduced Euler Integration step).
   +-------------------------------------------------------------------*/
   edgeBounce(){
-    this.vel.x *= (this.pos.x+this.shapeRad > this.map.dim.wide || this.pos.x-this.shapeRad < 0) ? -1: 1;
-    this.vel.y *= (this.pos.y+this.shapeRad > this.map.dim.tall || this.pos.y-this.shapeRad < 0) ? -1: 1;
+    switch(this.pos.x+this.shapeRad > this.map.dim.wide || this.pos.x-this.shapeRad < 0){
+      case true: this.vel.x *= -1; this.onDidCollide('w'); case false: break;
+    }
+    switch(this.pos.y+this.shapeRad > this.map.dim.tall || this.pos.y-this.shapeRad < 0){
+      case true: this.vel.y *= -1; this.onDidCollide('w'); case false: break;
+    }
     this.vel.limit(SPAgent.maxSpeed);
     this.pos.add(this.vel);
   } // Ends Function edgeBounce
@@ -185,36 +198,63 @@ class SPAgent{
     // NOTE: The following is an alternate version utilizing distance formula --> filter(u => (u.ID != this.ID && this.pos.dist(u.pos) <= this.rangeRad));
   }
 
-  // Yes, is QAD and directly calls global array - it's late and I'm tired...
-  getNeighborsInRangeNaive(){
-    this.neighborList = agents.filter(u => (u.ID != this.ID && p5.Vector.sub(u.pos,this.pos).magSq() <= this.rangeRadSqd));
+
+  // used to both increment (i.e. 'OnCollide') AND decrement (i.e. cooldown)
+  updateCollideScore(amt){
+    this.collideScore = constrain(this.collideScore+amt, 0, SPAgent.maxScore);
+  }
+
+
+  onDidCollide(evt){
+    switch(evt){
+      case 'a' : this.updateCollideScore(SPAgent.scoreAgt); return;
+      case 'o' : this.updateCollideScore(SPAgent.scoreObs); return;
+      case 'w' : this.updateCollideScore(SPAgent.scoreWal); return;
+    }
+  }
+
+  updateCooldown(){
+    if(frameCount%SPAgent.coolDelF==0){this.updateCollideScore(-this.collideScore*SPAgent.coolPcnt)}
   }
 
   mouseOverMe(){
     return (dist(mouseX,mouseY,this.pos.x,this.pos.y)<=this.shapeDiam) ? true : false;
   } // Ends Function mouseOverMe
 
-  /*====================================================================
-  |>>> RENDER FUNCTIONS
-  +===================================================================*/
-  render(){
-    this.renderNeighborhood(); this.renderAgent();
+
+
+  linMapCol(val){
+    let vKey = val/(100/(this.colMapLen)); //=> key of pct from which to 'colerp'
+    let idxL = floor(vKey); //=> index of left color on raw map
+    let idxR = ceil(vKey); //=> index of right color on raw map
+    let lPct = vKey-floor(vKey); //=> % by which to lerp between L and R colors
+    return lerpColor(this.colormap[idxL],this.colormap[idxR],lPct);
+  }
+  
+  logMapCol(val){
+    val = min(((log(val+1)/log(10))*100)/2,100);
+    let vKey = val/(100/(this.colMapLen)); //=> key of pct from which to 'colerp'
+    let idxL = floor(vKey); //=> index of left color on raw map
+    let idxR = ceil(vKey); //=> index of right color on raw map
+    let lPct = vKey-floor(vKey); //=> % by which to lerp between L and R colors
+    return lerpColor(this.colormap[idxL],this.colormap[idxR],lPct);
   }
 
-  renderAgent(){
-    strokeWeight(2);
-    fill(this.fill_fullOpq_agt);
-    stroke(this.strk_fullOpq_agt);
-    ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
-  } // Ends Function renderAgent
 
-  renderNeighborhood(){
-    if(!this.mouseOverMe()){return;}
-    strokeWeight(2); noFill();stroke(this.strk_fullOpq_rad);
-    ellipse(this.pos.x,this.pos.y,this.rangeDiam,this.rangeDiam);
-    strokeWeight(4);
-    fill(this.fill_fullOpq_nbr); stroke(this.strk_fullOpq_nbr);
-    this.neighborList.forEach((n)=>{ellipse(n.pos.x,n.pos.y,this.shapeDiam+4,this.shapeDiam+4)});
-  } // Ends Function renderNeighborhood
+
+
+
+
+  render(){
+    strokeWeight(this.swgt_agt);
+
+    switch(SPAgent.useScore){
+      case false: fill(this.fill_agt); break;
+      case true: fill(this.linMapCol(this.collideScore)); break;
+    }
+
+    stroke(this.strk_agt);
+    ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
+  } // Ends Function render
 
 } // Ends Class SPAgent
