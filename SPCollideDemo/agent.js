@@ -3,24 +3,27 @@
 +---------------------------------------------------------------------*/
 class SPAgent{
   static minSpeed = 1;
-  static maxSpeed = 2;
+  static maxSpeed = 4;
   static maxForce = 0.15;
-  static bodyDiam = 16;
-  static maxScore = 100;
 
-  static useScore = true;
-  static scoreAgt = 3;
-  static scoreObs = 2;
-  static scoreWal = 1;
-  static coolPcnt = 0.02;
-  static coolDelF = 6;
+  static useCScore = true;
+  static maxCScore = 100;
+  static doHealCSc = 80;
+  static maxHealth = 1000;
+  static dam_Agent = 6;
+  static dam_Obstc = 4;
+  static dam_Bound = 2;
+  static coolPrcnt = 0.02;
+  static coolDelFr = 6;
+  static deadFrLen = 180;
 
   constructor(pos,ID,map){
-    this.ID  = ID;
+    this.ID  = 'a'+ID;
     this.map = map; // caching for modularity purposes
     this.pos = pos;
     this.vel = p5.Vector.random2D().setMag(random(SPAgent.minSpeed,SPAgent.maxSpeed));
     this.acc = vec2();
+    this.mvq = SPAgent.maxSpeed*SPAgent.maxSpeed; // [m]ax [v]elocity s[q]uared
 
     //>>> Variables for SP/Neighbors
     this.curCoord = map.cellViaPos(this.pos);
@@ -30,11 +33,14 @@ class SPAgent{
     this.neighborList = [];
     this.inRangeCells = this.getCellsInRange();
 
-    //>>> Variables for Collision Score
-    this.collideScore = 0;
+    //>>> Variables for Collision Score And Health
+    this.isAlive   = true;
+    this.curCScore = 0;
+    this.curHealth = SPAgent.maxHealth;
+    this.curDeadFr = 0;
 
     //>>> Variables for GFX/VFX
-    this.shapeDiam   = SPAgent.bodyDiam;
+    this.shapeDiam   = Config.AGENT_DIAM;
     this.shapeDiamSq = this.shapeDiam*this.shapeDiam;
     this.shapeRad    = this.shapeDiam/2;
     this.shapeRadSq  = this.shapeRad*this.shapeRad;
@@ -47,6 +53,9 @@ class SPAgent{
     this.fill_agt = color(32,255,32); 
     this.strk_agt = color(0,180);
     this.swgt_agt = 1;
+    this.fill_ded = color(120);
+    this.strk_ded = color(255);
+    this.swgt_ded = 3;
     //>>> Collide Colormap
     this.colormap  = ["#1A9850","#66BD63","#A6D96A","#D9EF8B","#FFFFBF","#FEE08B","#FDAE61","#F46D43","#D73027"];
     this.colormap  = this.colormap.map(hexVal=>{return color(hexVal)}); 
@@ -55,25 +64,43 @@ class SPAgent{
 
 
   update(){
-    let sepForce = this.separate();
-    let lzdForce = this.lazyDrift();
-
-    if(sepForce.magSq()>0){
-      lzdForce.mult(0.25);
+    if(this.isAlive){
+      let sepForce = this.separate();
+      let lzdForce = this.lazyDrift();
+      if(sepForce.magSq()>0){lzdForce.mult(0.25);}
+      this.applyForce(sepForce);
+      this.applyForce(lzdForce);
+  
+      this.vel.add(this.acc);
+      this.vel.limit(SPAgent.maxSpeed);
+      this.pos.add(this.vel);
+      this.acc.mult(0);
+      this.edgeBounce();
+  
+  
+      this.updateSP();
+      this.updateCooldown();
     }
-
-    this.applyForce(sepForce);
-    this.applyForce(lzdForce);
-
-    this.vel.add(this.acc);
-    this.vel.limit(SPAgent.maxSpeed);
-    this.pos.add(this.vel);
-    this.acc.mult(0);
-
-    this.edgeBounce();
-    this.updateSP();
-    this.updateCooldown();
   }
+
+
+  lateUpdate(){
+    if(this.isAlive){
+
+    }
+    else{
+      // I step into this 1-2 frames into death sequence
+      if(this.curDeadFr>SPAgent.deadFrLen){return;}
+      if(this.curDeadFr==SPAgent.deadFrLen){this.poolRef.addToKillList(this.ID);return;}
+      if(this.curDeadFr==0){new ExplodeEffect(this.pos.x,this.pos.y);}   
+      if(this.curCoord!=null){this.map.removeUnit(this); return;}
+      this.shapeDiam = Math.max(2,this.shapeDiam*.995);
+      this.curDeadFr++;
+    }
+  }
+
+
+
 
   applyForce(force){
     this.acc.add(force);    
@@ -98,7 +125,7 @@ class SPAgent{
     let dSq = distSq(tar,this.pos);
     // diam -> 2x rad -> tar bounding circle touches my bound circle
     if(dSq<this.shapeDiamSq){
-      this.onDidCollide('a');
+      this.applyCollideDAM('a');
       des.setMag(-SPAgent.maxSpeed);
       steer = p5.Vector.sub(des,this.vel);
       //steer.limit(SPAgent.maxForce);
@@ -109,8 +136,7 @@ class SPAgent{
 
 
   updateSP(){
-    if((frameCount%Config.updateOffset)!==(this.ID%Config.updateOffset)){return;}
-
+    if(!this.isAlive){return;}
     let newCoord = this.map.updatePos(this);
     if(newCoord != null){
       this.curCoord = newCoord; 
@@ -135,10 +161,10 @@ class SPAgent{
   +-------------------------------------------------------------------*/
   edgeBounce(){
     switch(this.pos.x+this.shapeRad > this.map.dim.wide || this.pos.x-this.shapeRad < 0){
-      case true: this.vel.x *= -1; this.onDidCollide('w'); case false: break;
+      case true: this.vel.x *= -1; this.applyCollideDAM('w'); case false: break;
     }
     switch(this.pos.y+this.shapeRad > this.map.dim.tall || this.pos.y-this.shapeRad < 0){
-      case true: this.vel.y *= -1; this.onDidCollide('w'); case false: break;
+      case true: this.vel.y *= -1; this.applyCollideDAM('w'); case false: break;
     }
     this.vel.limit(SPAgent.maxSpeed);
     this.pos.add(this.vel);
@@ -199,29 +225,41 @@ class SPAgent{
   }
 
 
-  // used to both increment (i.e. 'OnCollide') AND decrement (i.e. cooldown)
-  updateCollideScore(amt){
-    this.collideScore = constrain(this.collideScore+amt, 0, SPAgent.maxScore);
+  getCollideDAMViaSpeed(evt){
+    return this.getCollideDAM(evt)*(this.vel.magSq()/this.mvq);
+
   }
 
 
-  onDidCollide(evt){
+  getCollideDAM(evt){
     switch(evt){
-      case 'a' : this.updateCollideScore(SPAgent.scoreAgt); return;
-      case 'o' : this.updateCollideScore(SPAgent.scoreObs); return;
-      case 'w' : this.updateCollideScore(SPAgent.scoreWal); return;
+      case 'a' : return SPAgent.dam_Agent;
+      case 'o' : return SPAgent.dam_Obstc;
+      case 'w' : return SPAgent.dam_Bound;
+      case 'z' : return 32;
     }
   }
 
+  applyCollideDAM(evt){
+    evt = this.getCollideDAMViaSpeed(evt); // because I'mm OCD for a 'let ...'
+    this.curCScore = constrain(this.curCScore+evt, 0, SPAgent.maxCScore);
+    this.curHealth = constrain(this.curHealth-evt, 0, SPAgent.maxHealth);
+    if(this.curHealth<=0){this.isAlive=false;}
+  }
+
+  applyCooldownHEAL(){
+    this.curCScore = constrain(this.curCScore-(this.curCScore*SPAgent.coolPrcnt), 0, SPAgent.maxCScore);
+    if(this.curCScore>SPAgent.doHealCSc){return;}
+    this.curHealth = constrain(this.curHealth+(this.curHealth*SPAgent.coolPrcnt), 0, SPAgent.maxHealth);
+  }
+
   updateCooldown(){
-    if(frameCount%SPAgent.coolDelF==0){this.updateCollideScore(-this.collideScore*SPAgent.coolPcnt)}
+    if(frameCount%SPAgent.coolDelFr==0){this.applyCooldownHEAL();}
   }
 
   mouseOverMe(){
     return (dist(mouseX,mouseY,this.pos.x,this.pos.y)<=this.shapeDiam) ? true : false;
   } // Ends Function mouseOverMe
-
-
 
   linMapCol(val){
     let vKey = val/(100/(this.colMapLen)); //=> key of pct from which to 'colerp'
@@ -240,20 +278,23 @@ class SPAgent{
     return lerpColor(this.colormap[idxL],this.colormap[idxR],lPct);
   }
 
-
-
-
-
+  styleSet(){
+    switch(this.isAlive){
+      case true: 
+        stroke(this.strk_agt); 
+        strokeWeight(this.swgt_agt); 
+        fill(this.linMapCol(this.curCScore)); 
+      return;
+      case false: 
+        stroke(this.strk_ded); 
+        strokeWeight(this.swgt_ded); 
+        fill(this.fill_ded);
+      return;
+    }
+  }
 
   render(){
-    strokeWeight(this.swgt_agt);
-
-    switch(SPAgent.useScore){
-      case false: fill(this.fill_agt); break;
-      case true: fill(this.linMapCol(this.collideScore)); break;
-    }
-
-    stroke(this.strk_agt);
+    this.styleSet();
     ellipse(this.pos.x,this.pos.y,this.shapeDiam,this.shapeDiam);
   } // Ends Function render
 

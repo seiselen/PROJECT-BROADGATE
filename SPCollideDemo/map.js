@@ -30,13 +30,43 @@ class SPMap{
   updatePos(obj){
     let newCoords = this.cellViaPos(obj.pos);
     if(obj.curCoord != null && obj.curCoord[0]==newCoords[0] && obj.curCoord[1]==newCoords[1] ){return null;}
-    this.updatePosViaMapObj(obj, newCoords);
+    if(obj.curCoord != null){this.map[obj.curCoord[0]][obj.curCoord[1]].delete(obj.ID);}
+    this.map[newCoords[0]][newCoords[1]].set(obj.ID,obj);
     return newCoords;
   }
 
-  updatePosViaMapObj(obj, newCoords){
-    if(obj.curCoord != null){this.map[obj.curCoord[0]][obj.curCoord[1]].delete(obj.ID);}
-    this.map[newCoords[0]][newCoords[1]].set(obj.ID,obj);
+  /*--------------------------------------------------------------------
+  |> Function removeUnit
+  +---------------------------------------------------------------------
+  | Purpose: Removes input unit from the SP system. For the BG Spatial 
+  |          Partitioning demo, such units are SPAgent instances which 
+  |          have recently 'died' s.t. there is no further need of they
+  |          nor the remaining 'alive' units to consider them WRT SP.
+  | Input:   SPAgent instance (which is assumed to be 'dead' for ~[1-2] 
+  |          frames e.g. has 'isAlive' flag set to 'false', but this is
+  |          not [necessarily] a guarantee, requirement, nor dependency.
+  | Output:  Well, side effect anyway... The agent's 'curCoord' value is
+  |          set to [null]; which alongside its 'isAlive' value already
+  |          being [false] should mean it calls this method ONLY ONCE!
+  +---------------------------------------------------------------------
+  |# Implementation Notes:
+  |  > [ZAC NOTE] The eponymous codebase would probably like this method
+  |    added therein at some point, so count that as a TODO item...
+  |  > [WHY INCLUDE 'NEWCOORDS'?] Two sub-maps have the <delete> called
+  |    thereunto: that of the agent's 'curCoord' value, as well as that 
+  |    of its 'newCoords' (as computed by <cellViaPos>). The latter case
+  |    is done as a precaution: handling an edge case whereby the agent
+  |    JUST enters a new coordinate and happens to have not yet updated 
+  |    its 'curCoords' value; which is certainly possible if this is not
+  |    called a 'safe' time in the draw loop (i.e. 'OnLateUpdate' as is
+  |    realized for the object pool). There should be no adverse effects
+  |    for the sub-map that happens to not contain the agent, so #YOLO.
+  +-------------------------------------------------------------------*/
+  removeUnit(obj){
+    this.map[obj.curCoord[0]][obj.curCoord[1]].delete(obj.ID);
+    let newCoords = this.cellViaPos(obj.pos);
+    this.map[newCoords[0]][newCoords[1]].delete(obj.ID);
+    obj.curCoord = null;
   }
 
   getUnitsInCells(list){
