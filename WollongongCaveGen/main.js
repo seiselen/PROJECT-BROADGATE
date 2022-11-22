@@ -7,19 +7,17 @@ var ColorMap = {WHITE:"#FFFFFF",BLACK:"#000000",PURPLE:"#FF00FF"}
 canvDims.init(1280,840);
 imageDim.init(400);
 
-var PNoise = { 
-  scale  : 0.02,
-  xOff   : 516,
-  yOff   : 631,
-  setOffsets : (nX,nY)=>{PNoise.xOff=nX;PNoise.yOff=nY;},
-  scrambleOffsets: ()=>{PNoise.setOffsets(Math.floor(Date.now()*random()),Math.floor(Date.now()*random()))},
-  getVal : (r,c)=>{[r,c]=[r+PNoise.yOff,c+PNoise.xOff]; return noise(c*PNoise.scale,r*PNoise.scale);}
-}
+
+
+
+
+
+
 
 var images = []
 
 function generateAllMaps(){
-  PNoise.scrambleOffsets();
+  PerlinNoiseField.scrambleOffsets();
 
   images.push(new ShaderImage(220,210).setRule("circle","biased"));
   images.push(new ShaderImage(1060,210).setRule("wollongong",["circle","biased"]));
@@ -39,10 +37,10 @@ function generateAllMaps(){
 
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
-  Object.keys(ColorMap).map(k=>ColorMap[k]=color(ColorMap[k]));
-
   imageMode(CENTER);
-  WBias.init(0.05);
+  Object.keys(ColorMap).map(k=>ColorMap[k]=color(ColorMap[k]));
+  WollongongBias.init(0.05);
+
 
   generateAllMaps();
 }
