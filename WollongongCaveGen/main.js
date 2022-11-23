@@ -1,65 +1,71 @@
+p5.disableFriendlyErrors = true;
+
 
 var imageDim = {init(dim){this.dim=dim;this.dimH=this.dim/2;}};
 var canvDims = {init(wide,tall){this.wide=wide;this.tall=tall;this.wideH=this.wide/2;this.tallH=this.tall/2;}};
 
 var ColorMap = {WHITE:"#FFFFFF",BLACK:"#000000",PURPLE:"#FF00FF"}
 
-canvDims.init(1280,840);
-imageDim.init(400);
+canvDims.init(1280,640);
+imageDim.init(512);
+
+var img_originShape;
+var img_perlinField;
+var img_mergedShape;
+var images = [];
 
 
-
-
-
-
-
-
-var images = []
-
-function generateAllMaps(){
-  PerlinNoiseField.scrambleOffsets();
-
-  images.push(new ShaderImage(220,210).setRule("circle","biased"));
-  images.push(new ShaderImage(1060,210).setRule("wollongong",["circle","biased"]));
-
-  images.push(new ShaderImage(220,630).setRule("square","biased"));
-  images.push(new ShaderImage(1060,630).setRule("wollongong",["square","biased"]));
-
-  images.push(new ShaderImage(640,420).setRule("perlin"));
-
-
-
-  //> Make sure that all desired images have been instantiated BEFORE this line (duh...)
-  images.forEach(i=>i.generate())
-
-}
-
+var imgSlider;
 
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
-  imageMode(CENTER);
   Object.keys(ColorMap).map(k=>ColorMap[k]=color(ColorMap[k]));
   WollongongBias.init(0.05);
 
-
-  generateAllMaps();
+  createImages();
+  imgSlider = new ImageSlider(64,64,512,512)
+    .bindImageLeft(img_originShape.img)
+    .bindImageRight(img_perlinField.img)
+  ;
 }
 
 
 function draw(){
   background(60,120,180);
-  images.forEach(i=>i.render());
-  //drawCanvasCrosshair('#00FF0080',2);
+  img_mergedShape.render();
+  imgSlider.render();
   dispFPSViaDOM();
 }
+
+
+function createImages(){
+  PerlinNoiseField.scrambleOffsets();
+  img_originShape = new ShaderImage(220,240).setRule("circle","biased").generate();
+  img_perlinField = new ShaderImage(640,240).setRule("perlin").generate();
+  img_mergedShape = new ShaderImage(704,64).setRule("wollongong",["circle","biased"]).generate();
+}
+
+
+
+
 
 
 /*----------------------------------------------------------------------
 |>>> MOUSE/KEYBOARD INTERACTION FUNCTIONS
 +---------------------------------------------------------------------*/
 function mousePressed(){
-  //if(imgWollongBias.mouseOverMe()){console.log("yep");}
+  imgSlider.onMousePressed();
 }
+
+function mouseDragged(){
+  imgSlider.onMouseDragged();
+}
+
+function mouseReleased(){
+  imgSlider.onMouseReleased();
+}
+
+
 
 function keyPressed(){
   if(key==='r'||key==='R'){generateAllMaps();}

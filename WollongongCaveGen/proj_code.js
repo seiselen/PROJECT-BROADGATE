@@ -126,6 +126,7 @@ class ShaderImage{
   }
 
   render(){
+    noFill(); stroke(255); strokeWeight(4); rect(this.pos.x,this.pos.y,this.dim,this.dim);
     image(this.img,this.pos.x,this.pos.y);
   }
 
