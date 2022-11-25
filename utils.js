@@ -281,6 +281,12 @@ function arrayValsEqual(arr1, arr2){
 
 /*======================================================================
 |>>> Function Mini-Group Involving Color Vals
++-----------------------------------------------------------------------
+|# Implementation Notes:
+|  > On 11/24/2022, six methods were added to this group; encompassing 
+|    {hex6⭤ int[3]⭤ p5.color} conversion methods that are more 'easy
+|    access' for quick {p→q} conversion (i.e. in a separate project that
+|    does NOT use p5js nor p5.colors) therebetween.
 +======================================================================*/
 function colorRGBAToHex(colVal){
   return hex(colVal.levels,2).join('');
@@ -291,7 +297,29 @@ function colorHexToRGBA(colVal){
   return unhex(colVal.match(/.{1,2}/g));
 } // Ends Function colorHexToRGBA
 
+function hex6_to_int3(h6){
+  return ((h6[0]=='#')?h6.slice(1):h6).match(/(..)/g).map(h=>{return unhex(h)});
+}
 
+function int3_to_hex6(i3){
+  return `#${i3.map(i=>{return hex(i,2);}).join('')}`;
+}
+
+function hex6_to_color(h6){
+  return color(NewUtils.hex6_to_int3(h6));
+}
+
+function color_to_hex6(col){
+  return NewUtils.color_to_int3(col);
+}
+
+function color_to_int3(col){
+  return col.levels.slice(0,-1);
+}
+
+function int3_to_color(i3){
+  return color(...i3);
+}
 
 /*----------------------------------------------------------------------
 |>>> Function bucket
