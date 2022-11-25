@@ -1,40 +1,111 @@
-
+import UIManager from "./dom_uiux.js";
 
 //######################################################################
 
-//>>> "Enums" for Color Mode / Map Resolution
-var ColorMode = {RGB:"rgb", HSB:"hsb"};
-var ColMapRes = {x32:32, x64:64, x128:128, x256:256, x512:512};
+var Config = {
+  canvasDims:   {wide:1000,tall:800,wideH:undefined,tallH:undefined},
+  colorModes:   {RGB:"rgb", HSB:"hsb"},
+  colorMapResz: {x8:8, x16:16, x32:32, x64:64, x128:128, x256:256},
 
-//>>> Current Settings (kept as init and for 'dirty flag' changes)
-var curColMode = ColorMode.RGB;
-var curCMapRes = ColMapRes.x32;
-var curCol1 = [240,108,0];
-var curCol2 = [0,108,240];
+  curColors: {
+    fill_bg: 60,
+    fill_p:  [240,108,0],
+    fill_q:  [0,108,240],
+    swgt_c:  1,
+    strk_e:  255,
+    swgt_e:  4
+  },
+
+  curResCfg: {
+    value:   8,   // temp 'till init
+    valueH:  4,   // also temp 'till init
+    tPcnt:   1/8, // yeah you get the idea...
+  },
+
+  init(){
+    this.canvasDims.wideH = this.canvasDims.wide/2;
+    this.canvasDims.tallH = this.canvasDims.tall/2;
+    this.curColorMode     = this.colorModes.RGB;
+    this.setCurRes(this.colorMapResz.x32);
+    Object.keys(this.curColors).forEach(k=>{if(k.startsWith('fill')||k.startsWith('strk')){this.curColors[k]=color(this.curColors[k]);}})
+  },
+
+  setCurColors(pCol,qCol){
+    this.setCurColor('fill_p',pCol);
+    this.setCurColor('fill_q',qCol);
+  },
+
+  setCurColor(colorID,newColor){
+    if(this.curColors[colorID]===undefined){
+      console.error(`Invalid curCol PKID: "${colorID}"`)
+    }
+    else if(typeof(newColor)==='number'){
+      this.curColors[colorID]=color(newColor);
+    }
+    else if(newColor.constructor===Array){
+      this.curColors[colorID]=color(...newColor);
+    }
+    else if(newColor.constructor===p5.Color){
+      this.curColors[colorID]=newColor;
+    }
+  },
+
+  setCurRes(newRes){
+    if(this.curResCfg.value===newRes){return false;}
+    this.curResCfg.value  = newRes;
+    this.curResCfg.valueH = newRes/2;
+    this.curResCfg.tPcnt  = 1/newRes;
+    return true;
+  },
+
+  canvasSizeVals(){
+    return [this.canvasDims.wide,this.canvasDims.tall];
+  }
+
+
+}
+
 
 //>>> Data Structures and Other Variables
 var myColorBar;
 var myColorWheel;
-var bgColor;
 
 //######################################################################
 
-function setup(){
-  createCanvas(896,704).parent("viz");
-  initUI();
-  myColorBar   = new ColorBar(createVector(64,32),curCol1,curCol2,curCMapRes,768,96);
-  myColorWheel = new ColorWheel(createVector(width/2,(height/2)+64), curCol1, curCol2, curCMapRes, 64, 256);
-  bgColor = color(24); // pre-defines as color object persists across color mode changes (via having vals \forall defined within)
-  colorMode(curColMode); // do one initialization call before first draw() call; UI handler will make all successive [re]sets
+window.setup =_=>{
+  createCanvas(...Config.canvasSizeVals()).parent("viz");
+  Config.init();
+  UIManager
+    .initDOM()
+    .bindGoButtonHandler(handleInputButton)
+    .initDOMColResOptions(Config.colorMapResz,Config.curResCfg.value)
+    .initDOMCurColorOptions(
+      Config.curColors.fill_p.levels.slice(0,-1),
+      Config.curColors.fill_q.levels.slice(0,-1)
+    )
+  ;
+  myColorBar   = new ColorBar(createVector(960,16), 768,96, Config);
+  myColorWheel = new ColorWheel(createVector(width*.42,(height/2)), 64, 380, Config);
+  handleInputButton(UIManager.valuesToOutput());
 } // Ends P5JS Function setup
 
-function draw(){
-  background(bgColor);
+window.draw =_=>{
+  background(Config.curColors.fill_bg);
   myColorBar.render();
   myColorWheel.render();
-  drawFPSSimple();
+  UIManager.render();
 } // Ends P5JS Function draw
 
-function drawFPSSimple(){
-  textSize(18); textAlign(LEFT,CENTER); noStroke(); fill(255); text("FPS: "+nfs(frameRate(),2,2), 12, height-15);
-} // Ends (Util) Function drawFPSSimple
+
+function handleInputButton(domProps){  
+  let [pCol,qCol] = [domProps.pColor,domProps.qColor];
+  // If one color input is blank: it becomes its counterpart. Why? 'Next
+  // Phase' QAD improved 'overload' means to request+view only 1 color.
+  if(pCol.length===0){pCol=qCol;} if(qCol.length===0){qCol=pCol;}  
+  Config.setCurColors(pCol,qCol);
+  // don't update if rez not changed, as regen colorwheel is expensive
+  if(Config.setCurRes(domProps.mapRez)===true){
+    myColorBar.onStateChanged();
+    myColorWheel.onStateChanged();
+  }
+}

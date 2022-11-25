@@ -1,0 +1,25 @@
+body {
+  color: darkblue;
+  font-family: "Roboto Mono", "Courier New", monospace;
+}
+
+select, input {
+  font-family: "Roboto Mono", "Courier New", monospace;  
+}
+
+#h1_head {
+  background:     #29067C;
+  color:          #FFFFFF;
+  font-size:          1.5em;
+  margin-block-start:   0px;
+  margin-block-end:     0px;
+  padding-top:          8px;
+  padding-bottom:       8px;
+  padding-left:        16px;
+  max-width:          984px; /*> i.e.: (<canvas width> - [16]) per 'padding-left' val */
+}
+
+p {
+  margin-bottom: 16px;
+  margin-top: 8px;
+}
