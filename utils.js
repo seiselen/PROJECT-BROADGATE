@@ -306,11 +306,11 @@ function int3_to_hex6(i3){
 }
 
 function hex6_to_color(h6){
-  return color(NewUtils.hex6_to_int3(h6));
+  return color(hex6_to_int3(h6));
 }
 
 function color_to_hex6(col){
-  return NewUtils.color_to_int3(col);
+  return color_to_int3(col);
 }
 
 function color_to_int3(col){
