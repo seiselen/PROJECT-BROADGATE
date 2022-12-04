@@ -23,10 +23,22 @@ class ShaderImage{
     return this;
   }
 
-  setRule(r,h){
-    this.curRule = this.rule[r];
-    this.curHeur = (typeof(h)==='string'||h===undefined) ? this.heur[h] : [this.rule[h[0]],this.heur[h[1]]];
+  setRule(r){
+    this.curRule = r;
+    this.ruleFunc = this.rule[r];
     return this; // for constructor/method chaining
+  }
+
+  //     this.curHeur = (typeof(h)==='string'||h===undefined) ? this.heur[h] : [this.rule[h[0]],this.heur[h[1]]];
+  setHeur(h){
+    this.curHeur = h;
+    this.heurFunc = (typeof(h)==='string'||h===undefined) ? this.heur[h] : [this.rule[h[0]],this.heur[h[1]]];
+    return this; // for constructor/method chaining   
+  }
+
+  setRuleAndHeur(r,h){
+    this.setRule(r).setHeur(h);
+    return this; // for constructor/method chaining   
   }
 
   initImage(){
@@ -90,7 +102,7 @@ class ShaderImage{
     this.img.loadPixels(); 
     for (let r=0;r<this.dim;r++){
       for(let c=0;c<this.dim;c++){
-        this.img.set(c,r,this.curRule(r,c,this.curHeur));
+        this.img.set(c,r,this.ruleFunc(r,c,this.heurFunc));
       }
     }
     this.img.updatePixels();

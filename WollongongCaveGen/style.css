@@ -14,3 +14,52 @@ body {
   padding-left:           16px;
   max-width:            1264px; /*> i.e.: (<canvas width> - [16]) per 'padding-left' val */
 }
+
+
+
+tr:nth-child(even) {background: rgb(255, 228, 208)}
+tr:nth-child(odd) {background: rgb(208, 255, 228)}
+
+tbody{
+  display: table-row-group;
+  vertical-align: middle;
+}
+
+
+td{
+  vertical-align:middle;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+td:nth-child(1) {
+  font-size: 1.25em;
+  user-select: none;  
+  text-align: center;
+}
+
+td:nth-child(2) {
+  font-size: 1em;
+  font-weight: bold;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
+
+}
+
+
+td p {
+  display: inline-block;
+  font-family: "Roboto Mono", "Courier New", monospace;
+  margin: 0px;
+  user-select: none;
+}
+
+td select{
+  font-family: "Roboto Mono", "Courier New", monospace;
+}
+
+td button{
+  font-family: "Roboto Mono", "Courier New", monospace;  
+  font-size: 1em;
+}

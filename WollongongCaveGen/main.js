@@ -17,10 +17,14 @@ var images = [];
 
 var imgSlider;
 
+var uiManager;
+
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
+
   Object.keys(ColorMap).map(k=>ColorMap[k]=color(ColorMap[k]));
-  WollongongBias.init(0.05);
+  WollongongBias.init(WollongongBias.refBiasVal);
+  uiManager = new UIManager();
 
   createImages();
   imgSlider = new ImageSlider(64,64,512,512)
@@ -34,15 +38,15 @@ function draw(){
   background(60,120,180);
   img_mergedShape.render();
   imgSlider.render();
-  dispFPSViaDOM();
+  uiManager.render();
 }
 
 
 function createImages(){
   PerlinNoiseField.scrambleOffsets();
-  img_originShape = new ShaderImage(220,240).setRule("circle","biased").generate();
+  img_originShape = new ShaderImage(220,240).setRuleAndHeur("circle","biased").generate();
   img_perlinField = new ShaderImage(640,240).setRule("perlin").generate();
-  img_mergedShape = new ShaderImage(704,64).setRule("wollongong",["circle","biased"]).generate();
+  img_mergedShape = new ShaderImage(704,64).setRuleAndHeur("wollongong",["circle","biased"]).generate();
 }
 
 
@@ -69,13 +73,4 @@ function mouseReleased(){
 
 function keyPressed(){
   if(key==='r'||key==='R'){generateAllMaps();}
-}
-
-/*----------------------------------------------------------------------
-|>>> MISC CANVAS AND/XOR UTIL FUNCTIONS
-+---------------------------------------------------------------------*/
-var fpsPane = null;
-function dispFPSViaDOM(dFrame=3){
-  if(!fpsPane){fpsPane=document.getElementById("fpsPane");}
-  if(frameCount%dFrame==0){fpsPane.textContent = `FPS: [${nf(frameRate(),2,2)}] (Updated Every [${dFrame}] Frames)`;}
 }

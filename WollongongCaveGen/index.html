@@ -11,6 +11,7 @@
     <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script> 
     <script src="p5jsLocal.js"></script>
     <!-- Project Code -->
+    <script src="ui_manager.js"></script>    
     <script src="image_slider.js"></script>
     <script src="wollongong_bias.js"></script>
     <script src="perlin_noise_field.js"></script>
@@ -21,7 +22,37 @@
     <h1  id="h1_head">⯈ PROJECT BROADGATE ⬥ WOLLONGONG CAVE GENERATION</h1>
   	<div id="viz"></div>
   	<div id="ui">
-      <p id="fpsPane">hi</p>
+      <table><tbody>
+        <tr>
+          <td>Template Shape:</td>
+          <td><select id="ddown_tShape"></select></td>
+        </tr>
+        <tr>
+          <td>Heuristic Function:</td>
+          <td><select id="ddown_hType"></select></td>
+        </tr>
+        <tr>
+          <td>Wollongong Bias:</td>
+          <td>
+            <input type="range" id="slidr_wBias"></input>
+            <p id="lbl_valOf_wBias">1.01</p>            
+          </td>
+        </tr>
+        <tr>
+          <td>Perlin Noise Scale:</td>
+          <td>
+            <input type="range" id="slidr_pScale"></input>
+            <p id="lbl_valOf_pScale">1.01</p>
+          </td>
+        </tr>
+        <tr>
+          <td>Perlin Noise Offsets:</td>
+          <td><button id="butt_pOffsets">Reset + Regenerate</button></td>
+        </tr>
+        <tr>
+          <td>Current FPS:</td><td><p id="fpsPane">60.09</p></td>
+        </tr>
+      </tbody></table>
     </div>
   </body>
 </html>
