@@ -4,7 +4,6 @@ class UIManager {
   constructor(){
     this.fpsPane=document.getElementById("fpsPane");
     this.ddown_tShape = document.getElementById("ddown_tShape");
-    this.ddown_hType  = document.getElementById("ddown_hType");
     this.slidr_wBias  = document.getElementById("slidr_wBias");
     this.slidr_pScale = document.getElementById("slidr_pScale");
     this.labl_wBias   = document.getElementById("lbl_valOf_wBias");
@@ -12,7 +11,6 @@ class UIManager {
     this.butt_pOffsts = document.getElementById("butt_pOffsets");
 
     this.initShapeDDown();
-    this.initHeurDDown();
     this.initWBiasSlider();
     this.initPScaleSlider();
     this.initPOffstsButton()
@@ -24,12 +22,6 @@ class UIManager {
     this.ddown_tShape.add(this.createOption("Diamond",'d'));
     this.ddown_tShape.add(this.createOption("X Cross",'x'));
     this.ddown_tShape.addEventListener("change", ()=>this.onShapeOptionChanged());
-  }
-
-  initHeurDDown(){
-    this.ddown_hType.add(this.createOption("Wollongong", 'w', true));
-    this.ddown_hType.add(this.createOption("Linear", 'l'));
-    this.ddown_hType.addEventListener("change", ()=>this.onHeurOptionChanged());
   }
 
   initWBiasSlider(){
@@ -65,23 +57,13 @@ class UIManager {
     }
   }
   
-  onHeurOptionChanged(){
-    switch(this.ddown_hType.value){
-      case 'w': this.heurOptionChangeAction('biased'); return; 
-      case 'l': this.heurOptionChangeAction('linear'); return; 
-    }
-  }
-
   onWBiasSliderValDragged(){
     this.labl_wBias.textContent = nf(this.slidr_wBias.value,1,2);
   }
 
   onWBiasSliderValDropped(){
     WollongongBias.setBiasVal(this.slidr_wBias.value);
-    if(img_originShape.curHeur=='biased'){
-      img_originShape.generate();
-      img_mergedShape.generate();
-    }
+    myWGImage.generate();
   }
 
   onPScaleSliderValDragged(){
@@ -90,37 +72,20 @@ class UIManager {
 
   onPScaleSliderValDropped(){
     PerlinNoiseField.setNoiseScale(this.slidr_pScale.value);
-    img_perlinField.generate();
-    img_mergedShape.generate();
+    myWGImage.generate();
   }
 
   onPOffsetsButtonClicked(){
     PerlinNoiseField.scrambleOffsets();
-    img_perlinField.generate();
-    img_mergedShape.generate();
+    myWGImage.generate();
     console.log(`New Perlin Offsets = (${[PerlinNoiseField.posOffsetX,PerlinNoiseField.posOffsetY].toString()})`)
   }
 
   shapeOptionChangeAction(nr){
-    if(img_originShape.curRule==nr){return;}
-    img_originShape.setRule(nr).generate();
-    img_mergedShape.setHeur([nr,img_mergedShape.curHeur[1]]).generate();
-  }
-  
-  heurOptionChangeAction(nh){
-    if(img_originShape.curHeur==nh){return;}
-    img_originShape.setHeur(nh).generate();
-    img_mergedShape.setHeur([img_mergedShape.curHeur[0],nh]).generate();
-  }
-  
+    if(myWGImage.curRule==nr){return;}
+    myWGImage.setRule(nr).generate();
+  }  
 
-
-
-
-
-
-  
-  
   createOption(txt,val,isSel=false){
     let ret   = document.createElement("option");
     ret.text  = txt;
@@ -130,12 +95,14 @@ class UIManager {
   }
 
 
+  onKeyPressed(){
+    if(key==='r'||key==='R'){myWGImage.generate();}
+  }
 
 
   render(){
     this.dispFPSViaDOM();
   }
-
 
   dispFPSViaDOM(){
     this.fpsPane.textContent = `[${nf(frameRate(),2,2)}]`;

@@ -2,8 +2,7 @@
 //>>> WOLLONGONG BIAS UTIL
 //======================================================================
 
-// Wollongong Bias Function: {f(x)=x^(ln(b)/ln(0.5)) | x∋[0≤x≤1] ∧ b∋[0≤b=.05≤0.5]}
-// ↑ Desmos [Ctrl]+[V] Expr: y=x^{\frac{\ln\left(0.05\right)}{\ln\left(0.5\right)}}
+
 var WollongongBias = {
   refBiasVal : .05,
   curBiasVal : 0,
@@ -23,10 +22,14 @@ var WollongongBias = {
   },
   
   setExpoVal : ()=>{
-    WollongongBias.curExpoVal=log(WollongongBias.curBiasVal)/WollongongBias.lnHalfEval;
+    WollongongBias.curExpoVal = log(WollongongBias.curBiasVal)/WollongongBias.lnHalfEval;
   },
   
   getBiasVal : (x)=>{
     return pow(constrain(x,0,1),WollongongBias.curExpoVal);
+  },
+
+  getBiasFromNormDist(nd){
+    return lerp(255,0,WollongongBias.getBiasVal(nd));
   }
 }

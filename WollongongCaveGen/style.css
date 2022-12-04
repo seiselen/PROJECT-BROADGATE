@@ -35,7 +35,7 @@ td{
 td:nth-child(1) {
   font-size: 1.25em;
   user-select: none;  
-  text-align: center;
+  text-align: right;
 }
 
 td:nth-child(2) {
@@ -57,6 +57,7 @@ td p {
 
 td select{
   font-family: "Roboto Mono", "Courier New", monospace;
+  font-size: 1em;
 }
 
 td button{

@@ -19,10 +19,10 @@ var PerlinNoiseField = {
     PerlinNoiseField.noiseBound.max
   )},
 
-  scrambleOffsets : ()=>{PerlinNoiseField.setPosOffset(
-    Math.floor(Date.now()*random()),
-    Math.floor(Date.now()*random())
-  )},
+  scrambleOffsets : ()=>{
+    PerlinNoiseField.setPosOffset(Math.floor(Date.now()*random()), Math.floor(Date.now()*random()));
+    return this; // for function chaining (namely 'prime pump' call {AtInit})
+  },
 
   getValueAtCoord : (r,c)=>{return noise(
     (c+PerlinNoiseField.posOffsetX)*PerlinNoiseField.noiseScale,

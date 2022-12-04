@@ -21,7 +21,7 @@ class ImageSlider{
 
   bindImageLeft(imgL){this.img_L=imgL; return this;}
   bindImageRight(imgR){this.img_R=imgR; return this;}
-
+  bindImages(imgL,imgR){return this.bindImageLeft(imgL).bindImageRight(imgR);}
 
   setDynamicImg(newWidth){
     this.img_dynam_wide = newWidth;

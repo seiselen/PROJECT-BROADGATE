@@ -1,76 +1,63 @@
-p5.disableFriendlyErrors = true;
-
-
-var imageDim = {init(dim){this.dim=dim;this.dimH=this.dim/2;}};
+/*######################################################################
+|>>> [Wollongong Cave(rn) Generation]              (BROADGATE | GENESIS)
++-----------------------------------------------------------------------
+| Description: Interactive viz/sim of the first steps of the 'Wollongong
+|              Method' in 2D; i.e. that described in paper "Voxel-based 
+|              Octree construction approach for procedural cave gen.",
+|              by Cui et.al. at the University of Wollongong, Australia
+|              (hence the name I apply to this method.)
+| Author:      Steven Eiselen (Eiselen Laboratories)
+| Source:      Aforementioned paper for basic ideas to generate 'Blended
+|              Shape'; though I utilize a different distance metric. 
+| Libraries:   P5JS and BROADGATE's 'Utils.js'
++-----------------------------------------------------------------------
+|# Implementation Notes:
+|  > Wollongong Bias Function (Math and Desmos 'copy+paste' Expression): 
+|     o -Math-: {f(x)=x^(ln(b)/ln(0.5)) | x∋[0≤x≤1] ∧ b∋[0≤b=.05≤0.5]}
+|     o Desmos: y=x^{\frac{\ln\left(0.05\right)}{\ln\left(0.5\right)}}
+|  > I NO LONGER NEED to define a separate Linear Heuristic, as setting 
+|    'Wollongong Bias' value to [0.5] is exactly equivalent thereto, as
+|    shown here ⮕ {y=x^(ln(0.5)/ln(0.5))} ⬌ {y=x^(1)} ⬌ {y=x} QED ∎
+|  > x
++-----------------------------------------------------------------------
+|# NATs:
+|  > Implement Flood-Fill Step ⮕ FloodFill(minPixArea,maxPixArea)
+|     o ZAC Flood-Fill installed, pseudocode solution prep'd and pending
+|       for implementation (next time, though... losing focus on this)
+|# TODOs:
+|  > SHOULD Partition In-Canvas Slider into a new "UIObjects" analog to
+|    Util.js (i.e. <vs> into the latter); as is commonly enough used,
+|    but should be greater effort for disjoint globally accessible util
+|    for BOTH In-Canvas and DOM UIObjects.
+|     o COULD implement via 'Michael Jackson Script' (i.e. as JS module)
+|       to assert that all consuming projects must be realized likewise;
+|       especially as I now know how to implement P5JS projects thereby.
+######################################################################*/
 var canvDims = {init(wide,tall){this.wide=wide;this.tall=tall;this.wideH=this.wide/2;this.tallH=this.tall/2;}};
-
-var ColorMap = {WHITE:"#FFFFFF",BLACK:"#000000",PURPLE:"#FF00FF"}
-
 canvDims.init(1280,640);
-imageDim.init(512);
 
-var img_originShape;
-var img_perlinField;
-var img_mergedShape;
-var images = [];
-
-
+var myWGImage;
 var imgSlider;
-
 var uiManager;
 
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
-
-  Object.keys(ColorMap).map(k=>ColorMap[k]=color(ColorMap[k]));
   WollongongBias.init(WollongongBias.refBiasVal);
   uiManager = new UIManager();
-
-  createImages();
-  imgSlider = new ImageSlider(64,64,512,512)
-    .bindImageLeft(img_originShape.img)
-    .bindImageRight(img_perlinField.img)
-  ;
+  myWGImage = new WollongongImage(704,64,512).setRule('circle').generate();
+  imgSlider = new ImageSlider(64,64,512,512).bindImages(myWGImage.image_TShape,myWGImage.image_PField);
 }
 
 
 function draw(){
   background(60,120,180);
-  img_mergedShape.render();
+  myWGImage.render(); 
   imgSlider.render();
   uiManager.render();
 }
 
-
-function createImages(){
-  PerlinNoiseField.scrambleOffsets();
-  img_originShape = new ShaderImage(220,240).setRuleAndHeur("circle","biased").generate();
-  img_perlinField = new ShaderImage(640,240).setRule("perlin").generate();
-  img_mergedShape = new ShaderImage(704,64).setRuleAndHeur("wollongong",["circle","biased"]).generate();
-}
-
-
-
-
-
-
-/*----------------------------------------------------------------------
-|>>> MOUSE/KEYBOARD INTERACTION FUNCTIONS
-+---------------------------------------------------------------------*/
-function mousePressed(){
-  imgSlider.onMousePressed();
-}
-
-function mouseDragged(){
-  imgSlider.onMouseDragged();
-}
-
-function mouseReleased(){
-  imgSlider.onMouseReleased();
-}
-
-
-
-function keyPressed(){
-  if(key==='r'||key==='R'){generateAllMaps();}
-}
+//>>> P5JS Device UI Calls
+function mousePressed(){imgSlider.onMousePressed();}
+function mouseDragged(){imgSlider.onMouseDragged();}
+function mouseReleased(){imgSlider.onMouseReleased();}
+function keyPressed(){uiManager.onKeyPressed();}
