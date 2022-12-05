@@ -1,13 +1,21 @@
 var canvDims = {init(wide,tall){this.wide=wide;this.tall=tall;this.wideH=this.wide/2;this.tallH=this.tall/2;}};
 canvDims.init(1024,768)
 
-var sheet;
+var sheetWalkAnims;
+var sheetIdleAnims;
 var bgImg;
+var mjSounds = [];
 var MJ;
 
+
 function preload(){
-  sheet=loadImage('assets/spritesheet.png');
+  sheetWalkAnims=loadImage('assets/spritesheet.png');
+  sheetIdleAnims=loadImage('assets/spritesheet_idleAnims.png');
   bgImg=loadImage('assets/bgLunarSurface.png');
+  soundFormats('wav');
+  mjSounds.push(loadSound('assets/aooo'));
+  mjSounds.push(loadSound('assets/hooo'));
+  mjSounds.push(loadSound('assets/oooh'));
 }
 
 
@@ -15,6 +23,8 @@ function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
   angleMode(DEGREES);
   MJ = new KingOfPop(canvDims.wideH,canvDims.tallH);
+
+
 }
 
 function draw(){
@@ -27,6 +37,10 @@ function draw(){
   noFill();
   drawCanvasBorder();
   dispFPSViaDOM();
+}
+
+function keyPressed(){
+  if(key==' '){MJ.state_motion();}
 }
 
 var fpsPane = null;
