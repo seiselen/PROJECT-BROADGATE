@@ -1,6 +1,8 @@
 
 // Note: DOM UI Manager; i.e. SANS in-canvas image overlap slider
 class UIManager {
+  static CONSOLE_LOG_EFFECTS = false;
+
   constructor(){
     this.fpsPane=document.getElementById("fpsPane");
     this.ddown_tShape = document.getElementById("ddown_tShape");
@@ -9,11 +11,13 @@ class UIManager {
     this.labl_wBias   = document.getElementById("lbl_valOf_wBias");
     this.labl_pScale  = document.getElementById("lbl_valOf_pScale");
     this.butt_pOffsts = document.getElementById("butt_pOffsets");
+    this.butt_fldFill = document.getElementById("butt_fldFill");    
 
     this.initShapeDDown();
     this.initWBiasSlider();
     this.initPScaleSlider();
-    this.initPOffstsButton()
+    this.initPOffstsButton();
+    this.initFldFillButton();
   }
 
   initShapeDDown(){
@@ -48,6 +52,10 @@ class UIManager {
     this.butt_pOffsts.addEventListener("click", ()=>this.onPOffsetsButtonClicked());
   }
 
+  initFldFillButton(){
+    this.butt_fldFill.addEventListener("click", ()=>this.onFloodFillButtonClicked());
+  }
+
   onShapeOptionChanged(){
     switch(this.ddown_tShape.value){
       case 'c': this.shapeOptionChangeAction('circle'); return; 
@@ -55,6 +63,7 @@ class UIManager {
       case 'd': this.shapeOptionChangeAction('diamond'); return; 
       case 'x': this.shapeOptionChangeAction('diag_cross'); return; 
     }
+    if(UIManager.CONSOLE_LOG_EFFECTS){console.log("Shape Template Changed And Image Subsequently Re-Generated");}
   }
   
   onWBiasSliderValDragged(){
@@ -64,6 +73,7 @@ class UIManager {
   onWBiasSliderValDropped(){
     WollongongBias.setBiasVal(this.slidr_wBias.value);
     myWGImage.generate();
+    if(UIManager.CONSOLE_LOG_EFFECTS){console.log("Wollongong Bias Value Changed And Image Subsequently Re-Generated");}
   }
 
   onPScaleSliderValDragged(){
@@ -73,13 +83,20 @@ class UIManager {
   onPScaleSliderValDropped(){
     PerlinNoiseField.setNoiseScale(this.slidr_pScale.value);
     myWGImage.generate();
+    if(UIManager.CONSOLE_LOG_EFFECTS){console.log("Perlin Noise Scale Value Changed And Image Subsequently Re-Generated");}
   }
 
   onPOffsetsButtonClicked(){
     PerlinNoiseField.scrambleOffsets();
     myWGImage.generate();
-    console.log(`New Perlin Offsets = (${[PerlinNoiseField.posOffsetX,PerlinNoiseField.posOffsetY].toString()})`)
+    if(UIManager.CONSOLE_LOG_EFFECTS){console.log(`New Perlin Offsets = (${[PerlinNoiseField.posOffsetX,PerlinNoiseField.posOffsetY].toString()})`)}
   }
+
+  onFloodFillButtonClicked(){
+    floodFill.floodFill();
+    if(UIManager.CONSOLE_LOG_EFFECTS){console.log("Flood Fill Operation Complete");}
+  }
+
 
   shapeOptionChangeAction(nr){
     if(myWGImage.curRule==nr){return;}

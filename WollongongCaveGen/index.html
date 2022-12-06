@@ -7,10 +7,12 @@
     <title>Wollongong Cave Gen Demo/Experiments</title>
     <link rel="stylesheet" href="style.css">
     <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>    
     <!-- P5JS Lib Imports -->
     <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script> 
     <script src="p5jsLocal.js"></script>
     <!-- Project Code -->
+    <script src="flood_fill_util.js"></script>    
     <script src="ui_manager.js"></script>    
     <script src="image_slider.js"></script>
     <script src="wollongong_bias.js"></script>
@@ -35,15 +37,19 @@
           </td>
         </tr>
         <tr>
-          <td>Perlin Noise Scale:</td>
+          <td>Perlin Noise Scale</td>
           <td>
             <input type="range" id="slidr_pScale"></input>
             <p id="lbl_valOf_pScale">1.01</p>
           </td>
         </tr>
         <tr>
-          <td>Per. Noise Offsets:</td>
+          <td>Perlin Noise Offsets</td>
           <td><button id="butt_pOffsets">Reset And Generate</button></td>
+        </tr>
+        <tr>
+          <td>Small Area Flood Fill</td>
+          <td><button id="butt_fldFill">Fill Voids/Chambers</button></td>
         </tr>
         <tr>
           <td>Current FPS:</td><td><p id="fpsPane">60.09</p></td>

@@ -20,11 +20,7 @@
 |    shown here ⮕ {y=x^(ln(0.5)/ln(0.5))} ⬌ {y=x^(1)} ⬌ {y=x} QED ∎
 |  > x
 +-----------------------------------------------------------------------
-|# NATs:
-|  > Implement Flood-Fill Step ⮕ FloodFill(minPixArea,maxPixArea)
-|     o ZAC Flood-Fill installed, pseudocode solution prep'd and pending
-|       for implementation (next time, though... losing focus on this)
-|# TODOs:
+|# NATs/TODOs:
 |  > SHOULD Partition In-Canvas Slider into a new "UIObjects" analog to
 |    Util.js (i.e. <vs> into the latter); as is commonly enough used,
 |    but should be greater effort for disjoint globally accessible util
@@ -36,9 +32,10 @@
 var canvDims = {init(wide,tall){this.wide=wide;this.tall=tall;this.wideH=this.wide/2;this.tallH=this.tall/2;}};
 canvDims.init(1280,640);
 
-var myWGImage;
 var imgSlider;
 var uiManager;
+var floodFill;
+var myWGImage;
 
 function setup(){
   createCanvas(canvDims.wide,canvDims.tall).parent("viz");
@@ -46,6 +43,7 @@ function setup(){
   uiManager = new UIManager();
   myWGImage = new WollongongImage(704,64,512).setRule('circle').generate();
   imgSlider = new ImageSlider(64,64,512,512).bindImages(myWGImage.image_TShape,myWGImage.image_PField);
+  floodFill = new FloodFillUtil(myWGImage);
 }
 
 

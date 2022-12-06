@@ -5,7 +5,6 @@ class WollongongImage{
   // Good 'Ol Error Color
   static PURPLE = "#FF00FF";
 
-
   constructor(posX,posY,size){
     this.setSize(size);
     this.setPosition(posX,posY);
