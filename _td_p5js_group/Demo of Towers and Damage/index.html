@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Tower Defense 'Merge And Converge The Parts' Demo</title>
+
+    <!-- Basic Style Formatting -->
+    <style>
+      body {color: darkblue; font-family:verdana;}
+      button {margin-left: 4px; margin-right: 4px; margin-bottom: 4px;}
+    </style>
+
+    <!-- P5JS Lib Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+
+    <!-- Map Definition[s] -->
+    <script src="map_ex1.js"></script>
+
+    <!-- Project Code -->
+    <script src="td_misc_utils.js"></script>  
+    <script src="map_viz_utils.js"></script>  
+    <script src="td_SPmap.js"></script>
+    <script src="td_map.js"></script>
+    <script src="td_tower.js"></script>    
+    <script src="td_agent.js"></script>
+    <script src="td_UI.js"></script>
+
+    <script src="main.js"></script>
+  </head>
+  
+  <body>
+    <h1>Tower Defense 'Merge And Converge The Parts' Demo</h1>
+
+    <div style="width: 100%; overflow: hidden;">
+        <div id="viz" style="width: 1024px; float: left;"> </div>
+        <div style="margin-left: 1056px;">
+
+          <div id="ui_dispMap" style="margin-bottom: 16px">
+            <p>Toggle Map Displays</p>
+          </div>
+
+          <div id="ui">
+            <p>Other Settings</p>
+          </div>
+        </div>
+    </div>
+
+
+  </body>
+</html>
