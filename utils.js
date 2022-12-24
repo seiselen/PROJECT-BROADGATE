@@ -28,8 +28,14 @@
 |              be made to this one file as to instantly effect (ideally
 |              beneficially) all projects which link thereto.
 +-----------------------------------------------------------------------
-| Version Info:
-|  > 09/14/21 - Initial Version (for use with Spatial Partition Demo 02)
+|# PENDING DEPRECATION NOTICE
+|  > A/O December 2022, there is intent ergo plans to convert this code
+|    into an ES6 JS Module ᴀᴋᴀ 'Michael Jackson Script' file; alongside
+|    relocating it to a different repo (a/o 12/23/2022 - that of my GH
+|    homepage). Though I plan to keep this version thereafter (indeed I
+|    MUST for all BROADGATE projects using it, and which are not [yet?]
+|    implemented as JS Module apps themselves): additions/maintenance
+|    will likely be done in the new MJS version and that version alone.
 +=====================================================================*/
 
 
@@ -371,3 +377,52 @@ function distMaxDimVal(x1, y1, x2, y2){
 function vectorEuclideanDist(p,q){return p5.Vector.dist(p,q);}
 function vectorManhattanDist(p,q){return distManh(p.x,p.y,q.x,q.y);}
 function vectorMaxDimValDist(p,q){return distMaxDimVal(p.x,p.y,q.x,q.y);}
+
+
+
+
+/*----------------------------------------------------------------------
+|>>> Function charLengthOf            (Character Length Of <Some Thing>)
++-----------------------------------------------------------------------
+| Overview: Outputs value corresponding to character length of whatever 
+|           is input; plus additional spaces WRT input-specified margin
+|           (A/A); based on the currently supported (i.e. implemented)
+|           means/semantics of doing so. If a value for 'margin' is NOT
+|           specified, its default value is zero, i.e. no contribution.
+|           These semantics are conveniently enumerated/described below
+|           (which Steve BETTER MAINTAIN whenever anything is modified,
+|           added, etc. as to correctly reflect accordingly...duh!)
+| In Parms: - thing:  The thing you want the length of, 'Nuff Said!
+|           - margin: A number, else it's set to [0] (zero), which also
+|                     means that it does NOT accept numbers in the form
+|                     of an unparsed string (e.g. '8'). If a float (e.g.
+|                     [3.14]), <Math.floor()> will be called upon it for
+|                     obvious reasons. On the plus side... a caller can
+|                     enter negative values for oppposite effect!
++-----------------------------------------------------------------------
+|# CURRENT OUTPUT SEMANTICS ᴀᴋᴀ RULES (i.e. what this does WRT input)
+|  • undefined: (margin), and that's it!
+|  • ---- null: (margin), and that's also it!
+|  • - boolean: (margin) plus length of chars of corresponging. string;
+|               i.e. [true]→['true']→[4] and [false]→['false']→[5].
+|  • -- string: (margin) plus the number of chars in the string, sans of
+|               course the null terminator because JS don't have 'em!
+|  • -- number: (margin) plus the number of integer digits WRT the floor
+|               of the input value; e.g. [99.999]→[2].
+|  • --- array: (margin) plus length of the string produced by callling
+|               <join(', ')> thereupon; and I ain't responsible for the
+|               [COUNTLESS] degenerate xor even syntax error producing
+|               ways this can go wrong: so caller beware!
++---------------------------------------------------------------------*/
+function charLengthOf(thing,margin=0){
+  switch(typeof(margin)==='number'){case true: margin=Math.floor(margin); break; case false: margin=0; break;}
+  if(typeof(margin)!=='number'){margin=0;} 
+  if(thing===undefined||thing===null){return margin;}
+  return margin + ((thing===null||thing===undefined) ? 0 :
+    (typeof(thing)==='boolean') ? thing.toString() :    
+    (typeof(thing)==='string')  ? thing.length :
+    (typeof(thing)==='number')  ? Math.ceil(Math.log10(Math.floor(thing+1))) :
+    (Array.isArray(thing))      ? thing.join(', ').length : 
+    thing.toString().length
+  );
+} // Ends Function charLengthOf
