@@ -33,11 +33,13 @@ export class UIToggleButton extends UIObject{
   } // Ends Constructor
 
   bindValueGetter(mGet){
-    this.boundGet = mGet; return this;
+    this.boundGet = mGet; 
+    return this;
   }
 
   bindValueSetter(mSet){
-    this.boundSet = mSet; return this;
+    this.boundSet = mSet; 
+    return this;
   }
   
   update(){

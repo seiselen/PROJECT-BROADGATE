@@ -1,3 +1,5 @@
+import { UIObject } from "./ui_objects.js";
+
 /*----------------------------------------------------------------------
 |>>> class UIBuyButton (of superclass UIObject)
 +-----------------------------------------------------------------------
@@ -6,9 +8,14 @@
 |              can look into other design patterns i.e. 2-way messenger
 |              s.t. the bound state will tell it if it can't be afforded
 +---------------------------------------------------------------------*/
-class UIBuyButton extends UIObject{
+export class UIBuyButton extends UIObject{
   constructor(pos, dim, label=""){
     super(pos,dim);
+    //> Subtype-Specific Style Setting[s]
+    this.setStyle('fill_bg', color(144,144,144));
+    this.setStyle('colr_01', color(0,0,0));
+    this.setStyle('strk_02', color(60,60,60,128));
+    //> Subtype-Specific State Component[s]
     this.text = label;
     this.action;
     this.query;
@@ -29,20 +36,20 @@ class UIBuyButton extends UIObject{
   } // Ends Function update
 
   render(){
-    strokeWeight(this.style.strk_weight);stroke(this.style.strk_border);fill(this.style.fill_bGround);
+    this.applyStyles(this.style.fill_bg, this.style.strk_01, this.style.sWgt_01);
     rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
 
-    noStroke();fill(this.style.fill_text);textSize(this.style.textSize);
-    this.renderTextViaTLCorner();
+    this.applyStyles(this.style.colr_01);
+    this.renderText();
 
     if(this.query()){
       if(this.mouseOver && mouseIsPressed){
-        strokeWeight(this.style.strk_weight);stroke(this.style.strk_border);fill(this.style.fill_fGround);
+        this.applyStyles(this.style.fill_fg, this.style.strk_01, this.style.sWgt_01);
         rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
       }
     }
     else{
-      strokeWeight(this.style.strk_weight2);fill(this.style.strk_border2);
+      this.applyStyles(this.style.strk_02, this.style.strk_02, this.style.sWgt_02);      
       rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
     }
   } // Ends Function render

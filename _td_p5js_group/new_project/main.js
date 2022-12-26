@@ -10,8 +10,20 @@ CanvasConfig.init(1200,800);
 
 var tester;
 
+const Fonts = {
+  titillium_web_regular : null,
+  titillium_web_bold : null,
+}
+
+window.preload =_=>{
+  Fonts.titillium_web_bold = loadFont('assets/fonts/TitilliumWeb-Bold.ttf')
+  Fonts.titillium_web_regular = loadFont('assets/fonts/TitilliumWeb-Regular.ttf')
+}
+
+
 window.setup =_=>{
   createCanvas(...CanvasConfig.dims()).parent("app");
+  textFont(Fonts.titillium_web_regular);
 
   tester = initExamplePanel();
 
@@ -34,7 +46,7 @@ window.draw =_=>{
   //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //>>> RENDER CALLS
   //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  background(32,32,int(random(32,48)));
+  background(32);
   tester.render();
   QAD_FPS_DISP.render();
 } // Ends P5JS Function draw

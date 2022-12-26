@@ -1,3 +1,5 @@
+import { UIObject } from "./ui_objects.js";
+
 /*----------------------------------------------------------------------
 |>>> class UILabel (of superclass UIObject)
 +-----------------------------------------------------------------------
@@ -10,9 +12,13 @@
 | Implementation Notes:
 |  > Use mouse-over to implement a tooltip popup in a future version?
 +---------------------------------------------------------------------*/
-class UILabel extends UIObject{
+export class UILabel extends UIObject{
   constructor(pos, dim, label=""){
     super(pos,dim);
+    //> Subtype-Specific Style Setting[s]
+    this.txtSize = 32;
+    this.fill_bg = color(60,60,60,120); 
+    //> Subtype-Specific State Component[s]
     this.text = label;
     this.cBack;
   } // Ends Constructor
@@ -34,11 +40,10 @@ class UILabel extends UIObject{
   } // Ends Function update
 
   render(){
-    strokeWeight(this.style.strk_weight);stroke(this.style.strk_border);fill(this.style.fill_bGround);
+    this.applyStyles(this.style.fill_bg, this.style.strk_01, this.style.sWgt_01);
     rect(this.pos.x,this.pos.y,this.dim.x,this.dim.y);
-
-    noStroke();fill(this.style.fill_text);textSize(this.style.textSize);
-    this.renderTextViaCenter(); 
+    this.applyStyles(this.style.colr_01);
+    this.renderText();
   } // Ends Function render
 
 } // Ends Class UILabel

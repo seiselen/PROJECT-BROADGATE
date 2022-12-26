@@ -21,7 +21,7 @@ export class UIContainer extends UIObject{
 
   //> NOTE: implements 'toggleHidden' if no parm vals entered!
   setHidden(val=undefined){
-    this.isHidden (val) ? val : !this.isHidden;
+    this.isHidden = (val===undefined) ? !this.isHidden : val;
     return this;
   }
 
@@ -74,7 +74,7 @@ export class UIContainer extends UIObject{
 
 
   render(){
-    if(this.hidden){return;}
+    if(this.isHidden){return;}
     strokeWeight(this.style.sWgt_01);
     stroke(this.style.strk_01);
     fill(this.style.fill_bg);
@@ -102,7 +102,7 @@ export class UIContainer extends UIObject{
 
 
   onMousePressed(){
-    if(this.hidden){return;}
+    if(this.isHidden){return;}
     this.children.forEach(c => c.onMousePressed());
   } // Ends Function onMousePressed
 } // Ends Class UIContainer
