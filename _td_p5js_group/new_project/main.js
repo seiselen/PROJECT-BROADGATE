@@ -2,6 +2,7 @@ import QAD_FPS_DISP from "./misc_utils.js";
 import initExamplePanel from "./example_proj.js";
 
 
+
 const CanvasConfig = {
   init(wide,tall){this.wide=wide;this.wideH=wide/2;this.tall=tall;this.tallH=tall/2;},
   dims(){return [this.wide,this.tall];}, dimsH(){return [this.wideH,this.tallH];}
@@ -9,6 +10,7 @@ const CanvasConfig = {
 CanvasConfig.init(1200,800);
 
 var tester;
+var bbutton;
 
 const Fonts = {
   titillium_web_regular : null,
@@ -23,10 +25,11 @@ window.preload =_=>{
 
 window.setup =_=>{
   createCanvas(...CanvasConfig.dims()).parent("app");
+  document.addEventListener("contextmenu", event => event.preventDefault()); // prevents right click menu popup
   textFont(Fonts.titillium_web_regular);
 
   tester = initExamplePanel();
-
+  bbutton = new BuildButton(createVector(0,0),createVector(400,400));
 
   console.log(tester);
 
@@ -42,17 +45,20 @@ window.draw =_=>{
   //>>> UPDATE CALLS
   //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   tester.update();
+  bbutton.update();
 
   //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //>>> RENDER CALLS
   //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   background(32);
   tester.render();
+  bbutton.render();
   QAD_FPS_DISP.render();
 } // Ends P5JS Function draw
 
 
 window.mousePressed =()=>{
   tester.onMousePressed();
+  bbutton.onMousePressed();
   return false;
 }
