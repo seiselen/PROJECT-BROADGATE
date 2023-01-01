@@ -316,7 +316,7 @@ function hex6_to_color(h6){
 }
 
 function color_to_hex6(col){
-  return color_to_int3(col);
+  return int3_to_hex6(color_to_int3(col));
 }
 
 function color_to_int3(col){
