@@ -1,6 +1,7 @@
 body {
-  color: darkblue;
+  color: white;
   font-family: "Roboto Mono", "Courier New", monospace;
+  background: rgb(32, 32, 32);
 }
 
 #h1_head {

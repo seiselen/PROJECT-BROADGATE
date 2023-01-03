@@ -16,37 +16,42 @@
 class KingOfPop{
 
   constructor(xPos=0,yPos=0){
-    this.pos = vec2(xPos,yPos);
-    this.vel = vec2();
-
-    this.speedFore = 1.5;
-    this.speedDiag = this.speedFore*0.7071;
+    this.pos        = vec2(xPos,yPos);
+    this.vel        = vec2();
+    this.maxSpeed   = 1.5;
+    this.curCell    = null;
+    this.curMoveTar = null;
 
     // Sprite Related Vals
     this.walkSpriteDims = {offX:16, offY:4, wide:32, tall:64, vizWide:64, vizTall:128};
     this.animSpriteDims = {offX:0, offY:0, wide:64, tall:64, vizWide:128, vizTall:128};
     this.walkSprites = [];
     this.animSprites = [];
-    this.anims   = {};
+    this.anims = {};
     this.curSpriteIdx=0;
     this.curAnim = 'STAND_DOWN';
     this.isIdle = true;
     this.isDoingMotion = false;
-    this.frameOnEnterIdle = -1;
-    this.framesBetweenIdleActs = 16*8;
+    this.spriteOffY = -48;
 
-    this.loadWalkSprites();
-    this.loadAnimSprites();
-    this.loadAnims();
+    this.loadSpritesAndAnims();
   }
 
+  loadSpritesAndAnims(){
+    this.loadWalkSprites(); this.loadAnimSprites(); this.loadAnims();
+  }
+
+  setPositionViaPos(xPos,yPos){
+    [this.pos,this.curCell] = [vec2(xPos,yPos), GridMap.posToCoord(xPos,yPos)]; return this;
+  }
+
+  setPositionViaCoord(iRow,iCol){
+    [this.pos,this.curCell] = [GridMap.coordToPos(iRow,iCol), [iRow,iCol]]; return this;
+  }
+
+
   loadWalkSprites(){
-    let [offX,offY,wide,tall] = [this.walkSpriteDims.offX,this.walkSpriteDims.offY,this.walkSpriteDims.wide,this.walkSpriteDims.tall];
-    for (let r=0; r<5; r++) {
-      for (let c=0; c<7; c++) {
-        this.walkSprites.push(sheetWalkAnims.get(offX+(c*wide), offY+(r*tall), wide, tall));
-      }
-    }
+    for (let r=0; r<5; r++){for (let c=0; c<7; c++){this.walkSprites.push(sheetWalkAnims.get(this.walkSpriteDims.offX+(c*this.walkSpriteDims.wide), this.walkSpriteDims.offY+(r*this.walkSpriteDims.tall), this.walkSpriteDims.wide, this.walkSpriteDims.tall));}}
   }
 
   getSprite(sheet,row,col,wide,tall,offX=0,offY=0){
@@ -54,11 +59,9 @@ class KingOfPop{
   }
 
   loadAnimSprites(){
-    let [nRows,nCols] = [7,8];
-
-    let i = 0;
-    for (let r=0; r<nRows; r++) {
-      for (let c=0; c<nCols; c++) {
+    let i = 0; 
+    for (let r=0; r<7; r++) {
+      for (let c=0; c<8; c++) {
         if(i!=12&&i!=13&&i!=14&&i!=15&&i!=34&&i!=35&&i!=36&&i!=37&&i!=38&&i!=39&&i!=46&&i!=47&&i!=54&&i!=55){
           this.animSprites.push(this.getSprite(sheetIdleAnims,r,c,64,64));
         }
@@ -91,47 +94,63 @@ class KingOfPop{
 
     s = this.animSprites;
 
-    this.anims.MOTION_A    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[ s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9],s[10],s[11],s[12],s[13],s[14],s[15]]};
-    this.anims.MOTION_B    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[ s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9],s[10],s[11],s[16],s[17],s[18],s[19]]};
-    this.anims.MOTION_C    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[s[20],s[21],s[22],s[23],s[24],s[25],s[26],s[27],s[28],s[29],s[30],s[31],s[32],s[33],s[34],s[35]]};
-    this.anims.MOTION_D    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[s[20],s[21],s[22],s[23],s[24],s[25],s[26],s[27],s[28],s[29],s[36],s[37],s[38],s[39],s[40],s[41]]};
+    this.anims.MOTION_0    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[ s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9],s[10],s[11],s[12],s[13],s[14],s[15]]};
+    this.anims.MOTION_1    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[ s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9],s[10],s[11],s[16],s[17],s[18],s[19]]};
+    this.anims.MOTION_2    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[s[20],s[21],s[22],s[23],s[24],s[25],s[26],s[27],s[28],s[29],s[30],s[31],s[32],s[33],s[34],s[35]]};
+    this.anims.MOTION_3    = {type:'a', deltaF:6, nFrames:16, mirror:false, frames:[s[20],s[21],s[22],s[23],s[24],s[25],s[26],s[27],s[28],s[29],s[36],s[37],s[38],s[39],s[40],s[41]]};
   }
 
 
   update(){
-
     if(this.isDoingMotion){return;}
 
-    let mousePos = mousePtToVec();
-    let ang = p5.Vector.sub(mousePos,this.pos).heading()*-1;
-
     if(mouseInCanvas()){
-      let dist = vectorManhattanDist(this.pos,mousePos);
-      if(dist<120 || dist>480){this.state_idle(ang);return;}
-      this.state_walk(ang); return;
+      this.curCell = GridMap.posToCoord(...this.pos.array())
+      let minLen = 9001;
+      let minCoord = null;
+      let dist;
+      
+      for (let r=this.curCell[0]-1; r<this.curCell[0]+2; r++) {
+        for (let c=this.curCell[1]-1; c<this.curCell[1]+2; c++) {
+          if(!GridMap.isValidCell(r,c)){continue;}
+          dist = GridMap.coordToPos(r,c).dist(mousePtToVec());
+          if(dist<minLen){minLen=dist; minCoord=[r,c]}
+        }   
+      }
+      if(minCoord){this.curMoveTar = GridMap.coordToPos(...minCoord)}
     }
 
-    this.state_idle(ang);
+    this.moveToCurMoveTar_viaVelAndDotProd();
+
+    if(this.vel.magSq()>0){this.anim_walk(p5.Vector.sub(this.curMoveTar,this.pos).heading()*-1)}
+    else{this.anim_idle()}
   }
 
-  state_idle(ang){
-    if(!this.isIdle){this.isIdle=true;}
-    this.state_stand(ang);
+  moveToCurMoveTar_viaVelAndDotProd(){
+    if(this.curMoveTar){
+      let des = p5.Vector.sub(this.curMoveTar,this.pos).setMag(this.maxSpeed);
+      let str = p5.Vector.sub(des,this.vel);
+      this.vel.add(str).limit(this.maxSpeed);
 
-    if(frameCount%60==0&&round(random(100))<10){
-      this.state_motion();
+      let newPos = p5.Vector.add(this.pos,this.vel); // this is the position i will be at upon effecting vel without clamping
+      let vecT_0 = p5.Vector.sub(this.curMoveTar,this.pos); // get ori at t_0 (i.e. pre-update)
+      let vecT_1 = p5.Vector.sub(this.curMoveTar,newPos);   // get ori at t_1 (i.e. on-update a.k.a. 'lookahead')
+
+      if(p5.Vector.dot(vecT_0,vecT_1)<0){this.pos.set(this.curMoveTar); this.curMoveTar=null; this.vel.mult(0);}
+      else{this.pos.set(newPos)};
+    } 
+    else{
+      this.vel.mult(0);
     }
+  } // Ends Function moveToCurMoveTar
 
+  anim_idle(){
+    if(!this.isIdle){this.isIdle=true; this.anim_stand(int(random(-180,180)))}
+    if(frameCount%240==0){this.anim_stand(int(random(-180,180)))}
+    else if(frameCount%60==0&&round(random(100))<10){this.anim_motion();}
   }
 
-
-  state_anim(animID){
-    this.curAnim = `MOTION_${animID}`;
-    this.curSpriteIdx=0;
-  }
-
-
-  state_stand(ang){
+  anim_stand(ang){
     let dir= 'STAND_';
     switch(Math.sign(ang)){
       case 1:  dir += (ang<=22.5) ? 'RIGHT' : (ang<=67.5) ? 'DG_UR' : (ang<=112.5) ? 'UP' : (ang<=157.5) ? 'DG_UL' : 'LEFT'; break;
@@ -139,51 +158,26 @@ class KingOfPop{
     }        
     if(dir!=this.curAnim){this.curAnim=dir; this.curSpriteIdx=0;}   
     return;
-  }
+  }   
 
-
-  state_walk(ang){
+  anim_walk(ang){
     if(this.isIdle){this.isIdle=false;}
 
     let dir = 'WALK_';
-
     switch(Math.sign(ang)){
+      case 0:  case -0: dir+='RIGHT'; break
       case 1:  dir += (ang<=22.5) ? 'RIGHT' : (ang<=67.5) ? 'DG_UR' : (ang<=112.5) ? 'UP' : (ang<=157.5) ? 'DG_UL' : 'LEFT'; break;
       case -1: ang*=-1; dir += (ang<=22.5) ? 'RIGHT' : (ang<=67.5) ? 'DG_DR' : (ang<=112.5) ? 'DOWN' : (ang<=157.5) ? 'DG_DL' : 'LEFT'; break;
     }
-
     if(dir!=this.curAnim){this.curAnim=dir; this.curSpriteIdx=0;}
 
-    switch(this.curAnim){
-      case 'WALK_UP'    : this.pos.add(              0, -this.speedFore); return;
-      case 'WALK_DOWN'  : this.pos.add(              0,  this.speedFore); return;
-      case 'WALK_RIGHT' : this.pos.add( this.speedFore,               0); return;
-      case 'WALK_LEFT'  : this.pos.add(-this.speedFore,               0); return;
-
-      case 'WALK_DG_DR' : this.pos.add( this.speedDiag,  this.speedDiag); return;
-      case 'WALK_DG_DL' : this.pos.add(-this.speedDiag,  this.speedDiag); return;
-      case 'WALK_DG_UR' : this.pos.add( this.speedDiag, -this.speedDiag); return;
-      case 'WALK_DG_UL' : this.pos.add(-this.speedDiag, -this.speedDiag); return;
-    }
   }
 
- 
-  state_motion(mID=undefined){
+  anim_motion(){
     if(!this.isIdle){return;}
     this.isDoingMotion = true;
-
-    if(mID===undefined){
-      switch(round(random(3))){
-        case 0: mID = 'A'; break;
-        case 1: mID = 'B'; break;
-        case 2: mID = 'C'; break;
-        case 3: mID = 'D'; break;
-      }
-    }
-
     mjSounds[round(random(2))].play();
- 
-    this.curAnim = `MOTION_${mID}`;
+    this.curAnim = `MOTION_${round(random(3))}`;
     this.curSpriteIdx=0;
   }
 
@@ -191,20 +185,18 @@ class KingOfPop{
     this.isDoingMotion = false;
   }
 
-
   render(){
     let anim = this.anims[this.curAnim];
-    imageMode(CENTER);
+    if(!anim){console.log(this.curAnim);return;}
     push();
       translate(this.pos.x, this.pos.y);
       if(anim.mirror){scale(-1,1);}
       // because P5JS fucking only takes (x,y,wide,tall) numbers and not (pos,size) vectors...
       switch(anim.type){
-        case 'w': image(anim.frames[this.curSpriteIdx],0,0, this.walkSpriteDims.vizWide,this.walkSpriteDims.vizTall); break;
-        case 'a': image(anim.frames[this.curSpriteIdx],0,0, this.animSpriteDims.vizWide,this.animSpriteDims.vizTall); break;
+        case 'w': image(anim.frames[this.curSpriteIdx],0,this.spriteOffY, this.walkSpriteDims.vizWide,this.walkSpriteDims.vizTall); break;
+        case 'a': image(anim.frames[this.curSpriteIdx],0,this.spriteOffY, this.animSpriteDims.vizWide,this.animSpriteDims.vizTall); break;
       }
     pop();
-
 
     if(frameCount%this.anims[this.curAnim].deltaF==0){
       if(this.isDoingMotion && this.curSpriteIdx+1==this.anims[this.curAnim].nFrames){this.stop_current_motion();}
