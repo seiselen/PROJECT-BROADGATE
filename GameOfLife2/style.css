@@ -5,6 +5,7 @@ body {
 }
 
 #h1_head {
+  user-select:            none;
   background:        #29067C;
   color:             #FFFFFF;
   font-size:             1.5em;

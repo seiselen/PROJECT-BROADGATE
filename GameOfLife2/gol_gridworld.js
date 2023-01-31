@@ -1,4 +1,4 @@
-
+//> IDEA: Making domains {-1,+1} xor {true,false} might be better via negation (iff 2 categories).
 const WorldMode = {WRAP:0, NOWRAP:1};
 const CellState = {DEAD:0, LIVE:1};
 
@@ -27,10 +27,10 @@ var GOLWorld = {
   },
 
   initColors(){
-    this.fill_LIVE = color(240);
+    this.fill_LIVE = color(0,255,0);
+    // neither of below currently used, as drawing rect IFF cell is alive
     this.fill_DEAD = color(60);
     this.col_ERROR = color(255,255,0);
-
   },
 
   //> Note: Old Version re-init'd. This one'll simply reset all cells to DEAD.
@@ -50,7 +50,6 @@ var GOLWorld = {
         this.curState[r][c] = int(random(2));
       }
     }
-    return this; // for function chaining
   },
 
 
@@ -71,8 +70,14 @@ var GOLWorld = {
 
 
   //> This is what, the 20th time I wrote xor copied this method? lol
-  checkInBounds(r, c){
+  checkInBounds(r,c){
     return (r>=0 && r<this.cellsTall && c>=0 && c<this.cellsWide);
+  },
+
+
+  //> Syntactic Sugar, basically...
+  outOfBounds(r,c){
+    return !this.checkInBounds(r,c);
   },
 
 
@@ -85,7 +90,7 @@ var GOLWorld = {
 
 
   adjTotal_wrap(r,c){
-    // could do sequence of additions, but KISS for now...
+    // could do sequence of additions to 'tot', but KISS for now...
     let tot=0;
     tot+=this.curState[this.getModdedRow(r-1)][c];
     tot+=this.curState[this.getModdedRow(r+1)][c];
@@ -95,7 +100,6 @@ var GOLWorld = {
     tot+=this.curState[this.getModdedRow(r+1)][this.getModdedCol(c+1)];
     tot+=this.curState[this.getModdedRow(r+1)][this.getModdedCol(c-1)];
     tot+=this.curState[this.getModdedRow(r-1)][this.getModdedCol(c+1)];
-
     return tot;
   },
 
@@ -118,14 +122,13 @@ var GOLWorld = {
     for (let r=0; r<this.cellsTall; r++) {
       for (let c=0; c<this.cellsWide; c++) {
         adjs = this.getAdjTotal(r,c);
-        // Conditions for if this cell is alive
-        if (this.curState[r][c] == 1){if(adjs==2 || adjs==3){this.newState[r][c]=1;}else{this.newState[r][c]=0;}}
-        // Conditions for if this cell is dead (Because is XOR to root condition in co-conditional
-        else{if(adjs==3){this.newState[r][c]=1;}else{this.newState[r][c]=0;}}
+        //> TODO? Can define more parametrically a-la what I did with L-System Flora?
+        switch(this.curState[r][c]){
+          case CellState.LIVE : this.newState[r][c] = (adjs==2||adjs==3) ? CellState.LIVE : CellState.DEAD; break;
+          case CellState.DEAD : this.newState[r][c] = (adjs==3)          ? CellState.LIVE : CellState.DEAD; break;
+        }
       }
     }
-
-    //> map newstate into curstate
     for (let r=0; r<this.cellsTall; r++) {
       for (let c=0; c<this.cellsWide; c++) {
         this.curState[r][c] = this.newState[r][c];
@@ -134,16 +137,22 @@ var GOLWorld = {
   },
 
 
+  setCellAtMousePos(){
+    let [mRow,mCol] = [int(mouseY/this.cellSize),int(mouseX/this.cellSize)];
+    if(this.outOfBounds(mRow,mCol)){return;}
+
+    this.curState[mRow][mCol] = (this.curState[mRow][mCol]===CellState.LIVE) ? CellState.DEAD : CellState.LIVE; 
+  },
+
+
   render(){
     noStroke();
     for(let r=0; r<this.cellsTall; r++){
       for(let c=0; c<this.cellsWide; c++){
         switch(this.curState[r][c]){
-          case CellState.DEAD: fill(this.fill_DEAD);
-          case CellState.LIVE: fill(this.fill_LIVE);
-          default:             fill(this.col_ERROR);
+          case CellState.LIVE: fill(this.fill_LIVE); rect(c*this.cellSize, r*this.cellSize, this.cellSize); break;
+          default: noFill(); break;
         }
-        rect(c*this.cellSize, r*this.cellSize, this.cellSize);
       }
     }
   },

@@ -1,59 +1,62 @@
-var screenTall = 600;
-var screenWide = 900;
-var cellSize   = 30;
-var cellsWide;
-var cellsTall;
-var myWorld;
-var paused = false;
+//> Policy: [canvWide, canvTall, cellSize] are MASTER s.t. [cellsWide, cellsTall] derive therefrom.
+const Config = {
+  toggleToConsole : true,
+  //> No parms for now, let's not be *THAT* OCD this time around...
+  init(){
+    this.canvWide  = 1024;
+    this.canvTall  = 864;
+    this.cellSize  = 4;
+    this.cellsWide = int(this.canvWide/this.cellSize);
+    this.cellsTall = int(this.canvTall/this.cellSize);
+    this.isPaused  = false;
+    this.showGrid  = false;
+    this.showFPS   = false;
+  },
+
+  togglePause(){this.isPaused=!this.isPaused; if(Config.toggleToConsole){this.statusToConsole('Pause',this.isPaused)}},
+  toggleGrid(){this.showGrid=!this.showGrid;  if(Config.toggleToConsole){this.statusToConsole('Show Grid',this.showGrid)}},
+  toggleFPS(){this.showFPS=!this.showFPS;     if(Config.toggleToConsole){this.statusToConsole('Show FPS',this.showFPS)}},  
+  statusToConsole(id,bool){console.log(`${id} is ${bool?'ON':'OFF'}`);}
+}
 
 function setup() {
-  cellsWide  = int(screenWide/cellSize);
-  cellsTall  = int(screenTall/cellSize);
-  //   createCanvas(CanvDims.wide,CanvDims.tall).parent("viz");
-  var canvas = createCanvas(screenWide,screenTall).parent("viz");
-  canvas.parent("P5Container");
-  ellipseMode(CORNER);
-  textSize(15);
-
-  GOLWorld.init(cWide, cTall, cSize)
-  .randomizeCurMap();
- 
+  Config.init();
+  createCanvas(Config.canvWide,Config.canvTall).parent("viz");
+  GOLWorld.init(Config.cellsTall, Config.cellsWide, Config.cellSize);
+  GOLWorld.randomizeCurMap();
 } // Ends Method setup
 
 
-
-
 function draw(){
-
-  // LOGIC CALLS
-  if(!paused){myWorld.advanceWorld();}
-  
-  // RENDER CALLS
+  //### PER-FRAME UI CALLS ###
+  mouseDown();
+  //### LOGIC CALLS ###
+  if(!Config.isPaused){GOLWorld.advance();}
+  //### RENDER CALLS ###
   background(0);
-  myWorld.displayWorld();
-  
+  GOLWorld.render();
+  if(Config.showGrid){drawGrid(Config.cellSize,'#FFFFFFg80',.5)}
+  if(Config.showFPS){drawFPS()}
+  drawCanvasBorder();
 } // Ends Method draw
 
 
-
 function keyPressed(){
-  if(key === 'P'){paused=!paused;}
-  if(key === 'C'){myWorld.resetWorld();}
-  if(key === 'R'){myWorld.randomPopulate();}
-  if(key === 'M'){myWorld.changeMode();}  
-} // Ends Function keyPressed
+  switch(key.toLowerCase()){
+    case 'p' : return Config.togglePause();
+    case 'g' : return Config.toggleGrid();
+    case 'f' : return Config.toggleFPS();
+    case 'c' : return GOLWorld.resetBothMaps();
+    case 'r' : return GOLWorld.randomizeCurMap();
+    case 'm' : return GOLWorld.swapWorldMode();
+  }
+}
+
+function mouseDown(){
+  if(mouseButton===LEFT){GOLWorld.setCellAtMousePos()} 
+}
+
 
 function mousePressed(){
-  mouseDraw(mouseButton);
+  if(mouseButton===LEFT){GOLWorld.setCellAtMousePos()}
 } // Ends Function mousePressed
-
-function mouseDraw(button){
-  var mRow = int(mouseY/cellSize);
-  var mCol = int(mouseX/cellSize);
-  if(!myWorld.checkInBounds(mRow, mCol)){return;}
-  
-  if(button == LEFT ){
-    if(myWorld.currentMap[mRow][mCol]===1){myWorld.currentMap[mRow][mCol]=0;}
-    else if(myWorld.currentMap[mRow][mCol]===0){myWorld.currentMap[mRow][mCol]=1;}
-  }
-} // Ends Function mouseDraw
