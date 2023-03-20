@@ -1,0 +1,6 @@
+Enter the 'p' key to pause/unpause the simulation
+Enter the 'r' key to reset the world with a new set of automatons
+Enter the 'c' key to remove (clear) all of the world's automatons
+Enter the 'm' key to change modes between wrap-around and solid room
+Click on a cell with the left mouse button to toggle its on/off state
+Note: this works better when the simulation is paused!

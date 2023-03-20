@@ -1,0 +1,82 @@
+########################################################################
+#>>> DESIGN DOC/SPEC: 'DragAndDropRegion' Module (And Support Thereof) #
+########################################################################
+
+========================================================================
+# INPUTS/STATE NEEDED (IN 'YAML OAPIish' SYNTAX):
+========================================================================
+
+/*> NOTE: JSDoc format might be the better way of expressing this, but
+          we're this far in, so might as well leave it as-is for now. */
+
+DragAndDropRegion:
+
+  cellsTall:
+    description: total of 'gridwise rows' of this DragAndDropRegion.
+    type:        integer
+
+  cellsWide:
+    description: total of 'gridwise columns' of this DragAndDropRegion.
+    type:        integer
+
+  cellSize:
+    description: width and height dimension \forall grid cells
+    type:        integer 
+
+  cellDims:
+    description: vec2 XOR JS object container for [cellsTall,cellsWide].
+    typeOptions: 
+      mode: XOR
+      type: {p5.Vector} | {x: $cellsWide, y: $cellsTall}
+      type: {Object}    | {$cellsWide, $cellsTall}
+
+  spMap:
+    description: Spatial Partition service of this DragAndDropRegion;
+                 from which member Drag-And-Drop objects will subscribe,
+                 and which collisions therebetween will be detected.
+    type:        $<SPMap>
+
+  otherRegions:
+    description: other 'counterpart' regions i.e. with which this region
+                 interacts with; likely will NOT be realized due to the
+                 better alternative of a ''DragAndDropRegionGroup' as is
+                 discussed immediately below.
+    type:        DragAndDropRegion[]
+
+  /*> NOTE: An alternate realization to 'otherRegions' which likely has
+            better OOP is a 'DragAndDropRegionGroup': which would manage
+            interactions (i.e. drag-and-drop sequences) between a set of
+            DragAndDropRegion instances bound thereto.                */
+
+
+========================================================================
+# CO-MODULES/DEPENDENCIES NEEDED:
+========================================================================
+  > Spatial Partitoning           : for cell-wise 'is(VACANT|OCCUPIED)'
+  > Utils.js i.e. "Steve's Utils" : for 'mouse...()' functions, etc.
+
+========================================================================
+# FEATURES:
+========================================================================
+  > variable [n_cTall,n_cWide] members e.g. {[1×1],[3×3],[1×4],[2×3],…}
+  > snap back to pre-[OnSelectedAndDragging]
+  > move members from one 'drag-and-drop region' to one or more others;
+    s.t. 'snap-back' feature is also realized therebetween
+
+========================================================================
+# (DESIGN) PRINCIPLES:
+========================================================================
+  > A "Drag-And-Drop Region" is an interactive UI/UX oriented structure
+    encompasing a rect-if-not-square grid of equally-sized square cells;
+    containing a collection of objects of variable {cellsWide,cellsTall} 
+    dimensions; whereby the objects can be 'drag-and-drop' moved within
+    the same region and/or onto other regions; such that regions and the
+    objects within implement grid-cell based spatial partitioning; as to
+    realize either a [NO-OVERLAP] xor [ON-OVERLAP] policy when an object
+    is dropped upon another object; whereby [NO-OVERLAP] effects a 'snap
+    back' behavior instantly positioning a dropped object back into its
+    pre-dragged position, and [ON-OVERLAP] effects an evaluation between
+    colliding object[s] to determine if one or more will be 'consumed',
+    'merged', etc. into others; else otherwise exhibit the [NO-OVERLAP]
+    behavior as to snap-back into place [ON-FAILED-OVERLAP-EVAL].
+    
