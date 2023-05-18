@@ -1,28 +1,20 @@
 /*----------------------------------------------------------------------
-|>>> Util Object InstructionsPopUp
-+---------------------------------------------------------------------*/
-var InstructionsPopUp = {
-  blurb : [
-    "⯈ <strong>VD: [V]oronoi [D]iagram</strong>, duh... ;-)",
-    "⯈ <strong>Bounding Rect</strong>: Rectangle border 'containing' VD. Should appear as having transparent blue background.",
-    "",
-    "⯈ <strong>[Mouse Down]</strong> If mouse is over an existing vertex: 'implicitly' selects it.",
-    "⯈ <strong>[Mouse Drag]</strong> If vertex is currently selected: moves it WRT mouse position and Bounding Rect.",    
-    "⯈ <strong>[Mouse Release]</strong> If vertex currently selected: immediately de-selects it i.e. 'drops it in place'.",
-    "⯈ <strong>[Mouse Click]</strong> If within Bounding Rect and NOT too close to existing vertices: creates new vertex.",
-    "⯈ <strong>[Mouse Release]</strong> If vertex is moved OUTSIDE Bounding Rect: removes it (note: CANNOT be undone!)",
-    "⯈ <strong>[Keypress 'm']</strong> Does one round of 'Min. Bound. Rect. Smoothing' (makes VD cells more uniform).",
-    "⯈ <strong>[Keypress 'r']</strong> Resets vertices to new random positions, then regenerates a mew VD thereupon.",    
-    "⯈ <strong>[Keypress 'g']</strong> Toggles a basic grid."
-  ],
-
-  blurbString(lineSep='\n'){return InstructionsPopUp.blurb.map(str=>`<p>${str}</p>`).join(lineSep);},
-  injectText(){document.getElementById("instructDOM").innerHTML = InstructionsPopUp.blurbString(' ');},
-}
-
-/*----------------------------------------------------------------------
 |>>> Class CanvDispUtil
 +---------------------------------------------------------------------*/
+
+
+
+const instructionStrings = [
+  "⬥ Mouse Down ⮕ selects vertex if mouse is currently hovering over an existing vertex.",
+  "⬥ Mouse Drag ⮕ moves selected vertex to mouse position ( note: see mouse release behavior effects!)",
+  "⬥ Mouse Click ⮕ creates new vertex if mouse within bounds and not too close to existing vertices.",
+  "⬥ Mouse Release ⮕ de-selects vertex if in bounds i.e. 'drops it into place' at mouse position.",
+  "⬥ Mouse Release ⮕ removes vertex if it is dragged out of bounds (note: CANNOT be undone!)",
+  "⬥ Press 'M' Key ⮕ does one round of 'Min. Bound. Rect. Smoothing' (makes Voronoi cells more uniform).",
+  "⬥ Press 'R' Key ⮕ resets vertices to new random positions, then creates new Voronoi Diagram thereof.",
+  "⬥ Press 'G' Key ⮕ toggles a basic display grid."
+]
+
 class CanvUtil{
   constructor(cWide,cTall){
     this.tform = {tall:cTall, tallHf:cTall/2, wide:cWide, wideHf:cWide/2};
@@ -35,12 +27,14 @@ class CanvUtil{
     this.dimGD  = 10;
 
     this.displ  = {BD:true, CH:false, GR:false};
+
+    this.dispInstruct = false;
   } // Ends Constructor
 
   toggle_dispBorder(){this.displ.BD = !this.displ.BD;}
   toggle_dispCrossH(){this.displ.CH = !this.displ.CH;}
   toggle_dispGrid()  {this.displ.GR = !this.displ.GR;}
-
+  toggle_dispInstruct(){this.dispInstruct = !this.dispInstruct;}
 
   drawCursor(){
     if(CanvUtil.mouseInCanvas()){
@@ -68,16 +62,66 @@ class CanvUtil{
   } // Ends Function drawMousePosTooltip
 
   render(){
-    (this.displ.BD) ? this.renderBorder(this.tform) : false;
-    (this.displ.GR) ? this.renderGrid(this.tform) : false;
-    (this.displ.CH) ? this.renderCHair(this.tform) : false;   
+    this.displ.BD ? this.renderBorder(this.tform) : false;
+    this.displ.GR ? this.renderGrid(this.tform) : false;
+    this.displ.CH ? this.renderCHair(this.tform) : false;
   }
 
-  renderBorder(tf){stroke(this.colBD); strokeWeight(4); noFill(); rect(0,0,tf.wide,tf.tall);}
+  lateRender(){
+    this.renderFPSSimple();
+    this.renderNumVerts();
+    this.drawCursor();
+    this.drawMousePosTooltip();
+    this.dispInstruct ? this.renderDispInstruct() : false;    
+  }
+
+  renderBorder(tf){rectMode(CORNER); stroke(this.colBD); strokeWeight(4); noFill(); rect(0,0,tf.wide,tf.tall);}
   renderCHair(tf){stroke(this.colCH); strokeWeight(2); line(0,tf.tallHf,tf.wide,tf.tallHf); line(tf.wideHf,0,tf.wideHf,tf.tall);}
   renderGrid(tf){stroke(this.colGD); strokeWeight(1); let i=0; for(i=0; i<tf.tall/this.dimGD; i++){line(0,this.dimGD*i,tf.wide,this.dimGD*i);} for(i=0; i<tf.wide/this.dimGD; i++){line(this.dimGD*i,0,this.dimGD*i,tf.tall);}}
   renderFPSSimple(blurb="FPS: "){textSize(18); textAlign(LEFT,CENTER); strokeWeight(1); stroke(this.colBD); fill(this.colBD); text(blurb+round(frameRate()), 10, height-15);}
   renderNumVerts(blurb="# Verts: "){textSize(18); textAlign(LEFT,CENTER); strokeWeight(1); stroke(this.colBD); fill(this.colBD); text(blurb+round(voronoi.vertUtil.getNumVerts()), 120, height-15);}
+
+
+  renderDispInstruct(){
+    push();
+    translate(this.tform.wideHf, this.tform.tallHf);
+    
+    rectMode(CENTER);
+    fill(0,216);
+    stroke(0);
+    strokeWeight(4);
+    rect(0,0,864,320);
+
+    fill(255);
+    stroke(180);
+    strokeWeight(1);
+    
+    let yBuff = -144;
+    
+    textAlign(CENTER, TOP);
+    textSize(24);
+    text("INSTRUCTIONS:",0,yBuff);
+    
+    yBuff+=32;
+    
+    textAlign(LEFT, TOP);
+    textSize(18);
+    instructionStrings.forEach((s)=>{
+      text(s,-416,yBuff);
+      yBuff+=28;
+    })
+
+    yBuff+=24;
+    textAlign(CENTER, TOP);
+    textSize(18);
+    text("⯇ Click the 'Instructions' button again to hide this window ⯈",0,yBuff);
+
+    pop();
+
+
+  }
+
+
 
   static mouseInCanvas(){return (mouseX > 0) && (mouseY > 0) && (mouseX < width) && (mouseY < height);}
   static mousePtToVec(){return createVector(round(mouseX), round(mouseY));}

@@ -2,16 +2,11 @@
 <html>
   <head>
     <meta charset="UTF-8"/>
+    <!--# Backup 'STFU Favicon!' Version: <link rel="icon" href="data:,"> #-->
+    <link rel="icon" type="image/png" href="https://seiselen.github.io/icoV1.png"/>
     <title>Fun With Voronoi Diagrams</title>
-    <style>
-      body {color: darkblue; font-family:verdana;}
-      h1 {margin-block-start: 4px; margin-block-end: 4px;}
-      h3 {margin-block-start: 12px; margin-block-end: 4px;}
-      p {width: 1200px; margin-block-start: 8px; margin-block-end: 8px; text-align: justify; text-justify: inter-word;}
-      .tooltip {position: relative; display: inline-block;}
-      .tooltip .tooltiptext {visibility: hidden; width: 720px; background-color: darkblue; color: #fff; border-radius: 6px; border-color: black; padding: 16px 16px; font-size: 12px; position: absolute; z-index: 1; top: 100%; right: 100%; margin-left: -60px;}
-      .tooltip:hover .tooltiptext {visibility: visible;}
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link href='https://fonts.googleapis.com/css?family=Titillium Web' rel='stylesheet'>
     <!-- P5JS Lib Imports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
@@ -22,10 +17,13 @@
     <script src="main.js"></script>
   </head>
   <body>
-    <div style="width: 1200px;">
-      <div style="display: inline-block; float: left;"><h1>Fun With Voronoi Diagrams</h1></div>
-      <div class="tooltip" style="display: inline-block; float: right;"><h3>⯑ Instructions</h3><span class="tooltiptext" id="instructDOM">WAH</span></div>
+    <div class="container">
+      <div><h1 id="titleHeader">Fun With Voronoi Diagrams</h1></div>
+      <div><button id="infoButton" onclick="toggle_dispInstruct_DOM()">⯇Instructions⯈</button></div>
     </div>
-    <div id="viz"></div><div id="ui"></div>
+    <div class="vizContainer">
+      <div id="viz"></div>
+    </div>
+
   </body>
 </html>

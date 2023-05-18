@@ -1,0 +1,9 @@
+{
+  "name": "fun-with-voronoi-diagrams",
+  "description": "Interactive Voronoi Diagram via JS/P5JS",
+  "version": "1.0.0",
+  "private": true,
+  "main": "main.js",
+  "author": "Steven Eiselen <https://seiselen.github.io/>",
+  "scripts": {"start": "browser-sync start --server -f -w"}
+}

@@ -13,7 +13,6 @@ function setup(){
   voronoi = new VoronoiDiagram(new BBox(20,20,1180,800), 512, 32);
 
   VertGridSnapExpmt.init();
-  InstructionsPopUp.injectText();
 } // Ends P5JS Function setup
 
 function draw(){
@@ -21,10 +20,7 @@ function draw(){
   background(255);
   canvDisp.render();
   voronoi.render();
-  canvDisp.renderFPSSimple();
-  canvDisp.renderNumVerts();
-  canvDisp.drawCursor();
-  canvDisp.drawMousePosTooltip();
+  canvDisp.lateRender();
 
   //VertGridSnapExpmt.render();
 } // Ends P5JS Function draw
@@ -40,8 +36,13 @@ function keyPressed(){
   //>>> Reserved for [VD] Testbed Util
   if(key=='r'){voronoi.resetVD();}
   if(key=='m'){voronoi.smoothCellsViaBBoxMidpt();}
-
 }
+
+function toggle_dispInstruct_DOM(){
+  canvDisp.toggle_dispInstruct();
+}
+
+
 
 
 
