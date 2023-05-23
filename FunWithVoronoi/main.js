@@ -1,21 +1,36 @@
-//>>> VORONOI CODE SOURCE (and info/instructions!)
-// https://github.com/gorhill/Javascript-Voronoi
 
-var canvDims = [1200,840];
+import EisBBox from "./EISObjects/EisBBox.mjs";
+import CanvasUtil from "./EISObjects/CanvasUtil.js";
+import VoronoiUtil from "./EISObjects/VoronoiUtil.js";
+import VertexUtil from "./EISObjects/VertexUtil.mjs";
+
+const canvDims = [1280,800];
+const canvInOff = 20; // canvas inward offset defining actual VD rect bounds WRT canv bounds
+const canvInOff2x = canvInOff*2;
+const minDesDist  = 32; // orig: 32
+const numDesVerts = 256; // orig: 512
 
 var canvDisp;
+var vertUtil;
 var voronoi;
 
-function setup(){
+window.setup =()=> {
   createCanvas(canvDims[0],canvDims[1]).parent("viz");
+
   noCursor();
-  canvDisp = new CanvUtil(canvDims[0],canvDims[1]);
-  voronoi = new VoronoiDiagram(new BBox(20,20,1180,800), 512, 32);
+
+  let bbox = new EisBBox(canvInOff, canvInOff, canvDims[0]-canvInOff2x, canvDims[1]-canvInOff2x);
+
+  let vertUtil = new VertexUtil(bbox,numDesVerts,minDesDist);
+
+  canvDisp = new CanvasUtil(canvDims[0],canvDims[1],vertUtil);
+
+  voronoi = new VoronoiUtil(bbox, vertUtil);
 
   VertGridSnapExpmt.init();
 } // Ends P5JS Function setup
 
-function draw(){
+window.draw =()=> {
   //>>> RENDER CALLS
   background(255);
   canvDisp.render();
@@ -25,22 +40,16 @@ function draw(){
   //VertGridSnapExpmt.render();
 } // Ends P5JS Function draw
 
-function mousePressed(){voronoi.onMousePressed();return false;}
-function mouseDragged(){voronoi.onMouseDragged();return false;}
-function mouseReleased(){voronoi.onMouseReleased();return false;}
-function keyPressed(){
-  //>>> Reserved for Canvas Util
-  //if(key=='b'){canvDisp.toggle_dispBorder();}
-  //if(key=='h'){canvDisp.toggle_dispCrossH();}
-  if(key=='g'){canvDisp.toggle_dispGrid();}
-  //>>> Reserved for [VD] Testbed Util
-  if(key=='r'){voronoi.resetVD();}
-  if(key=='m'){voronoi.smoothCellsViaBBoxMidpt();}
+window.mousePressed =()=> {voronoi.onMousePressed();return false;}
+window.mouseDragged =()=> {voronoi.onMouseDragged();return false;}
+window.mouseReleased =()=> {voronoi.onMouseReleased();return false;}
+
+window.keyPressed =()=> {
+  if(key=='r'){voronoi.resetVD()}
+  if(key=='m'){voronoi.smoothCellsViaBBoxMidpt()}
+  if(key=='s'){saveCanvas("generated_voronoi","png")}
 }
 
-function toggle_dispInstruct_DOM(){
-  canvDisp.toggle_dispInstruct();
-}
 
 
 

@@ -10,17 +10,43 @@
     <!-- P5JS Lib Imports -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
-    <!-- Project Code -->
-    <script src="utils.js"></script>     
-    <script src="voronoi.js"></script>
-    <script src="testbed.js"></script>   
-    <script src="main.js"></script>
+    <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script> 
+    <!-- Project Code (and the joys of havinhg to self-manage module imports <vs> webpack holding my hand {sobs}) --> 
+    <script type="module" src="./Voronoi/Voronoi.mjs"></script>
+    <script type="module" src="./Voronoi/Diagram.mjs"></script>       
+    <script type="module" src="./Voronoi/HalfEdge.mjs"></script>       
+    <script type="module" src="./Voronoi/Edge.mjs"></script>      
+    <script type="module" src="./Voronoi/Cell.mjs"></script>    
+    <script type="module" src="./Voronoi/RedBlackTree.mjs"></script>
+    <script type="module" src="./EISObjects/CanvasUtil.js"></script>
+    <script type="module" src="./EISObjects/VertexUtil.mjs"></script>
+    <script type="module" src="./EISObjects/VoronoiUtil.js"></script>
+    <script type="module" src="./EISObjects/EisBBox.mjs"></script>
+    <script type="module" src="main.js"></script>
   </head>
   <body>
+
+    <!-- YES, HACKY AS SHIT, I KNOW... IT'S 12:27AM AND I BLEW ROUND III ON REIMPLEMENTING A TOOLTIP <VS> IN-CANVAS; SO YEAH... -->
     <div class="container">
       <div><h1 id="titleHeader">Fun With Voronoi Diagrams</h1></div>
-      <div><button id="infoButton" onclick="toggle_dispInstruct_DOM()">⯇Instructions⯈</button></div>
+      <div class="ins_ttip">⯇Instructions⯈
+        <span class="ins_ttext">
+          <h1>⯀ Instructions ⯀</h1>
+          <ul>
+            <li>VD = Voronoi Diagram &nbsp;⬥&nbsp; Site = Vertex encompassing one VD cell &nbsp;⬥&nbsp; Cell = Self-Evident!</li>
+            <li>[ Left Mouse Click ] &nbsp; and not hovering over existing site ⮕ creates new site.</li>
+            <li>[ Left Mouse Press ] &nbsp; and over existing site ⮕ selects the site for dragging.</li>            
+            <li>[ Left Mouse Drag ] &nbsp; and site selected ⮕ moves it via mouse (see release behavior effects!)</li>
+            <li>[ Left Mouse Release ] &nbsp; and in bounds ⮕ de-selects selected site as to 'drop it into place'.</li>
+            <li>[ Left Mouse Release ] &nbsp; and OUT of bounds ⮕ removes site from VD (note: CANNOT be undone!)</li>
+            <li>[ 'M' Key Press ] ⮕ &nbsp; does 1 round of 'Min. Bound. Rect. Smoothing' (makes cells more uniform).</li>
+            <li>[ 'R' Key Press ] ⮕ &nbsp; resets sites to new random positions, then creates new VD thereof.</li>
+            <li>[ 'G' Key Press ] ⮕ &nbsp; toggles basic display grid.</li>
+          </ul>
+        </span>
+      </div>
     </div>
+
     <div class="vizContainer">
       <div id="viz"></div>
     </div>

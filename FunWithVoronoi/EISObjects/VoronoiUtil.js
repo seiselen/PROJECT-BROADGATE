@@ -1,10 +1,19 @@
-class VoronoiDiagram{
-  constructor(bbox,nVerts,minVertDist){
+
+import VertexUtil from "./VertexUtil.mjs";
+import Voronoi from "../Voronoi/Voronoi.mjs";
+import EisBBox from "./EisBBox.mjs";
+
+class VoronoiUtil {
+
+  /**
+   * 
+   * @param {EisBBox} bbox 
+   * @param {VertexUtil} in_vertUtil 
+   */
+  constructor(bbox,in_vertUtil){
     this.bbox     = bbox;
-    this.numVerts = nVerts;
-    this.minVDist = minVertDist;
     this.VDUtil   = new Voronoi();
-    this.vertUtil = new VertUtil(this.bbox,nVerts,minVertDist);
+    this.vertUtil = in_vertUtil;
 
     // VFX Settings
     this.strk_allEdges = color(0,120,36); 
@@ -16,6 +25,9 @@ class VoronoiDiagram{
   initVD(){
     this.VD = this.VDUtil.compute(this.vertUtil.vertListToSiteList(), this.bbox.getBoundsVD());
   }
+
+
+
 
   resetVD(){
     this.vertUtil.resetVertSet();
@@ -37,7 +49,7 @@ class VoronoiDiagram{
   //>>> GETTER FUNCTIONS
   //####################################################################
   getCellIdxAtMousePt(){
-    if(!CanvUtil.mouseInCanvas()){return -1;}
+    if(!mouseInCanvas()){return -1;}
     let minDist = 9999; let minIdx  = -1; let curDist;
     for(let i=0; i<this.VD.cells.length; i++){
       curDist = dist(this.VD.cells[i].site.x,this.VD.cells[i].site.y,mouseX,mouseY);
@@ -84,19 +96,30 @@ class VoronoiDiagram{
     return ret;
   }
 
+  //> HOLY SHIT HOLY SHIT THIS FUCKING WORKS!!!
+  cellFaceVertsToOBJFormat(cellIdx){
+    let retArr = [];
+    let sp;
+
+    this.VD.cells[cellIdx].halfedges.forEach(hEdge=>{
+      sp = hEdge.getStartpoint();
+      retArr.push(`v ${sp.x} ${sp.y} 0.0`);    
+    });
+
+    let faceLine = 'f';
+    for (let idx=0; idx<retArr.length; idx++){faceLine+=` -${idx+1}`}
+    retArr.push(faceLine);
+    return retArr.join('\n');
+  }
 
   //####################################################################
   //>>> RENDER FUNCTIONS
   //####################################################################
   render(){
-    this.renderBBox();
+    this.bbox.render();
     this.renderVerts();
     this.renderVDEdges();
     this.drawVDCellAtMousePt();
-  }
-
-  renderBBox(){
-    this.bbox.renderBorder();
   }
 
   renderVerts(){
@@ -146,4 +169,6 @@ class VoronoiDiagram{
 
   drawVDCellMidptAtMousePt(){this.drawVDCellMidptAtIdx(this.getCellIdxAtMousePt());}
 
-} // Ends Class VoronoiManager
+} // Ends Class VoronoiUtil
+
+export default VoronoiUtil;

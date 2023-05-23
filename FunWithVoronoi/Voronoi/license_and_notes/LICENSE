@@ -1,0 +1,17 @@
+/*!#############################################################################
+| Description: Original License Text
++-------------------------------------------------------------------------------
+| Contents As Follows:
+|  > (C) 2010-2013 Raymond Hill: https://github.com/gorhill/Javascript-Voronoi
+|  > MIT License: https://github.com/gorhill/Javascript-Voronoi/LICENSE.md
++#############################################################################*/
+
+/*!#############################################################################
+| Description: Eis Extension Of Original License
++-------------------------------------------------------------------------------
+| Contents As Follows:
+|  > MIT License retained without constraints; no need to assert copyright of my
+|    modifications to the original implementation. My otherwise implementation
+|    of interactive visualization and otherwise code of which utilizes this code
+|    is within the same IP statement as the greater BROADGATE repo of projects.
++#############################################################################*/

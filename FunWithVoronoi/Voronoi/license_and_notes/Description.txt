@@ -1,0 +1,28 @@
+================================================================================
+#>>> Original Description (Hill, Morgan)
+--------------------------------------------------------------------------------
+Description: "This is my personal Javascript implementation of Steven Fortune's 
+             algorithm to compute Voronoi diagrams."
+Author:      Raymond Hill (rhill@raymondhill.net)                      (primary)
+             Jesse Morgan (morgajel@gmail.com)                     (contributor)
+File:        rhill-voronoi-core.js
+Version:     0.98
+Date:        January 21, 2013
+================================================================================
+
+================================================================================
+#>>> Supplemental Description (Eiselen)
+--------------------------------------------------------------------------------
+Description: Augmentation of Hill/Morgan Voronoi Diagram library for interactive
+             visualization as a BROADGATE demo; now also being developed for PCG
+             (Procedural Content Generation) purposes per/via Project:GENESIS.
+Author:      Steven Eiselen <https://seiselen.github.io/>
+Version:     Mark-II
+Date:        21/05/2023 ANNO DOMINI
+--------------------------------------------------------------------------------
+Version Info: Notable changes as follows...
+  > Minimized partitioned classes of original into MJS
+  > Improved EIS Augmentation/Encapsulation code
+  > Implemented Perlin Noise overlay for elevation realization
+  > Implemented `.OBJ` file export realization of VD polygons incl. elevation
+================================================================================

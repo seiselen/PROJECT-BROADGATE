@@ -32,30 +32,64 @@ body {
   margin-left: 16px;
 }
 
-#infoButton {
-  align-self: center;
+
+/* Derived (as always) from: https://www.w3schools.com/css/css_tooltip.asp  */
+.ins_ttip {
   font-family: "Titillium Web", "Courier New", monospace;
+  color: white;
   font-size: 1.25em;
   margin-block-start: 0px;
   margin-block-end: 0px;
   margin-top: 4px;
   margin-bottom: 4px;
   margin-right: 16px;
-  font-weight: bold;
-  color: white;
-  background-color: rgba(0, 0, 0, .5);
+  border: 1px dotted white;
+  transition: 400ms;
+}
+.ins_ttip:hover {
+  background-color: rgba(60, 216, 255, .5);
+  border: 1px solid white;
+  transition: 400ms;
+}
+.ins_ttip .ins_ttext {
+  visibility: hidden;
+  background-color: RGBA(0,0,0,.66);
+  padding: 5px 0;
   border: 1px solid black;
-  transition: 400ms;  
+  border-radius: 16px;
+  position: absolute;
+  z-index: 1;
+  top: 20%;
+  left: 50%;
+  width: 960px;
+  margin-left: -480px;
+}
+.ins_ttip:hover .ins_ttext {
+  visibility: visible;
 }
 
-#infoButton:hover {
-  background-color: rgba(0, 0, 0, 1);
-  border: 1px solid white;
-  transition: 400ms;  
+.ins_ttext {
+  text-shadow: 0px 0px  4px black, 
+               0px 0px  4px black,
+               0px 0px  8px black,
+               0px 0px  8px black,
+               0px 0px 16px black,
+               0px 0px 16px black;
 }
 
-#infoButton:active {
-  background-color: rgba(128, 255, 255, .75 );
-  border: 1px solid white;
-  transition: 100ms;  
+.ins_ttext h1 {
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.ins_ttext ul {
+  font-size: 1em;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.ins_ttext ul li {
+  font-weight: bold;
+  margin-left: 0px;
+  padding-bottom: 4px;
+  padding-top: 4px;
 }
