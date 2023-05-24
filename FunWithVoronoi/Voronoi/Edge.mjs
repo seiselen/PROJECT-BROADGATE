@@ -32,14 +32,9 @@ class VEdge {
   /** 
    * Sets coord components of existing `VVertex`/`VSite` instance.
    * @note  **WARNING:** Will set {@link va} and {@link vb} to `null`!
-   * @param {VSite} in_lSite input left site
-   * @param {VSite} in_rSite input right site
+   * @param {VSite} in_lSite input left site @param {VSite} in_rSite input right site
    */
-  set(in_lSite, in_rSite){
-    this.lSite = in_lSite;
-    this.rSite = in_rSite;
-    this.va = this.vb = null; 
-  }
+  set(in_lSite, in_rSite){this.lSite=in_lSite; this.rSite=in_rSite; this.va=this.vb=null;}
 
 
 }

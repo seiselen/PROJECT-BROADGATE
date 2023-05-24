@@ -59,11 +59,37 @@ Voronoi.createEdge:
   // two halfedges which are added to each site's counterclockwise array
   // of halfedges.
 
-Voronoi.quantizeSites
-  // Helper: Quantize sites
-  // This is to solve https://github.com/gorhill/Javascript-Voronoi/issues/15
-  // Since not all users will end up using the kind of coord values which would
-  // cause the issue to arise, I chose to let the user decide whether or not
-  // he should sanitize his coord values through this helper. This way, for
-  // those users who uses coord values which are known to be fine, no overhead is
-  // added.
+
+
+
+################################################################################
+>>> Voronoi.clipEdge
+################################################################################
+
+(RHill) Line-clipping code from 'Liang-Barsky function' by Daniel White [LINK];
+with a bit modified to minimize code paths. Thanks!"
+  LINK: http://www.skytopia.com/project/articles/compsci/clipping.html
+
+
+################################################################################
+>>> Voronoi.compute
+################################################################################
+
+(RHill) Top-level Fortune loop. Voronoi sites are kept clientside for now, s.t.
+user can freely modify their content. At compute time, *references* to the sites
+are copied locally.
+
+
+################################################################################
+>>> Voronoi.quantizeSites
+################################################################################
+
+(SEiselen) TL;DR: Nerfs input site pts with coord valRs of massive decimals; see
+Hill's docu immediately below for more info. I dont think I need to use this as
+long as I'm nerfing my own input; but keeping as a 'JIC' nonetheless.
+
+(RHill) Solves https://github.com/gorhill/Javascript-Voronoi/issues/15. Because
+not all users will end up using the kind of coord values which would cause this
+issue to arise, I chose to let the user decide whether or not he should sanitize
+his coord values through this helper. This way, for those users who uses coord
+values which are known to be fine, no overhead is added.

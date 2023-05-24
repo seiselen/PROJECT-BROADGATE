@@ -20,12 +20,7 @@ class VVertex {
 
   /** @param {number} in_x input `X` Axis coord component @param {number} in_y input `Y` Axis coord component */
   constructor(in_x, in_y){
-
-    /** @type {number} `X` Axis coord component */
-    this.x = in_x;
-
-    /** @type {number} `Y` Axis coord component */
-    this.y = in_y;
+    this.set(in_x,in_y);
   }
 
   /** 
@@ -34,10 +29,11 @@ class VVertex {
    * @param {number} new_y new `Y` Axis coord component 
    */
   set(new_x, new_y){
+    /** @type {number} `X` Axis coord component */
     this.x = new_x;
+    /** @type {number} `Y` Axis coord component */
     this.y = new_y;
   }
-
 }
 
 export default VVertex;
