@@ -7,7 +7,7 @@
 |              > Steven Eiselen <seiselen.github.io> (minimized and MJS)
 +---------------------------------------------------------------------*/
 
-import VVertex from "./Vertex.mjs";
+import VVertex from "./VVertex.mjs";
 /** @typedef {VVertex} VSite */
 
 /** **VEdge** (**V**oronoi **Edge**) */
@@ -16,16 +16,16 @@ class VEdge {
   /** @param {VSite} in_lSite input left site @param {VSite} in_rSite input right site */
   constructor(in_lSite, in_rSite){
 
-    /** @type {VSite} left site i.e. vertex of VD */
+    /** @type {VSite} @description left site i.e. vertex of VD */
     this.lSite = in_lSite;
 
-    /** @type {VSite} right site i.e. vertex of VD */    
+    /** @type {VSite} @description right site i.e. vertex of VD (could be null if closed by bounding box) */    
     this.rSite = in_rSite;
 
-    /** @type {VSite} one of two vertices whose border this edge realizes */
+    /** @type {VVertex} @description vertex defining start point of edge */
     this.va = null;
 
-    /** @type {VSite} one of two vertices whose border this edge realizes */    
+    /** @type {VVertex} @description vertex defining end point of edge */    
     this.vb = null;
   }
 

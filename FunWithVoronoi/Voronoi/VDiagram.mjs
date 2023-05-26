@@ -4,9 +4,9 @@
 | Description: Contains data returned from 
 | Authors:     > Steven Eiselen <seiselen.github.io> (minimized and MJS)
 +---------------------------------------------------------------------*/
-import VCell from "./Cell.mjs";
-import VEdge from "./Edge.mjs";
-import VVertex from "./Vertex.mjs";
+import VCell from "./VCell.mjs";
+import VEdge from "./VEdge.mjs";
+import VVertex from "./VVertex.mjs";
 import Voronoi from "./Voronoi.mjs";
 
 /**
@@ -18,15 +18,20 @@ import Voronoi from "./Voronoi.mjs";
 class VDiagram {
   /** @param {VCell[]} in_cells @param {VEdge[]} in_edges @param {VVertex[]} in_verts @param {number[]} in_execTime */
   constructor(in_cells, in_edges, in_verts, in_execTime){
-    /** @type {VCell[]} all VD cells i.e. all I really want/need */
+    /** @type {VCell[]} @description array of all VD cells encompassing the VD; i.e. all I really want/need @note elements within might have empty array of halfedges; which implies no Voronoi cell could be computed. */
     this.cells=in_cells;
-    /** @type {VEdge[]} all **full** i.e. shared edges of all VD cells */
+    /** @type {VEdge[]} @description array of unordered, unique `VEdge` objects encompassing the VD */
     this.edges=in_edges;
-    /** @type {VVertex[]} all vertices of all VD cells/geometry */
+    /** @type {VVertex[]} @description array of unordered, unique `VVertex` objects encompassing the VD */
     this.vertices=in_verts;
-    /** @type {number} time it took to generate VD, in `milliseconds` */
+    /** @type {number} @description time it took to generate VD, in `milliseconds` */
     this.execTime=in_execTime; 
   }
+
+
+
+
+
 }
 
 export default VDiagram;

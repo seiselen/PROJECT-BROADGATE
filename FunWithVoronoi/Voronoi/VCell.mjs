@@ -7,8 +7,8 @@
 |              > Steven Eiselen <seiselen.github.io> (minimized and MJS)
 +---------------------------------------------------------------------*/
 
-import VHalfEdge from "./HalfEdge.mjs";
-import VVertex from "./Vertex.mjs";
+import VHalfEdge from "./VHalfEdge.mjs";
+import VVertex from "./VVertex.mjs";
 /** @typedef {VVertex} VSite */
 
 /** **VCell** (**V**oronoi **Cell**) */
@@ -17,10 +17,10 @@ class VCell{
   constructor(in_site){this.init(in_site);}
 
   init(site){
-    /** @type {VSite} site i.e. vertex of VD encompassing this Voronoi cell. */
+    /** @type {VSite} @description `VSite` i.e. vertex of VD encompassing this Voronoi cell. */
     this.site = site;
 
-    /** @type {VHalfEdge[]} half edges encompassing this Voronoi cell. */
+    /** @type {VHalfEdge[]} @description array of `Halfedge` objects, ordered counterclockwise, defining polygon for this Voronoi cell. */
     this.halfedges = [];
 
     this.closeMe = false;
