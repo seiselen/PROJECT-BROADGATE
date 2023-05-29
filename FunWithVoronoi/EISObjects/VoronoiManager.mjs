@@ -408,7 +408,7 @@ export class VoronoiManager {
 
 
   //> HOLY SHIT HOLY SHIT THIS FUCKING WORKS!!!
-  cellFaceVertsToOBJFormat(cellIdx){
+  cellPolygonToOBJFormat(cellIdx){
     let retArr = [];
     let sp;
 
@@ -420,10 +420,23 @@ export class VoronoiManager {
     let faceLine = 'f';
     for (let idx=0; idx<retArr.length; idx++){faceLine+=` -${idx+1}`}
     retArr.push(faceLine);
-    return retArr.join('\n');
+    return retArr;
   }
 
+  cellPolygonSubsetToOBJFormat(cellIdxs){
+    let bigStrArr = [];
+    cellIdxs.forEach(idx=> bigStrArr = bigStrArr.concat(this.cellPolygonToOBJFormat(idx)));
+    return bigStrArr;
+  }
 
+  //> AND THIS FUCKING WORKS SO MUCH THAT IT SUCCESSFULLY IMPORTED INTO BLENDER (NEXT TIME... SKETCHUP)
+  allCellsToObjFormat(){
+    let bigStrArr = [];
+    for(let idx=0; idx<this.curDiagram.cells.length; idx++){
+      bigStrArr = bigStrArr.concat(...this.cellPolygonToOBJFormat(idx))
+    }
+    saveStrings(bigStrArr, 'cells.obj');
+  }
 
 
 

@@ -25,6 +25,7 @@ window.setup =()=> {
   vorManager = new VoronoiManager(bbox, numSitesReq, minDistBtwn);
   //perManager = new PerlinManager(bbox);
   vorManager.addObserver("obs_numVDSites",(v)=>{canvasDisp.callback_numVDSites(v)});
+  console.log(vorManager);
 }
 
 window.draw =()=>{
@@ -58,5 +59,5 @@ window.keyPressed =()=>{
   if(key=='r'){vorManager.initSitesAndDiagram()}
   if(key=='m'){vorManager.smoothCellsViaBBoxMidpt()}
   //if(key=='g'){perManager.generateNewImage()}
-  if(key=='s'){saveCanvas("generated_voronoi","png")}
+  if(key=='s'){vorManager.allCellsToObjFormat()}
 }
