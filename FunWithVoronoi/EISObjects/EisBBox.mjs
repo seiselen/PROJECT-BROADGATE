@@ -1,10 +1,16 @@
 /** **EisBBox** ⯁ (**Eis**elen **B**ounding **Box**) */
 class EisBBox{
+
+  
+  /** (width, height) of this bbox */
+  dim;
+
   constructor(x1,y1,x2,y2){
     // t-form state
     this.pos = createVector(x1,y1);
     this.ept = createVector(x2,y2);
     this.dim = createVector(x2-x1,y2-y1);
+
     this.mpt = createVector(this.pos.x+(this.dim.x/2),this.pos.y+(this.dim.y/2));
     // vfx state
     this.strk_box = color(0,60,240,32);
@@ -33,6 +39,12 @@ class EisBBox{
    * @returns {PVector}
    */
   getRandomPoint(){return createVector(round(random(this.pos.x,this.ept.x)),round(random(this.pos.y,this.ept.y)))}
+
+  /**
+   * **Purpose:** Returns {@link dim} as a `Number[2]` *(lol... he said 'number 2')*
+   * @returns {[number,number]} (width, height) of this bbox
+   */
+  getDimAsArray2(){return [this.dim.x, this.dim.y]}
 
 
   inBounds(x,y){return (x>=this.pos.x && x<=this.ept.x && y>=this.pos.y && y<=this.ept.y)}

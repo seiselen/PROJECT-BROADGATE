@@ -13,34 +13,92 @@ ALGORITHM FOR PERLIN SAMPLING OF ELEV VALS WITHIN VORONOI CELLS:
     o Logarithmic/Easing: meh... KISS for now
 */
 
-//> TODO START 05/26 => 'Bake' Perlin Image in bound box area (xor i guess entire canvas) s.t. keypress('r') resets it
+import { falsy } from "../utils.mjs";
+import EisBBox from "./EisBBox.mjs";
 
-const PerlinNoiseField = {
-  noiseBound: {min:0.005,max:0.03,step:0.001},
-  noiseScale: 0.02,
-  posOffsetX: 516,
-  posOffsetY: 516,
+const CONSTRAIN_NOISE_SCALE = false;
 
-  setPosOffset : (newX,newY)=>{
-    PerlinNoiseField.posOffsetX = newX;
-    PerlinNoiseField.posOffsetY = newY;
-  },
+class PerlinNoiseField {
 
-  setNoiseScale : (newScale)=>{PerlinNoiseField.noiseScale = constrain(
-    newScale,
-    PerlinNoiseField.noiseBound.min,
-    PerlinNoiseField.noiseBound.max
-  )},
+  /** @type {EisBBox} */
+  bbox;
 
-  scrambleOffsets : ()=>{
-    PerlinNoiseField.setPosOffset(Math.floor(Date.now()*random()), Math.floor(Date.now()*random()));
+  /**
+   * 
+   * @param {EisBBox} bbox
+   * @param {number}  inNoiseScale input noise scale
+   * @param {boolean} genImgOnStart create image at initialization? (default=`true`)
+   */
+  constructor(in_bbox,inNoiseScale,genImgOnStart=true){
+    this.bbox       = in_bbox;
+    this.noiseBound = {min:0.005,max:0.03,step:0.001};
+    this.noiseScale = this.constrainNoiseScale(inNoiseScale??0.02);
+    this.posOffsetX = 516;
+    this.posOffsetY = 516;
+    this.curImage   = null;
+    if(genImgOnStart){this.generateImage()}
+  }
+
+  setPosOffset(newX,newY){
+    this.posOffsetX = newX;
+    this.posOffsetY = newY;
+    console.log(`> New Position Offsets: (${this.posOffsetX},${this.posOffsetY})`);
+  }
+
+  setNoiseScale(newScale){
+    this.noiseScale = this.constrainNoiseScale(newScale);
+  }
+
+  constrainNoiseScale(in_nscale){
+    if(!CONSTRAIN_NOISE_SCALE){return in_nscale;}    
+    return constrain(in_nscale,this.noiseBound.min,this.noiseBound.max)
+  }
+
+  scrambleOffsets(){
+    let nowSeed = parseInt(`${Date.now()}`.slice(-5));
+    let zipSeed = int(random(51631));
+    this.setPosOffset(int(random(nowSeed,zipSeed)), int(random(nowSeed+zipSeed)));
     return this; // for function chaining (namely 'prime pump' call {AtInit})
-  },
+  }
 
-  getValueAtCoord : (r,c)=>{return noise(
-    (c+PerlinNoiseField.posOffsetX)*PerlinNoiseField.noiseScale,
-    (r+PerlinNoiseField.posOffsetY)*PerlinNoiseField.noiseScale
-  )}
+  getValueAtCoord(r,c){
+    return noise((c+this.posOffsetX)*this.noiseScale,(r+this.posOffsetY)*this.noiseScale)
+  }
+
+  getColorAtCoord(r,c){
+    return color(constrain(this.getValueAtCoord(r,c)*255,0,255));
+  }
+
+  getRandomColor(){
+    return color(int(random(255)),int(random(255)),int(random(255)))
+  }
+
+  /** Syntactic sugar for calling {@link scrambleOffsets} followed by {@link generateImage} */
+  generateNewImage(){
+    this.scrambleOffsets();
+    this.generateImage();
+  }
+
+  generateImage(){
+    let [wide,tall] = this.bbox.getDimAsArray2();
+    this.curImage = createImage(wide,tall);
+    this.curImage.loadPixels();
+    for (let r=0;r<tall;r++){for (let c=0;c<wide;c++){
+      this.curImage.set(c,r, this.getColorAtCoord(r,c))
+      //this.curImage.set(c,r, this.getRandomColor())      
+    }}
+    this.curImage.updatePixels();    
+  }
+
+  render(){
+    this.renderImage()
+  }
+
+  renderImage(){
+    if(falsy(this.curImage)){return;}
+    image(this.curImage, this.bbox.pos.x, this.bbox.pos.y);
+  }
+
 }
 
 export default PerlinNoiseField;

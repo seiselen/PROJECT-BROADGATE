@@ -69,7 +69,6 @@ function setStyle(vFill,vStrk,vSwgt){
 
 
 
-
 function distLessThan(va,vb,dist){
   return ((vb.x-va.x) * (vb.x-va.x)) + ((vb.y-va.y) * (vb.y-va.y)) <= (dist*dist);
 }

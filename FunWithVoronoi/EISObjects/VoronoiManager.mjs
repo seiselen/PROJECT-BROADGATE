@@ -538,6 +538,7 @@ export class VoronoiManager {
   }
   
   renderCellNgon(cell){
+    if(cell.halfedges.length==0){return;} // still kinda no clue how/when/why this happens
     setStyle(this.fill_edges_sel, this.strk_edges_sel, this.swgt_edges_sel);
     beginShape();
     let cur = {edge:cell.halfedges[0].edge, vID:"vb"}

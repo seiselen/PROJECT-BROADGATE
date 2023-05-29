@@ -1,31 +1,30 @@
-
 import EisBBox from "./EISObjects/EisBBox.mjs";
 import CanvasUtil from "./EISObjects/CanvasUtil.mjs";
 import VoronoiManager from "./EISObjects/VoronoiManager.mjs";
-//import PerlinNoiseField from "./EISObjects/PerlinManager.mjs";
+import PerlinManager from "./EISObjects/PerlinManager.mjs";
 
 const canvDims = [1344,832];
 const canvInOff = 32; // canvas inward offset defining actual VD rect bounds WRT canv bounds
-const minDistBtwn = 32; // orig: 32
-const numSitesReq = 512; // orig: 512
+const minDistBtwn = 32;
+const numSitesReq = 512;
 
 /** @type {CanvasUtil} */
-var canvDisp;
+var canvasDisp;
 
 /** @type {VoronoiManager} */
 var vorManager;
 
+/** @type {PerlinManager} */
+var perManager;
+
 window.setup =()=> {
   createCanvas(canvDims[0],canvDims[1]).parent("viz");
   noCursor();
-
   let bbox = new EisBBox(canvInOff, canvInOff, canvDims[0]-canvInOff, canvDims[1]-canvInOff);
-  canvDisp = new CanvasUtil(canvDims[0],canvDims[1]);
+  canvasDisp = new CanvasUtil(canvDims[0],canvDims[1]);
   vorManager = new VoronoiManager(bbox, numSitesReq, minDistBtwn);
-
-  vorManager.addObserver("obs_numVDSites",(v)=>{canvDisp.callback_numVDSites(v)});
-
-  console.log(vorManager);
+  //perManager = new PerlinManager(bbox);
+  vorManager.addObserver("obs_numVDSites",(v)=>{canvasDisp.callback_numVDSites(v)});
 }
 
 window.draw =()=>{
@@ -35,8 +34,9 @@ window.draw =()=>{
   vorManager.update();
 //[RENDER]==============================================================
   background(255);
+  //perManager.render();
   vorManager.render();
-  canvDisp.render();
+  canvasDisp.render();
 }
 
 window.mousePressed =()=>{
@@ -55,7 +55,8 @@ window.mouseReleased =()=>{
 }
 
 window.keyPressed =()=>{
-  if(key=='r'){vorManager.resetVD()}
+  if(key=='r'){vorManager.initSitesAndDiagram()}
   if(key=='m'){vorManager.smoothCellsViaBBoxMidpt()}
+  //if(key=='g'){perManager.generateNewImage()}
   if(key=='s'){saveCanvas("generated_voronoi","png")}
 }
