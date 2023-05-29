@@ -1,16 +1,21 @@
 
+const BLURB_FPS_PREFIX = "FPS: ";
+const CUR_SITES_PREFIX = "Sites: ";
+
 class CanvasUtil{
-  constructor(cWide,cTall,in_vertUtil){
+
+  constructor(cWide,cTall){
     this.tform = {tall:cTall, tallHf:cTall/2, wide:cWide, wideHf:cWide/2};
     this.ttDim = {tall:24, wide:108};
     this.colBD  = color(60);
     this.colGD  = color(64,32);
     this.dimGD  = 10;
 
-    this.vertUtil = in_vertUtil;
+    this.local_numVDSites = undefined;
 
     this.initStyles();
   }
+
 
   initStyles(){
     this.cursOff   = 4;
@@ -25,12 +30,14 @@ class CanvasUtil{
     this.dispFPSTextPos  = { x:16, y:height-15}    
   }
 
+
+  callback_numVDSites(nSites){this.local_numVDSites = nSites}
+  toString_numVDSites(){return this.local_numVDSites ?? "N/A"}
+
+
   render(){
     this.renderFPSSimple();
-    this.renderNumVerts();
-  }
-  
-  lateRender(){    
+    this.renderNumVerts(); 
     this.drawCursor();
     this.drawMousePosTooltip();  
   }
@@ -68,8 +75,22 @@ class CanvasUtil{
     text("("+mVec.x+","+mVec.y+")",xOff,yOff);
   }
 
-  renderFPSSimple(blurb="FPS: "){textSize(this.text_size); textAlign(LEFT,CENTER); strokeWeight(this.text_swgt); stroke(this.colBD); fill(this.colBD); text(blurb+round(frameRate()), this.dispFPSTextPos.x, this.dispFPSTextPos.y);}
-  renderNumVerts(blurb="# Verts: "){textSize(this.text_size); textAlign(LEFT,CENTER); strokeWeight(this.text_swgt); stroke(this.colBD); fill(this.colBD); text(blurb+round(this.vertUtil.getNumVerts()), this.numVertsTextPos.x, this.numVertsTextPos.y);}
+  renderFPSSimple(){
+    textSize(this.text_size);
+    textAlign(LEFT,CENTER);
+    strokeWeight(this.text_swgt);
+    stroke(this.colBD);
+    fill(this.colBD);
+    text(BLURB_FPS_PREFIX+round(frameRate()), this.dispFPSTextPos.x, this.dispFPSTextPos.y);
+  }
+
+  renderNumVerts(){
+    textSize(this.text_size);
+    textAlign(LEFT,CENTER);
+    strokeWeight(this.text_swgt);
+    stroke(this.colBD);
+    fill(this.colBD);
+    text(CUR_SITES_PREFIX+round(this.toString_numVDSites()),this.numVertsTextPos.x, this.numVertsTextPos.y);}
 
 } // Ends Class CanvasUtil
 

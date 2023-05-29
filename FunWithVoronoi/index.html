@@ -11,16 +11,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
     <script src="https://seiselen.github.io/PROJECT-BROADGATE/utils.js"></script> 
-    <!-- Project Code (and the joys of havinhg to self-manage module imports <vs> webpack holding my hand {sobs}) --> 
-    <script type="module" src="./utils.mjs"></script>    
-    <script type="module" src="./EISObjects/CanvasUtil.js"></script>
-    <script type="module" src="./EISObjects/VertexUtil.mjs"></script>
-    <script type="module" src="./EISObjects/VoronoiUtil.js"></script>
-    <script type="module" src="./EISObjects/EisBBox.mjs"></script>
+    <!-- Project Code --> 
     <script type="module" src="main.js"></script>
   </head>
   <body>
-
     <!-- YES, HACKY AS SHIT, I KNOW... IT'S 12:27AM AND I BLEW ROUND III ON REIMPLEMENTING A TOOLTIP <VS> IN-CANVAS; SO YEAH... -->
     <div class="container">
       <div><h1 id="titleHeader">Fun With Voronoi Diagrams</h1></div>
@@ -36,15 +30,14 @@
             <li>[ Left Mouse Release ] &nbsp; and OUT of bounds ⮕ removes site from VD (note: CANNOT be undone!)</li>
             <li>[ 'M' Key Press ] ⮕ &nbsp; does 1 round of 'Min. Bound. Rect. Smoothing' (makes cells more uniform).</li>
             <li>[ 'R' Key Press ] ⮕ &nbsp; resets sites to new random positions, then creates new VD thereof.</li>
-            <li>[ 'G' Key Press ] ⮕ &nbsp; toggles basic display grid.</li>
+            <li>[ 'G' Key Press ] ⮕ &nbsp; toggles basic display grid. 
+              <span style="white-space: pre;">                                        <em>(NOTE: may NOT reflect current code!)</em></span></li>
           </ul>
         </span>
       </div>
     </div>
-
     <div class="vizContainer">
       <div id="viz"></div>
     </div>
-
   </body>
 </html>

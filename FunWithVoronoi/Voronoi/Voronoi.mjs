@@ -1,3 +1,16 @@
+/*==============================================================================
+| Description: This is my personal Javascript implementation of Steven Fortune's
+|              algorithm to compute Voronoi diagrams.
+| Author:      Raymond Hill (rhill@raymondhill.net) primary
+|              Jesse Morgan (morgajel@gmail.com) contributor
+| File:        rhill-voronoi-core.js
+| Version:     0.98
++-------------------------------------------------------------------------------
+| License Info:
+|  > (C) 2010-2013 Raymond Hill: https://github.com/gorhill/Javascript-Voronoi
+|  > MIT License: https://github.com/gorhill/Javascript-Voronoi/LICENSE.md
++=============================================================================*/
+
 import VCell from "./VCell.mjs";
 import VEdge from "./VEdge.mjs";
 import VHalfEdge from "./VHalfEdge.mjs";
@@ -111,7 +124,33 @@ class Voronoi{
    *  result = voronoi.compute(sites, bbox);
    *  // ... render, further analyze, etc. ...
    * */
-  compute(sites,bbox){let startTime=new Date(); this.reset(); if(this.toRecycle){this.vertexJunkyard=this.vertexJunkyard.concat(this.toRecycle.vertices); this.edgeJunkyard=this.edgeJunkyard.concat(this.toRecycle.edges); this.cellJunkyard=this.cellJunkyard.concat(this.toRecycle.cells); this.toRecycle=null;} let siteEvents=sites.slice(0); siteEvents.sort(function(a,b){let r=b.y-a.y; if(r){return r;} return b.x-a.x;}); let site=siteEvents.pop(),siteid=0,xsitex,xsitey,cells=this.cells,circle; for (;;){circle=this.firstCircleEvent; if(site&&(!circle||site.y<circle.y||(site.y===circle.y&&site.x<circle.x))){if(site.x!==xsitex||site.y!==xsitey){cells[siteid]=this.createCell(site); site.voronoiId=siteid++; this.addBeachsection(site); xsitey=site.y; xsitex=site.x;} site=siteEvents.pop();} else if(circle){this.removeBeachsection(circle.arc)} else {break}} this.clipEdges(bbox); this.closeCells(bbox); let stopTime=new Date(); let outDiagram = new VDiagram(this.cells, this.edges, this.vertices, stopTime.getTime()-startTime.getTime()); this.reset(); return outDiagram;}
+  compute(sites,bbox){
+    let startTime=new Date(); 
+    this.reset();
+    if(this.toRecycle){
+      this.vertexJunkyard=this.vertexJunkyard.concat(this.toRecycle.vertices);
+      this.edgeJunkyard=this.edgeJunkyard.concat(this.toRecycle.edges);
+      this.cellJunkyard=this.cellJunkyard.concat(this.toRecycle.cells);
+      this.toRecycle=null;}
+    let siteEvents=sites.slice(0);
+    siteEvents.sort(function(a,b){let r=b.y-a.y; if(r){return r;} return b.x-a.x;});
+    let site=siteEvents.pop(),
+        siteid=0,
+        xsitex,
+        xsitey,
+        cells=this.cells,
+        circle;
+    for (;;){
+      circle=this.firstCircleEvent;
+      if(site&&(!circle||site.y<circle.y||(site.y===circle.y&&site.x<circle.x))){
+        if(site.x!==xsitex||site.y!==xsitey){
+          cells[siteid]=this.createCell(site);
+          site.voronoiId=siteid++;
+          this.addBeachsection(site);
+          xsitey=site.y;
+          xsitex=site.x;
+        }
+        site=siteEvents.pop();} else if(circle){this.removeBeachsection(circle.arc)} else {break}} this.clipEdges(bbox); this.closeCells(bbox); let stopTime=new Date(); let outDiagram = new VDiagram(this.cells, this.edges, this.vertices, stopTime.getTime()-startTime.getTime()); this.reset(); return outDiagram;}
 
 } // Ends Class
 

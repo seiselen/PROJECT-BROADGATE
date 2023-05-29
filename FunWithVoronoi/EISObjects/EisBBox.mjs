@@ -25,11 +25,15 @@ class EisBBox{
 
   toggleDispCrosshair(){this.dispCH=!this.dispCH}
 
-  /** Return bounds encoding for Vert generator */
-  getBoundsPC(){return {minX: this.pos.x, maxX: this.ept.x, minY: this.pos.y, maxY: this.ept.y}}
-
   /** Return bounds encoding for Voronoi generator */
   getBoundsVD(){return {xl: this.pos.x, xr: this.ept.x, yt: this.pos.y, yb: this.ept.y}}
+
+  /**
+   * **Purpose:** Returns `p5.Vector` of a random point within this bounding box
+   * @returns {PVector}
+   */
+  getRandomPoint(){return createVector(round(random(this.pos.x,this.ept.x)),round(random(this.pos.y,this.ept.y)))}
+
 
   inBounds(x,y){return (x>=this.pos.x && x<=this.ept.x && y>=this.pos.y && y<=this.ept.y)}
 

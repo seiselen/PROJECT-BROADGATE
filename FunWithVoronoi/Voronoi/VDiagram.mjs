@@ -13,25 +13,33 @@ import Voronoi from "./Voronoi.mjs";
  * **VDiagram** (**V**oronoi **Diagram**)
  * @description Contains data returned from call of Voronoi Diagram generator.
  * @see {@link Voronoi.compute}
- * @author Steven Eiselen <http://seiselen.github.io> (WRT docu'd class)
+ * @author Steven Eiselen <http://seiselen.github.io>
  */
 class VDiagram {
   /** @param {VCell[]} in_cells @param {VEdge[]} in_edges @param {VVertex[]} in_verts @param {number[]} in_execTime */
   constructor(in_cells, in_edges, in_verts, in_execTime){
-    /** @type {VCell[]} @description array of all VD cells encompassing the VD; i.e. all I really want/need @note elements within might have empty array of halfedges; which implies no Voronoi cell could be computed. */
+    /** 
+     * Array of all VD cells, **including** their respective sites.
+     * @note Elements herein might have empty array of halfedges; which implies no Voronoi cell could be computed.
+     * @type {VCell[]}
+     */
     this.cells=in_cells;
-    /** @type {VEdge[]} @description array of unordered, unique `VEdge` objects encompassing the VD */
+
+    /** 
+     * Unordered array of unique `VEdge` objects encompassing the VD
+     * @type {VEdge[]}
+     */
     this.edges=in_edges;
-    /** @type {VVertex[]} @description array of unordered, unique `VVertex` objects encompassing the VD */
+
+    /** 
+     * Unordered array of unique `VVertex` objects encompassing the VD
+     * @type {VVertex[]} @description
+     */
     this.vertices=in_verts;
+
     /** @type {number} @description time it took to generate VD, in `milliseconds` */
     this.execTime=in_execTime; 
   }
-
-
-
-
-
 }
 
 export default VDiagram;

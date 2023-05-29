@@ -5,5 +5,7 @@
   "private": true,
   "main": "main.js",
   "author": "Steven Eiselen <https://seiselen.github.io/>",
-  "scripts": {"start": "browser-sync start --server -f -w"}
+  "scripts": {
+    "start": "browser-sync start --server -f -w"
+  }
 }
