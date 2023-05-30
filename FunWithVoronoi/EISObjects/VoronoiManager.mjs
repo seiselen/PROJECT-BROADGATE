@@ -8,7 +8,6 @@ import { truthy, distLessThan, vertsEqual, setStyle, falsy, distGreaterThan, dis
 import VVertex from "../Voronoi/VVertex.mjs";
 import VCell from "../Voronoi/VCell.mjs";
 
-
 /*######################################################################
 |> CONST PRIMITIVE VALS
 +#####################################################################*/
@@ -18,6 +17,9 @@ const MIN_SITE_DIST = 4;
 
 /** Maximum allowed distance between sites of which a VD will be generated. */
 const MAX_SITE_DIST = 32;
+
+/** Default Collision Radius e.g. s.t. dropping a site within this dist of another 'snaps' it back to pre-move position. */
+const DEFAULT_COLLIDE_RADIUS = MAX_SITE_DIST;
 
 /** Maximim number of attempts to locate a random position for a site, of min dist from existing sites, before giving up. */
 const MAX_PLACEMENT_TRIES = 32768;
@@ -50,6 +52,7 @@ export class VoronoiManager {
   /**@type {number}*/     selectedSiteIdx;  
   /**@type {number}*/     numSitesReq;
   /**@type {number}*/     minDistBtwn;
+  /**@type {number}*/     minDistBtwnDiam;  
   /**@type {VDiagram}*/   curDiagram;
   /**@type {Voronoi}*/    generator;
   /**@type {EisBBox}*/    bbox;
@@ -65,7 +68,7 @@ export class VoronoiManager {
    * @param {number} in_numSitesReq
    * @param {number} in_minDistBtwn
    */
-  constructor(in_bbox, in_numSitesReq, in_minDistBtwn){
+  constructor(in_bbox, in_numSitesReq, in_minDistBtwn, in_collideDist){
     this.bbox = in_bbox;
     this.inputSiteSet = [];
     this.outputVertSet = [];
@@ -75,6 +78,7 @@ export class VoronoiManager {
     //> Props With Their Own [Re]Setter Methods
     this.setNumSitesRequested(in_numSitesReq);
     this.setMinDistanceBetween(in_minDistBtwn);
+    this.setcolliderVals(in_collideDist)
     this.resetSelectedSite();
 
     //> BOOL FLAGS/TRIGGERS
@@ -85,25 +89,17 @@ export class VoronoiManager {
     this.obs_numVDSites = [];
     
     //> Init Calls
-    this.initMouseCell();
+    this.resetMouseCell();
     this.initStyles();
 
     this.initSitesAndDiagram();
   }
 
-  initStyles(){
-    this.swgt_general   = 1;
-    this.strk_edges_all = color(0,120,36);
-    this.fill_edges_sel = color(0,216,0,64);
-    this.strk_edges_sel = color(0,216,0,128);
-    this.swgt_edges_sel = 4;
-    this.fill_sites_all = color(240,128,0);
-    this.strk_sites_all = color(0,128);
-    this.fill_sites_sel = color(255,120,0);
-    this.strk_sites_sel = color(0);
-    this.fill_sites_mpt = color(0,255,0);
-    this.strk_sites_mpt = color(0,72,0);
-    this.diam_sites_all = 6;
+  /**
+   * @param {string} theme `L` ⮕ **Light** | 'D' ⮕ **Dark** (default: `L`)
+   */
+  initStyles(theme='L'){
+    this.style = (theme=='D') ? this.theme_voronoi_dark() : this.theme_voronoi_light();
   }
 
   /** Clears existing input sites, creates new set thereof, then computes Voronoi Diagram. */
@@ -126,9 +122,10 @@ export class VoronoiManager {
   resetSelectedSite(){
     this.selectedSite = undefined;
     this.selectedSiteIdx = -1;
+    this.selectedSiteOrigPos = undefined;
   }
 
-  initMouseCell(){
+  resetMouseCell(){
     this.mouseCell = undefined;
     this.mouseCellIdx = -1;
   }
@@ -141,6 +138,15 @@ export class VoronoiManager {
   setMinDistanceBetween(in_minDistBtwn){
     this.minDistBtwn = in_minDistBtwn ? constrain(in_minDistBtwn,MIN_SITE_DIST,MAX_SITE_DIST) : MAX_SITE_DIST
   }
+
+  //> lazily reusing the same [MIN,MAX] constraints as site dist, as it's a fine enough range thereto
+  setcolliderVals(in_collideDist){
+    this.collideRadius = in_collideDist ? constrain(in_collideDist,MIN_SITE_DIST,MAX_SITE_DIST) : DEFAULT_COLLIDE_RADIUS;
+    this.collideDiamtr = this.collideRadius*2;
+    this.siteGlyphDiam = this.collideRadius/2;
+  }
+
+
 
   /*====================================================================
   |> OBSERVER REALIZATION
@@ -180,7 +186,7 @@ export class VoronoiManager {
 
   update(){
     this.mouseCellIdx = this.getCellIdxAtMousePt();
-    if(this.mouseCellIdx<0){this.initMouseCell()}
+    if(this.mouseCellIdx<0){this.resetMouseCell()}
     this.mouseCell = this.getCellAtMousePt();
   }
 
@@ -201,7 +207,19 @@ export class VoronoiManager {
   }
   
   onMouseReleased(){
-    this.deleteSelectedSite();
+    //> If no selected site: do nothing!
+    if(!this.selectedSite){return}
+
+    //> Delete selected site if it has been placed outside of the diagram bounding area
+    if(this.canRemoveSites && !this.bbox.inBounds(this.selectedSite.x,this.selectedSite.y)){this.inputSiteSet.splice(this.selectedSiteIdx, 1);}
+
+    //> 'Snap-Back' selected site to pre-selected position if it collides with an existing site
+    if(this.pointCollidesWithSites(this.selectedSite)){this.selectedSite.set(this.selectedSiteOrigPos.x,this.selectedSiteOrigPos.y)}
+    
+    //> In all cases where truthy(selectedSite): reset it to falsy, then recompute diagram
+    this.resetSelectedSite();
+    this.createDiagramFromSites();
+    
   }
   
   /*====================================================================
@@ -209,8 +227,11 @@ export class VoronoiManager {
   +===================================================================*/
 
   selectSiteAtMouse(mVec){
-    this.selectedSiteIdx = this.inputSiteSet.findIndex(site=>distLessThan(site,mVec,this.diam_sites_all));
-    if(this.selectedSiteIdx>=0){this.selectedSite=this.inputSiteSet[this.selectedSiteIdx];}
+    this.selectedSiteIdx = this.inputSiteSet.findIndex(site=>distLessThan(site,mVec,this.collideRadius));
+    if(this.selectedSiteIdx>=0){
+      this.selectedSite=this.inputSiteSet[this.selectedSiteIdx];
+      this.selectedSiteOrigPos=createVector(this.selectedSite.x, this.selectedSite.y);
+    }
   }
 
   moveSelectedSite(){
@@ -219,21 +240,12 @@ export class VoronoiManager {
     this.createDiagramFromSites();
   }
 
-  deleteSelectedSite(){
-    if(this.selectedSite){
-      if(this.canRemoveSites && !this.bbox.inBounds(this.selectedSite.x,this.selectedSite.y)){this.inputSiteSet.splice(this.selectedSiteIdx, 1);}
-      this.resetSelectedSite();
-      this.createDiagramFromSites();
-    }    
-  }
-
   addNewSite(mVec){
-    if (this.canAddNewSites && this.bbox.inBounds(mVec.x,mVec.y) && this.isValidNewSiteLocation(mVec)){
+    if (this.canAddNewSites && this.bbox.inBounds(mVec.x,mVec.y) && this.pointDoesntCollideWithMouseCellSite(mVec)){
       this.inputSiteSet.push(mVec);
       this.createDiagramFromSites();
     }
   }
-
 
   /*====================================================================
   |> STATE/SITU GETTERS (INCL 'STATE EXISTS?' BOOLS AND STATE COPIERS)
@@ -276,11 +288,15 @@ export class VoronoiManager {
   }
 
 
-
-  isValidNewSiteLocation(pos){
-
-    return distGreaterThan(this.mouseCell.site,pos,this.minDistBtwn)
+  pointDoesntCollideWithMouseCellSite(pos){
+    return distGreaterThan(this.mouseCell.site,pos,this.collideRadius);
   }
+
+
+  pointCollidesWithSites(pos){
+    return this.inputSiteSet.some(site=>(!vertsEqual(pos,site)&&distLessThan(pos,site,this.collideRadius)))
+  }
+
 
 
   /*====================================================================
@@ -403,7 +419,7 @@ export class VoronoiManager {
    */
   snapVertsToNearest(precision=1.0){
     if(this.noComputedDiagram()){return}
-    this.outputVertSet = this.curDiagram.vertices.map(v=>createVector(round(v.x/val)*val,round(v.y/val)*val));
+    this.outputVertSet = this.curDiagram.vertices.map(v=>createVector(round(v.x/precision)*precision,round(v.y/precision)*precision));
   }
 
 
@@ -512,9 +528,9 @@ export class VoronoiManager {
   render(){
     this.renderBounds();
     this.renderDiagramSites();
-    this.renderSelectedSite();
     this.renderEdges();
     this.renderCellAtMousePt();
+    this.renderSelectedSite();
   }
 
   renderBounds(){
@@ -523,19 +539,23 @@ export class VoronoiManager {
   
   renderDiagramSites(){
     if(this.noComputedDiagram()){return}
-    setStyle(this.fill_sites_all,this.strk_sites_all,this.swgt_general);
-    this.curDiagram.cells.forEach(cell=>circle(cell.site.x,cell.site.y,this.diam_sites_all));
+    this.curDiagram.cells.forEach(cell=>{
+      setStyle(this.style.fill_sites_all,this.style.strk_sites_all,this.style.swgt_general);
+      circle(cell.site.x,cell.site.y,this.siteGlyphDiam);
+      setStyle(this.style.fill_site_circ,this.style.strk_site_circ,this.style.swgt_general);
+      circle(cell.site.x,cell.site.y,this.collideDiamtr);  
+    });
   }
 
   renderSelectedSite(){
     if(!this.selectedSiteExists()){return}
-    setStyle(this.fill_sites_sel,this.strk_sites_sel,this.swgt_general);
-    circle(this.selectedSite.x,this.selectedSite.y,this.diam_sites_all)
+    setStyle(this.style.fill_sites_sel,this.style.strk_sites_sel,this.style.swgt_general);
+    circle(this.selectedSite.x,this.selectedSite.y,this.siteGlyphDiam)
   }
   
   renderEdges(){
     if(this.noComputedDiagram()){return}    
-    setStyle(null,this.strk_edges_all,this.swgt_general)
+    setStyle(null,this.style.strk_edges_all,this.style.swgt_general)
     this.curDiagram.edges.forEach((e)=>line(e.va.x,e.va.y,e.vb.x,e.vb.y));
   }
   
@@ -547,12 +567,12 @@ export class VoronoiManager {
   
   renderCellAtMousePt(){
     if(!this.mouseCellExists()||this.mouseCell.halfedges.length==0){return}
-    this.renderCellNgon(this.mouseCell);
+    this.renderCellNgon(this.mouseCell);    
   }
   
   renderCellNgon(cell){
     if(cell.halfedges.length==0){return;} // still kinda no clue how/when/why this happens
-    setStyle(this.fill_edges_sel, this.strk_edges_sel, this.swgt_edges_sel);
+    setStyle(this.style.fill_edges_sel, this.style.strk_edges_sel, this.style.swgt_edges_sel);
     beginShape();
     let cur = {edge:cell.halfedges[0].edge, vID:"vb"}
     vertex(cur.edge.va.x, cur.edge.va.y);
@@ -562,11 +582,42 @@ export class VoronoiManager {
   }
   
   renderCellMidpoint(cell){
-    setStyle(this.fill_sites_mpt, this.strk_sites_mpt, this.swgt_general);
-    circle(...this.getCellBBoxMidptAsArray(cell),this.diam_sites_all);
+    setStyle(this.style.fill_sites_mpt, this.style.strk_sites_mpt, this.style.swgt_general);
+    circle(...this.getCellBBoxMidptAsArray(cell),this.siteGlyphDiam);
   }
+
+  theme_voronoi_light(){return{
+    swgt_general:   1,
+    strk_edges_all: color(0,120,36),
+    fill_edges_sel: color(0,216,0,64),
+    strk_edges_sel: color(0,216,0,128),
+    swgt_edges_sel: 4,
+    fill_sites_all: color(240,128,0),
+    strk_sites_all: color(0,128),
+    fill_sites_sel: color(255,120,0),
+    strk_sites_sel: color(0),
+    fill_sites_mpt: color(0,255,0),
+    strk_sites_mpt: color(0,72,0),
+    fill_site_circ: color(240,128,0,32),
+    strk_site_circ: null
+  }}
+  
+  theme_voronoi_dark(){return{
+    swgt_general:   1,
+    strk_edges_all: color(0,255,255),
+    fill_edges_sel: null,
+    strk_edges_sel: color(0,255,255,128),
+    swgt_edges_sel: 8,
+    fill_sites_all: color(0,128),
+    strk_sites_all: color(0,255,255),
+    fill_sites_sel: color(228,96,0),
+    strk_sites_sel: color(255),
+    fill_sites_mpt: color(0,255,0),
+    strk_sites_mpt: color(0,72,0),
+    fill_site_circ: color(0,255,255,32),
+    strk_site_circ: null
+  }}
   
 } // Ends Class Def # # #
-
 
 export default VoronoiManager;

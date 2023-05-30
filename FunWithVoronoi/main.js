@@ -6,6 +6,7 @@ import PerlinManager from "./EISObjects/PerlinManager.mjs";
 const canvDims = [1344,832];
 const canvInOff = 32; // canvas inward offset defining actual VD rect bounds WRT canv bounds
 const minDistBtwn = 32;
+const collideDist = 12;
 const numSitesReq = 512;
 
 /** @type {CanvasUtil} */
@@ -22,7 +23,7 @@ window.setup =()=> {
   noCursor();
   let bbox = new EisBBox(canvInOff, canvInOff, canvDims[0]-canvInOff, canvDims[1]-canvInOff);
   canvasDisp = new CanvasUtil(canvDims[0],canvDims[1]);
-  vorManager = new VoronoiManager(bbox, numSitesReq, minDistBtwn);
+  vorManager = new VoronoiManager(bbox, numSitesReq, minDistBtwn, collideDist);
   //perManager = new PerlinManager(bbox);
   vorManager.addObserver("obs_numVDSites",(v)=>{canvasDisp.callback_numVDSites(v)});
   console.log(vorManager);

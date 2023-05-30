@@ -70,7 +70,7 @@ function setStyle(vFill,vStrk,vSwgt){
 
 
 function distLessThan(va,vb,dist){
-  return ((vb.x-va.x) * (vb.x-va.x)) + ((vb.y-va.y) * (vb.y-va.y)) <= (dist*dist);
+  return distSq(va.x,va.y,vb.x,vb.y) <= (dist*dist);
 }
 
 
@@ -89,9 +89,15 @@ function distSq(x1,y1,x2,y2){
   let dx=x2-x1; let dy=y2-y1; return (dx*dx)+(dy*dy);
 } // Ends Function distSq
 
+
+/** Note: uses epsilon of 0.01 which is good enough I guess... */
 function vertsEqual(v1,v2){
   return (abs(v1.x-v2.x)<0.01)&&(abs(v1.y-v2.y)<0.01);
 }
+
+
+
+
 
 export {
   distSq,
